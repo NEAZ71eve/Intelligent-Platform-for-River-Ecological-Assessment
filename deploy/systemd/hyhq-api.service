@@ -1,0 +1,26 @@
+[Unit]
+Description=HYHQ Django API and administrator site
+After=network.target postgresql.service
+
+[Service]
+Type=simple
+User=hyhq
+Group=hyhq
+WorkingDirectory=/srv/hyhq/backend
+EnvironmentFile=/etc/hyhq/backend.env
+Environment=OMP_NUM_THREADS=1
+Environment=OPENBLAS_NUM_THREADS=1
+Environment=PYTHONDONTWRITEBYTECODE=1
+ExecStart=/srv/hyhq/.venv/bin/gunicorn config.wsgi:application --bind 127.0.0.1:8000 --workers 2 --threads 1 --timeout 30 --access-logfile -
+Restart=on-failure
+RestartSec=3
+TimeoutStopSec=30
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectHome=true
+ProtectSystem=strict
+ReadWritePaths=/srv/hyhq/backend/var
+
+[Install]
+WantedBy=multi-user.target

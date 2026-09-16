@@ -1,0 +1,34 @@
+<view class="page">
+  <view class="brand row"><text class="eyebrow">HYHQ / 海晏河清</text><text class="pill">校园生态实验室</text></view>
+  <view class="page-title"><view>让绿色，</view><view>成为生活的日常。</view></view>
+  <view class="subtitle">从身边的一片叶、一条河开始。</view>
+  <view class="notice">演示环境 · 天气、空气与河湖指标均为模拟数据，不代表任何地区实况。</view>
+  <view class="region-bar row section" wx:if="{{regions.length}}">
+    <view><text class="small muted">当前示范区域</text><view class="title">{{region.name}}</view></view>
+    <picker range="{{regions}}" range-key="name" value="{{regionIndex}}" bindchange="changeRegion"><view class="pill">切换区域⌄</view></picker>
+  </view>
+  <page-state loading="{{loading}}" error="{{error}}" empty="{{!loading && !error && !regions.length}}" empty-text="请先在服务端初始化示范区域。" bindretry="load" />
+  <block wx:if="{{!loading && !error && region}}">
+    <view class="weather-card section" wx:if="{{weather}}">
+      <view class="row"><text class="weather-kicker">今日校园 · {{weather.description || weather.condition || '模拟天气'}}</text><source-label source="{{weather.source_type}}" /></view>
+      <view class="weather-main"><view><text class="temperature">{{weather.temp_label}}</text><view class="weather-detail">相对湿度 {{weather.humidity_label}}</view></view><view class="sun-art"><view class="sun"></view><view class="hill"></view><view class="hill front"></view></view></view>
+      <view class="weather-foot">{{weather.updated_label}} · 仅供教学演示</view>
+    </view>
+    <view class="notice" wx:if="{{weather.status === 'unavailable'}}">暂无模拟天气观测，请在服务端初始化模拟数据。</view>
+    <view class="metric-grid section" wx:if="{{air}}">
+      <view class="metric"><text class="metric-label">PM10 · μg/m³</text><text class="metric-value">{{air.pm10_label}}</text><source-label source="{{air.source_type}}" /></view>
+      <view class="metric"><text class="metric-label">PM2.5 · μg/m³</text><text class="metric-value">{{air.pm25_label}}</text><text class="small muted">示范区模拟观测</text></view>
+    </view>
+    <view class="small muted gap" wx:if="{{air}}">{{air.source.name || '模拟空气数据'}} · {{air.updated_label}}。未提供官方 AQI 指数。</view>
+    <view class="notice" wx:if="{{air.status === 'unavailable'}}">暂无模拟空气观测，请在服务端初始化模拟数据。</view>
+    <view class="notice" wx:for="{{alerts}}" wx:key="id"><view class="row"><text class="title">{{item.title}}</text><source-label source="{{item.source_type}}" /></view><view>{{item.description || item.message}}</view><view class="small">{{item.time_label}}</view></view>
+    <view class="notice" wx:if="{{alertNotice}}">{{alertNotice}}</view>
+    <view class="error-inline" wx:for="{{sections}}" wx:key="key">{{item.title}}暂不可用：{{item.error}}<button class="text-button" bindtap="load">重试</button></view>
+  </block>
+  <view class="section"><view class="section-head"><text class="section-title">开启绿色探索</text><text class="small muted">校园 · 河湖 · 生活</text></view>
+    <view class="entry" data-page="explore" bindtap="navigate"><view class="entry-icon water">≈</view><view class="grow"><view class="title">去看看身边的山水</view><view class="copy">生态点位 / 河湖指标 / 校园步道</view></view><text class="chevron">›</text></view>
+    <view class="entry" data-page="recognize" bindtap="navigate"><view class="entry-icon leaf">⌁</view><view class="grow"><view class="title">认识一片校园绿意</view><view class="copy">图片上传与识别任务 · M1 基础服务</view></view><text class="chevron">›</text></view>
+    <view class="entry" data-page="learn" bindtap="navigate"><view class="entry-icon book">▤</view><view class="grow"><view class="title">收集一点生态知识</view><view class="copy">科普阅读 / 预设路线 / 个人收藏</view></view><text class="chevron">›</text></view>
+  </view>
+  <view class="footer-note">HYHQ · 与自然一起生长</view>
+</view>

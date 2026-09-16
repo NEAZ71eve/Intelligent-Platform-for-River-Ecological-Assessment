@@ -1,0 +1,23 @@
+# Local database only. Run with the explicit --env-file shown in README.md.
+name: hyhq-dev
+services:
+  db:
+    image: postgres:17.9-bookworm
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-hyhq}
+      POSTGRES_USER: ${POSTGRES_USER:-hyhq}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Create deploy/.env from deploy/.env.example}
+      POSTGRES_INITDB_ARGS: --auth-host=scram-sha-256
+    ports:
+      - "127.0.0.1:${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+    shm_size: 128mb
+volumes:
+  postgres_data:

@@ -1,0 +1,2 @@
+.record-action { border-top: 1rpx solid #edf0e5; padding-top: 14rpx; margin-top: 16rpx; display: flex; justify-content: flex-end; }
+.record-action button { color: #9a7359; }

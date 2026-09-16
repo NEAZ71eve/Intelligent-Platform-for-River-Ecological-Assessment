@@ -1,0 +1,14 @@
+<view class="page"><text class="eyebrow">HYHQ / 使用说明</text><view class="page-title">{{privacy ? '隐私说明' : '用户协议'}}</view><text class="small muted">M1 教学演示版 · 2026-09-16</text><view class="notice">这是教学开发环境说明。正式对外服务前，需补充运营主体、联系渠道及实际部署策略，并完成平台隐私配置。</view>
+<block wx:if="{{privacy}}">
+  <view class="card section"><view class="title">1. 身份与资料</view><view class="copy">游客可浏览公开资料。微信登录时，服务端使用临时 code 建立业务身份；昵称和头像由你主动设置。开发模拟登录只建立联调账号，不建立微信身份。本地保存业务会话令牌与开发设备标识，用于保持登录；密钥不存放在小程序中。</view></view>
+  <view class="card"><view class="title">2. 图片与识别任务</view><view class="copy">只有主动选择并确认上传后，图片才会发送至业务服务。服务端校验文件、移除不必要元数据，并通过鉴权接口访问。M1 没有启用真实识别模型，任务不会返回虚构识别结果。识别原图默认保留 24 小时，缩略图和识别记录默认保留 30 天；定时清理生效时间受服务器任务配置影响。</view></view>
+  <view class="card"><view class="title">3. 个人记录</view><view class="copy">收藏、浏览记录、游览记录与识别任务只允许本人访问。可以在“我的”关闭新增浏览记录，或删除已有收藏、浏览和游览记录。游览记录为用户自记，本版本不获取定位、不核验到访、不收集位置轨迹。</view></view>
+  <view class="card"><view class="title">4. 退出与注销</view><view class="copy">退出登录会使当前会话失效。注销账号会使所有会话失效，并删除账号关联记录与上传文件。头像由你主动上传，替换和注销时按服务端规则处理。正式部署时还需明确备份中的删除期限与恢复规则。</view></view>
+  <view class="card"><view class="title">5. 数据服务与外部调用</view><view class="copy">当前天气、空气与河湖指标全部为明确标记的模拟数据。天气供应商、真实定位服务、LLM 与外部 AI API 均未启用。运行日志用于排查错误，禁止记录会话令牌、上游密钥和原始图片内容。</view></view>
+</block>
+<block wx:else>
+  <view class="card section"><view class="title">1. 服务用途</view><view class="copy">HYHQ 海晏河清用于课程、毕业设计或比赛中的生态信息与绿色校园教学演示。功能按开发阶段逐步交付，页面中的未启用提示代表当前实际能力边界。</view></view>
+  <view class="card"><view class="title">2. 模拟数据</view><view class="copy">天气、空气与河湖指标为模拟数据，不代表任何地区实时情况，不用于出行安全、水质判定或环境监管决策。气象预警未接入时，空列表不代表当地没有真实预警。</view></view>
+  <view class="card"><view class="title">3. 图片与内容</view><view class="copy">请仅上传有权使用的图片，避免上传包含他人隐私的内容。科普资料由管理员发布；用户收藏与游览记录不对其他用户公开。当前不提供用户评论、真实导航或到访认证。</view></view>
+  <view class="card"><view class="title">4. 开发账号</view><view class="copy">开发模拟登录仅适用于受控的本地联调环境，不作为生产环境身份认证。真实微信登录依赖有效 AppID、服务端配置和微信平台能力验证。</view></view>
+</block></view>

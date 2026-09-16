@@ -1,0 +1,14 @@
+.guest-mark { width: 96rpx; height: 96rpx; line-height: 96rpx; text-align: center; margin: 6rpx auto 18rpx; border-radius: 30rpx; background: #e4edd9; color: #628553; font-size: 46rpx; font-weight: 300; }
+.guest-title { text-align: center; font-size: 34rpx; font-weight: 600; }
+.center { text-align: center; }
+.consent { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; font-size: 22rpx; margin: 30rpx 0 10rpx; color: #738168; }
+.consent label { display: flex; align-items: center; }
+.consent checkbox { transform: scale(.7); transform-origin: right center; margin-left: -16rpx; }
+.consent > text { margin-left: 8rpx; }
+.consent > text[data-kind] { color: #2e6b49; }
+.avatar-button { width: 100rpx; height: 100rpx; line-height: 100rpx; padding: 0; font-size: 44rpx; border-radius: 28rpx; margin-right: 24rpx; background: #e6eddb; color: #6b8958; }
+.avatar { width: 100rpx; height: 100rpx; }
+.record-grid { display: flex; flex-wrap: wrap; background: #fffefa; border-radius: 24rpx; padding: 10rpx; }
+.record-grid > view { width: 25%; display: flex; flex-direction: column; align-items: center; padding: 16rpx 0; font-size: 22rpx; color: #68785d; }
+.record-symbol { font-size: 43rpx; color: #64884d; margin-bottom: 7rpx; }
+.setting-link { padding: 8rpx 0; }

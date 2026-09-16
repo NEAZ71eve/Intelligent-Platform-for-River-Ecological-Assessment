@@ -1,0 +1,10 @@
+[Unit]
+Description=HYHQ hourly simulated data generation
+
+[Timer]
+OnCalendar=hourly
+Persistent=true
+Unit=hyhq-simulation.service
+
+[Install]
+WantedBy=timers.target

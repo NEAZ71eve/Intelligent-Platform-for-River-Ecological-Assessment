@@ -1,0 +1,6 @@
+.state { padding: 48rpx 30rpx; border-radius: 28rpx; background: #fffefa; display: flex; flex-direction: column; align-items: center; color: #788478; font-size: 26rpx; text-align: center; line-height: 1.8; }
+.state-title { color: #294636; font-size: 32rpx; font-weight: 600; margin-bottom: 10rpx; }
+.state button { color: #246746; background: #edf3e8; margin-top: 24rpx; }
+.state button::after { border: 0; }
+.pulse { width: 18rpx; height: 18rpx; border-radius: 50%; background: #91b777; margin-bottom: 22rpx; animation: breathe 1s infinite alternate; }
+@keyframes breathe { to { opacity: .25; } }

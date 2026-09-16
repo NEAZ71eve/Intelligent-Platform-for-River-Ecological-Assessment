@@ -1,0 +1,18 @@
+[Unit]
+Description=HYHQ generate the current simulation time window
+After=network.target postgresql.service
+
+[Service]
+Type=oneshot
+User=hyhq
+Group=hyhq
+WorkingDirectory=/srv/hyhq/backend
+EnvironmentFile=/etc/hyhq/backend.env
+Environment=PYTHONDONTWRITEBYTECODE=1
+ExecStart=/srv/hyhq/scripts/simulate-current.sh normal
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectHome=true
+ProtectSystem=strict
+ReadWritePaths=/srv/hyhq/backend/var
