@@ -1,0 +1,33 @@
+﻿# 河道生态评估类别映射 v1
+# 版本化：修改必须递增 version 并在报告中说明
+# 评估大类（4）— 用于规则引擎评分与等级映射
+version: 1
+eval_categories:
+  floating_debris:    {id: 0}
+  bloom_blackwater:   {id: 1}
+  outfall_discharge:  {id: 2}
+  bank_problem:       {id: 3}
+
+# 细粒度标签 → 评估大类 映射
+# 训练用细类（保留判别信息），评估聚合到大类
+# 各数据集原始标签 → 细类 的归一化在各源转换器中处理（Task 4）
+fine_labels:
+  # floating_debris（水面漂浮物）
+  bottle:          {eval: floating_debris}
+  foam_board:      {eval: floating_debris}
+  water_plant:     {eval: floating_debris}
+  algae_mass:      {eval: floating_debris}
+  plastic:         {eval: floating_debris}
+  paper:           {eval: floating_debris}
+  glass:           {eval: floating_debris}
+  metal:           {eval: floating_debris}
+  fabric:          {eval: floating_debris}
+  misc_debris:     {eval: floating_debris}
+  # bloom_blackwater（水华/黑臭水体）
+  sewage_color:    {eval: bloom_blackwater}
+  foam_pollution:  {eval: bloom_blackwater}
+  # outfall_discharge（排污口/污水直排）
+  outfall:         {eval: outfall_discharge}
+  # bank_problem（岸带环境问题）
+  bank_garbage:    {eval: bank_problem}
+  bank_encroach:   {eval: bank_problem}
