@@ -1,6 +1,7 @@
-from django.urls import path
+﻿from django.urls import path
 
 from . import views
+from .views import AssessmentJobDetail, AssessmentJobList
 
 urlpatterns = [
     path("regions/", views.RegionList.as_view(), name="region-list"),
@@ -15,4 +16,7 @@ urlpatterns = [
     path("air-quality/", views.AirQuality.as_view(), name="air-quality"),
     path("weather-alerts/", views.WeatherAlerts.as_view(), name="weather-alerts"),
     path("dashboard/", views.Dashboard.as_view(), name="dashboard"),
+
+    path("assessment-jobs/", AssessmentJobList.as_view(), name="assessment-job-list"),
+    path("assessment-jobs/<uuid:pk>/", AssessmentJobDetail.as_view(), name="assessment-job-detail"),
 ]

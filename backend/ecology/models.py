@@ -1,9 +1,10 @@
-import math
+﻿import math
 import uuid
 
 from django.core.exceptions import ValidationError
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
+from django.conf import settings
 from django.utils import timezone
 
 
@@ -320,3 +321,98 @@ class Observation(ValidatedModel):
                     errors["observed_at"] = "模拟观测时间必须处于批次时间范围内。"
         if errors:
             raise ValidationError(errors)
+
+
+class RuleSet(ValidatedModel):
+    """版本化河道生态评估规则定义；同时仅一个 is_active=True。
+
+    definition 与 ecology/rules.py 中 RULE_V1 同构（base + 各大类扣分规则），
+    assess() 优先从库加载匹配版本的 RuleSet，缺省回退到代码内置 RULE_V1。
+    """
+
+    version = models.CharField(max_length=32, unique=True)
+    definition = models.JSONField()
+    is_active = models.BooleanField(default=False)
+    notes = models.CharField(max_length=500, blank=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["is_active"],
+                condition=models.Q(is_active=True),
+                name="one_active_assessment_ruleset",
+            ),
+        ]
+        verbose_name = "评估规则版本"
+        verbose_name_plural = verbose_name
+
+    def __str__(self):
+        return f"RuleSet {self.version}"
+
+    def clean(self):
+        if not isinstance(self.definition, dict):
+            raise ValidationError({"definition": "规则定义必须是 JSON 对象。"})
+        required_keys = {"base", "floating_debris", "bloom_blackwater",
+                         "outfall_discharge", "bank_problem"}
+        missing = required_keys - self.definition.keys()
+        if missing:
+            raise ValidationError({"definition": f"规则定义缺少键：{sorted(missing)}。"})
+
+
+class AssessmentJob(models.Model):
+    """河道巡查评估任务：上传图片+定位 → 队列 → 检测+评估 → 等级/原因。
+
+    沿用 RecognitionJob 的状态机与不可变快照模式：
+    queued → running → succeeded/failed；model_snapshot 在 claim 时落库，
+    rule_version 记录所用规则版本，结果字段在 _finish 一次性写入。
+    """
+
+    class Status(models.TextChoices):
+        QUEUED = "queued", "排队中"
+        RUNNING = "running", "处理中"
+        SUCCEEDED = "succeeded", "完成"
+        FAILED = "failed", "失败"
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
+                              related_name="assessment_jobs")
+    asset = models.ForeignKey("assets.Asset", null=True, blank=True,
+                              on_delete=models.SET_NULL, related_name="+")
+    model_version = models.ForeignKey("recognition.ModelVersion", null=True, blank=True,
+                                      on_delete=models.SET_NULL, related_name="+")
+    model_snapshot = models.JSONField(default=dict, blank=True)
+    status = models.CharField(max_length=16, default=Status.QUEUED,
+                              choices=Status.choices, db_index=True)
+    error_code = models.CharField(max_length=80, blank=True)
+    message = models.CharField(max_length=200, blank=True)
+    latitude = models.FloatField(null=True, blank=True,
+                                 validators=[MinValueValidator(-90), MaxValueValidator(90)])
+    longitude = models.FloatField(null=True, blank=True,
+                                   validators=[MinValueValidator(-180), MaxValueValidator(180)])
+    coordinate_system = models.CharField(max_length=20, blank=True,
+        choices=[("", "未提供"), ("WGS84", "WGS84"), ("GCJ02", "GCJ02"), ("BD09", "BD09")])
+    water_body = models.ForeignKey("WaterBody", null=True, blank=True,
+                                   on_delete=models.SET_NULL, related_name="assessment_jobs")
+    station = models.ForeignKey("Station", null=True, blank=True,
+                                on_delete=models.SET_NULL, related_name="assessment_jobs")
+    detections = models.JSONField(default=list, blank=True)
+    score = models.PositiveIntegerField(null=True, blank=True)
+    grade = models.CharField(max_length=8, blank=True)
+    causes = models.JSONField(default=list, blank=True)
+    rule_set = models.ForeignKey(RuleSet, null=True, blank=True,
+                                 on_delete=models.SET_NULL, related_name="jobs")
+    rule_version = models.CharField(max_length=32, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    started_at = models.DateTimeField(null=True, blank=True)
+    finished_at = models.DateTimeField(null=True, blank=True)
+    duration_ms = models.PositiveIntegerField(default=0)
+    expires_at = models.DateTimeField(db_index=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+        verbose_name = "河道评估任务"
+        verbose_name_plural = verbose_name
+
+    def __str__(self):
+        return f"AssessmentJob {self.id} [{self.status}]"

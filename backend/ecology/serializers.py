@@ -1,4 +1,4 @@
-from rest_framework import serializers
+﻿from rest_framework import serializers
 
 from .models import DataSource, MapLayout, Metric, Observation, Place, Region, Station
 
@@ -69,3 +69,47 @@ class ObservationSerializer(serializers.ModelSerializer):
 
     def get_is_simulated(self, obj):
         return obj.source.kind == DataSource.Kind.SIMULATION
+
+
+# 河道生态评估任务（AssessmentJob）序列化器与 API 入口
+ASSESSMENT_DISCLAIMER = "平台演示评分，非官方水质评价；仅用于课程/毕设演示，不可作为正式水质判定依据。"
+
+
+class AssessmentJobSerializer(serializers.ModelSerializer):
+    """AssessmentJob 详情输出契约。"""
+
+    asset_id = serializers.UUIDField(read_only=True)
+    water_body_id = serializers.UUIDField(read_only=True, allow_null=True, default=None)
+    station_id = serializers.UUIDField(read_only=True, allow_null=True, default=None)
+    rule_set_id = serializers.UUIDField(read_only=True, allow_null=True, default=None)
+    model_version_id = serializers.UUIDField(read_only=True, allow_null=True, default=None)
+    disclaimer = serializers.SerializerMethodField()
+
+    class Meta:
+        model = None  # 延迟绑定，避免在 serializers 模块加载时 ecology.models 尚未导入
+
+        fields = ("id", "asset_id", "status", "error_code", "message",
+                  "latitude", "longitude", "coordinate_system",
+                  "water_body_id", "station_id",
+                  "detections", "score", "grade", "causes",
+                  "rule_version", "rule_set_id", "model_version_id",
+                  "created_at", "started_at", "finished_at",
+                  "duration_ms", "expires_at", "disclaimer")
+
+    def get_disclaimer(self, obj):
+        return ASSESSMENT_DISCLAIMER
+
+
+# 延迟绑定 model：避免循环导入
+from .models import AssessmentJob  # noqa: E402
+AssessmentJobSerializer.Meta.model = AssessmentJob
+
+
+class AssessmentJobInput(serializers.Serializer):
+    """创建评估任务入参：asset_id + 经纬度（必填）。"""
+    asset_id = serializers.UUIDField()
+    latitude = serializers.FloatField(required=True)
+    longitude = serializers.FloatField(required=True)
+    coordinate_system = serializers.ChoiceField(
+        required=False, allow_blank=True,
+        choices=["", "WGS84", "GCJ02", "BD09"])

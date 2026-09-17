@@ -237,3 +237,86 @@ class Dashboard(APIView):
             "latest_observations": ObservationSerializer(rows, many=True).data,
             "notice": "按单一来源和模拟批次展示，无综合生态指数及官方水质评级。",
         })
+
+
+# 河道生态评估任务（AssessmentJob）API：复用 recognition 的鉴权与 asset 模式
+from datetime import timedelta
+from django.conf import settings as django_settings
+from django.db import transaction
+from django.shortcuts import get_object_or_404
+from rest_framework import generics
+from rest_framework.permissions import IsAuthenticated
+
+from accounts.models import User
+from assets.models import Asset
+from common.audit import audit
+from common.exceptions import ServiceError
+from .models import AssessmentJob, RuleSet
+from .serializers import (AssessmentJobInput, AssessmentJobSerializer,
+                          ASSESSMENT_DISCLAIMER)
+from . import geo as _geo
+
+
+class AssessmentJobList(generics.ListCreateAPIView):
+    """GET 列出当前用户未过期任务；POST 入队（asset_id + 经纬度）。"""
+    permission_classes = [IsAuthenticated]
+    serializer_class = AssessmentJobSerializer
+
+    def get_queryset(self):
+        qs = AssessmentJob.objects.filter(
+            owner=self.request.user, expires_at__gt=timezone.now())
+        if wb := self.request.query_params.get("water_body"):
+            qs = qs.filter(water_body_id=wb)
+        if status_param := self.request.query_params.get("status"):
+            qs = qs.filter(status=status_param)
+        return qs
+
+    def create(self, request, *args, **kwargs):
+        serializer = AssessmentJobInput(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        with transaction.atomic():
+            User.objects.select_for_update().get(pk=request.user.pk)
+            asset = get_object_or_404(
+                Asset, pk=serializer.validated_data["asset_id"],
+                owner=request.user, purpose="recognition",
+                expires_at__gt=timezone.now(),
+                original_expires_at__gt=timezone.now())
+            existing = AssessmentJob.objects.filter(
+                owner=request.user, asset=asset).first()
+            if existing:
+                return Response(AssessmentJobSerializer(existing).data)
+            if AssessmentJob.objects.filter(
+                    status__in=["queued", "running"]).count() >= django_settings.RECOGNITION_QUEUE_LIMIT:
+                raise ServiceError("等待处理的图片较多，请稍后重试", "QUEUE_FULL", 429)
+            lat = serializer.validated_data["latitude"]
+            lng = serializer.validated_data["longitude"]
+            coord_system = serializer.validated_data.get("coordinate_system") or "WGS84"
+            match = _geo.match_water_body(lat, lng)
+            active_rule = RuleSet.objects.filter(is_active=True).first()
+            rule_version = active_rule.version if active_rule else "v1"
+            job = AssessmentJob.objects.create(
+                owner=request.user, asset=asset,
+                latitude=lat, longitude=lng, coordinate_system=coord_system,
+                water_body_id=match["water_body_id"] if match else None,
+                station_id=match["station_id"] if match else None,
+                rule_set=active_rule, rule_version=rule_version,
+                expires_at=timezone.now() + timedelta(days=django_settings.RECORD_RETENTION_DAYS))
+            audit("assessment.queued", request.user, job.pk)
+        return Response(AssessmentJobSerializer(job).data, status=201)
+
+
+class AssessmentJobDetail(generics.RetrieveDestroyAPIView):
+    """GET 单任务详情；DELETE 同时清理关联 asset。"""
+    permission_classes = [IsAuthenticated]
+    serializer_class = AssessmentJobSerializer
+
+    def get_queryset(self):
+        return AssessmentJob.objects.filter(
+            owner=self.request.user, expires_at__gt=timezone.now())
+
+    def perform_destroy(self, instance):
+        asset = instance.asset
+        with transaction.atomic():
+            instance.delete()
+            if asset:
+                asset.delete()

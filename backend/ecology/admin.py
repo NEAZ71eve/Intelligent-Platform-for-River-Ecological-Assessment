@@ -84,3 +84,62 @@ class SimulationRunAdmin(admin.ModelAdmin):
 
     def has_delete_permission(self, request, obj=None):
         return False
+
+
+from django.contrib import admin, messages
+from django.db import transaction
+
+from common.models import AuditLog
+from .models import AssessmentJob, RuleSet
+
+
+@admin.register(RuleSet)
+class RuleSetAdmin(admin.ModelAdmin):
+    list_display = ("version", "is_active", "created_at", "notes")
+    list_filter = ("is_active",)
+    search_fields = ("version", "notes")
+    readonly_fields = ("created_at", "updated_at")
+    actions = ("activate_selected", "disable_selected")
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+    @admin.action(description="启用所选版本（可回退旧版本）")
+    def activate_selected(self, request, queryset):
+        if queryset.count() != 1:
+            self.message_user(request, "请只选择一个版本。", messages.ERROR)
+            return
+        target = queryset.get()
+        with transaction.atomic():
+            RuleSet.objects.filter(is_active=True).update(is_active=False)
+            RuleSet.objects.filter(pk=target.pk).update(is_active=True)
+            AuditLog.objects.create(event="ruleset.activated", actor=request.user,
+                                    target_id=str(target.pk),
+                                    details={"version": target.version})
+        self.message_user(request, f"已启用 RuleSet {target.version}；历史任务保留原 rule_version。")
+
+    @admin.action(description="停用当前启用版本")
+    def disable_selected(self, request, queryset):
+        if queryset.filter(is_active=True).exists():
+            RuleSet.objects.filter(is_active=True).update(is_active=False)
+            AuditLog.objects.create(event="ruleset.disabled", actor=request.user)
+            self.message_user(request, "评估规则已停用；后续任务回退到代码内置 RULE_V1。")
+
+
+@admin.register(AssessmentJob)
+class AssessmentJobAdmin(admin.ModelAdmin):
+    list_display = ("id", "owner", "status", "error_code", "water_body",
+                    "grade", "rule_version", "created_at", "duration_ms")
+    list_filter = ("status", "error_code", "grade", "water_body")
+    search_fields = ("owner__username", "rule_version")
+    readonly_fields = tuple(field.name for field in AssessmentJob._meta.fields)
+    date_hierarchy = "created_at"
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
