@@ -4,7 +4,7 @@ from recognition.worker import process_one
 
 
 class Command(BaseCommand):
-    help = 'Process queued jobs; M1 explicitly reports MODEL_NOT_CONFIGURED.'
+    help = '逐个处理识别任务：独立 CPU 子进程、全局执行锁与硬超时。'
 
     def add_arguments(self, parser):
         parser.add_argument('--once', action='store_true')
@@ -20,4 +20,3 @@ class Command(BaseCommand):
                     time.sleep(1)
         except KeyboardInterrupt:
             self.stdout.write('worker stopped')
-

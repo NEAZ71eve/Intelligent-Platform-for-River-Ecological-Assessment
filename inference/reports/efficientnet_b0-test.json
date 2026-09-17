@@ -1,0 +1,344 @@
+{
+  "model": "efficientnet_b0",
+  "test": {
+    "samples": 550,
+    "accuracy": 0.9218181818181819,
+    "macro_f1": 0.9200204041621538,
+    "confusion_matrix_true_rows_predicted_columns": [
+      [
+        88,
+        4,
+        2,
+        1,
+        0
+      ],
+      [
+        1,
+        130,
+        0,
+        3,
+        1
+      ],
+      [
+        0,
+        0,
+        88,
+        1,
+        7
+      ],
+      [
+        2,
+        1,
+        5,
+        94,
+        2
+      ],
+      [
+        2,
+        1,
+        9,
+        1,
+        107
+      ]
+    ],
+    "threshold": 0.0,
+    "accepted_samples": 550,
+    "coverage": 1.0,
+    "accepted_accuracy": 0.9218181818181819
+  },
+  "meets_macro_f1_target": true,
+  "conversion": {
+    "max_absolute_logit_difference": 2.8371810913085938e-05,
+    "top1_agreement_with_pytorch_cached_features": 1.0,
+    "onnx_macro_f1_minus_pytorch": 0.0,
+    "quantized": false
+  },
+  "artifact": {
+    "filename": "flowers-efficientnet-b0-v1.onnx",
+    "sha256": "01d132fd6fc189adf636060adbe633de57343977d124590e944150f3084fac8f",
+    "size_bytes": 16047581
+  },
+  "benchmark": {
+    "provider": "CPUExecutionProvider",
+    "threads": 1,
+    "batch_size": 1,
+    "warmups": 5,
+    "iterations": 50,
+    "session_load_ms": 34.05304200714454,
+    "forward_p50_ms": 24.364604003494605,
+    "forward_p95_ms": 26.02661697892472,
+    "evaluation_process_peak_rss_mb": 1094.515625,
+    "memory_scope": "whole evaluation process with PyTorch and ORT; not isolated serving RSS"
+  },
+  "environment": {
+    "platform": "macOS-26.6.1-arm64-arm-64bit",
+    "machine": "arm64",
+    "python": "3.12.6",
+    "torch": "2.8.0"
+  },
+  "failure_cases": [
+    {
+      "path": "daisy/2482982436_a2145359e0_n.jpg",
+      "true": "daisy",
+      "predicted": "sunflowers",
+      "score": 0.45298326495438046
+    },
+    {
+      "path": "daisy/2561371688_c80a4fe957_n.jpg",
+      "true": "daisy",
+      "predicted": "dandelion",
+      "score": 0.9837407093966402
+    },
+    {
+      "path": "daisy/3588872598_e0f9a1d2a1_m.jpg",
+      "true": "daisy",
+      "predicted": "dandelion",
+      "score": 0.8295678540601606
+    },
+    {
+      "path": "daisy/4861391074_c3e122dab0_m.jpg",
+      "true": "daisy",
+      "predicted": "roses",
+      "score": 0.7138398846162185
+    },
+    {
+      "path": "daisy/5434901893_4550be3f84_m.jpg",
+      "true": "daisy",
+      "predicted": "roses",
+      "score": 0.4723034992662237
+    },
+    {
+      "path": "daisy/5586977262_6b24412805_n.jpg",
+      "true": "daisy",
+      "predicted": "dandelion",
+      "score": 0.4736688145301475
+    },
+    {
+      "path": "daisy/7320089276_87b544e341.jpg",
+      "true": "daisy",
+      "predicted": "dandelion",
+      "score": 0.6628722993955156
+    },
+    {
+      "path": "dandelion/1798082733_b8080b1173_m.jpg",
+      "true": "dandelion",
+      "predicted": "sunflowers",
+      "score": 0.47871517092336696
+    },
+    {
+      "path": "dandelion/2502627784_4486978bcf.jpg",
+      "true": "dandelion",
+      "predicted": "daisy",
+      "score": 0.5565416500036654
+    },
+    {
+      "path": "dandelion/3465599902_14729e2b1b_n.jpg",
+      "true": "dandelion",
+      "predicted": "sunflowers",
+      "score": 0.5313101657926614
+    },
+    {
+      "path": "dandelion/7162551630_3647eb9254.jpg",
+      "true": "dandelion",
+      "predicted": "sunflowers",
+      "score": 0.5587863708547223
+    },
+    {
+      "path": "dandelion/7222962522_36952a67b6_n.jpg",
+      "true": "dandelion",
+      "predicted": "tulips",
+      "score": 0.49027917123517906
+    },
+    {
+      "path": "roses/14312910041_b747240d56_n.jpg",
+      "true": "roses",
+      "predicted": "tulips",
+      "score": 0.8287004980867371
+    },
+    {
+      "path": "roses/16424992340_c1d9eb72b4.jpg",
+      "true": "roses",
+      "predicted": "tulips",
+      "score": 0.4990996805439979
+    },
+    {
+      "path": "roses/18563353954_b761d97155_m.jpg",
+      "true": "roses",
+      "predicted": "tulips",
+      "score": 0.5468797213129899
+    },
+    {
+      "path": "roses/3145692843_d46ba4703c.jpg",
+      "true": "roses",
+      "predicted": "sunflowers",
+      "score": 0.3666594975891117
+    },
+    {
+      "path": "roses/3265902330_d8b1e44545.jpg",
+      "true": "roses",
+      "predicted": "tulips",
+      "score": 0.5524508198294565
+    },
+    {
+      "path": "roses/3713368809_eba7fa2fbf_m.jpg",
+      "true": "roses",
+      "predicted": "tulips",
+      "score": 0.4639492874453422
+    },
+    {
+      "path": "roses/7345657862_689366e79a.jpg",
+      "true": "roses",
+      "predicted": "tulips",
+      "score": 0.6602446460433431
+    },
+    {
+      "path": "roses/9300754115_dd79670066_n.jpg",
+      "true": "roses",
+      "predicted": "tulips",
+      "score": 0.5439275542826503
+    },
+    {
+      "path": "sunflowers/10386522775_4f8c616999_m.jpg",
+      "true": "sunflowers",
+      "predicted": "roses",
+      "score": 0.5484729880918493
+    },
+    {
+      "path": "sunflowers/1240626292_52cd5d7fb1_m.jpg",
+      "true": "sunflowers",
+      "predicted": "tulips",
+      "score": 0.4512151751353024
+    },
+    {
+      "path": "sunflowers/15839183375_49bf4f75e8_m.jpg",
+      "true": "sunflowers",
+      "predicted": "daisy",
+      "score": 0.4695602944532505
+    },
+    {
+      "path": "sunflowers/164668737_aeab0cb55e_n.jpg",
+      "true": "sunflowers",
+      "predicted": "dandelion",
+      "score": 0.37294209216857005
+    },
+    {
+      "path": "sunflowers/2307673262_e1e1aefd29.jpg",
+      "true": "sunflowers",
+      "predicted": "roses",
+      "score": 0.5222550139820938
+    },
+    {
+      "path": "sunflowers/23894449029_bf0f34d35d_n.jpg",
+      "true": "sunflowers",
+      "predicted": "daisy",
+      "score": 0.47749511095735303
+    },
+    {
+      "path": "sunflowers/3784815653_5df39aa9c2_m.jpg",
+      "true": "sunflowers",
+      "predicted": "roses",
+      "score": 0.4954759593256283
+    },
+    {
+      "path": "sunflowers/39271782_b4335d09ae_n.jpg",
+      "true": "sunflowers",
+      "predicted": "tulips",
+      "score": 0.31803605149464437
+    },
+    {
+      "path": "sunflowers/4746648726_e37a2de16d_n.jpg",
+      "true": "sunflowers",
+      "predicted": "roses",
+      "score": 0.6101515467261648
+    },
+    {
+      "path": "sunflowers/9904127656_f76a5a4811_m.jpg",
+      "true": "sunflowers",
+      "predicted": "roses",
+      "score": 0.46070133713770256
+    },
+    {
+      "path": "tulips/14067778605_0285b7cc3a.jpg",
+      "true": "tulips",
+      "predicted": "sunflowers",
+      "score": 0.4926668886788532
+    },
+    {
+      "path": "tulips/15082212714_ff87e8fcb1_m.jpg",
+      "true": "tulips",
+      "predicted": "roses",
+      "score": 0.7070661127784997
+    },
+    {
+      "path": "tulips/15147464747_594599c855_m.jpg",
+      "true": "tulips",
+      "predicted": "roses",
+      "score": 0.3528252241961854
+    },
+    {
+      "path": "tulips/164578909_51f245d3fa_n.jpg",
+      "true": "tulips",
+      "predicted": "roses",
+      "score": 0.931906612448919
+    },
+    {
+      "path": "tulips/16680998737_6f6225fe36.jpg",
+      "true": "tulips",
+      "predicted": "roses",
+      "score": 0.6802233769771744
+    },
+    {
+      "path": "tulips/17078716890_68e0723389_n.jpg",
+      "true": "tulips",
+      "predicted": "daisy",
+      "score": 0.5266367955421165
+    },
+    {
+      "path": "tulips/391477275_7c2f50a1a7_m.jpg",
+      "true": "tulips",
+      "predicted": "roses",
+      "score": 0.5133569266090342
+    },
+    {
+      "path": "tulips/4604238410_bcec9da4a0_n.jpg",
+      "true": "tulips",
+      "predicted": "roses",
+      "score": 0.8454215834257245
+    },
+    {
+      "path": "tulips/5687705933_55a8c2dbac.jpg",
+      "true": "tulips",
+      "predicted": "dandelion",
+      "score": 0.5633255912428617
+    },
+    {
+      "path": "tulips/6948239566_0ac0a124ee_n.jpg",
+      "true": "tulips",
+      "predicted": "daisy",
+      "score": 0.42911231478588896
+    },
+    {
+      "path": "tulips/8454707381_453b4862eb_m.jpg",
+      "true": "tulips",
+      "predicted": "roses",
+      "score": 0.7344765380803842
+    },
+    {
+      "path": "tulips/8521597402_4b6169ba05.jpg",
+      "true": "tulips",
+      "predicted": "roses",
+      "score": 0.413551207923045
+    },
+    {
+      "path": "tulips/8687675254_c93f50d8b0_m.jpg",
+      "true": "tulips",
+      "predicted": "roses",
+      "score": 0.7802818098311406
+    }
+  ],
+  "limitations": [
+    "Five flower image categories only; not species-level botanical identification.",
+    "No campus-shot dataset or open-set/non-target evaluation available.",
+    "Perceptual hashing is a leakage precaution, not proof that all semantically similar images were found."
+  ]
+}

@@ -1,5 +1,5 @@
 [Unit]
-Description=HYHQ recognition queue worker (M1 has no inference model)
+Description=HYHQ isolated ONNX CPU recognition worker
 After=network.target postgresql.service
 
 [Service]
@@ -15,6 +15,12 @@ ExecStart=/srv/hyhq/.venv/bin/python manage.py run_recognition_worker
 Restart=on-failure
 RestartSec=3
 TimeoutStopSec=30
+KillMode=control-group
+MemoryHigh=768M
+MemoryMax=1G
+MemorySwapMax=0
+CPUQuota=100%
+TasksMax=64
 UMask=0077
 NoNewPrivileges=true
 PrivateTmp=true

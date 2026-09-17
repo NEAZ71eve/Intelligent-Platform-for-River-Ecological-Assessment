@@ -27,7 +27,8 @@
   },
   "usingComponents": {
     "page-state": "/components/page-state/index",
-    "source-label": "/components/source-label/index"
+    "source-label": "/components/source-label/index",
+    "recognition-result": "/components/recognition-result/index"
   },
   "style": "v2",
   "lazyCodeLoading": "requiredComponents",

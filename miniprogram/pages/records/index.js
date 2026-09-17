@@ -39,7 +39,7 @@ Page({
   },
   more() { this.load(true); },
   open(event) {
-    if (this.data.kind === 'recognition-jobs') { wx.switchTab({ url: '/pages/recognize/index' }); return; }
+    if (this.data.kind === 'recognition-jobs') { app().globalData.recognitionJobId = event.currentTarget.dataset.id; wx.switchTab({ url: '/pages/recognize/index' }); return; }
     const record = this.data.records.find((item) => item.id === event.currentTarget.dataset.id);
     if (record && record.target_id && !record.unavailable) detail(record.target_kind, record.target_id);
     else toast(new Error('原资料可能已经删除或暂不可用'));

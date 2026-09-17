@@ -27,7 +27,7 @@
   </block>
   <view class="section"><view class="section-head"><text class="section-title">开启绿色探索</text><text class="small muted">校园 · 河湖 · 生活</text></view>
     <view class="entry" data-page="explore" bindtap="navigate"><view class="entry-icon water">≈</view><view class="grow"><view class="title">去看看身边的山水</view><view class="copy">生态点位 / 河湖指标 / 校园步道</view></view><text class="chevron">›</text></view>
-    <view class="entry" data-page="recognize" bindtap="navigate"><view class="entry-icon leaf">⌁</view><view class="grow"><view class="title">认识一片校园绿意</view><view class="copy">图片上传与识别任务 · M1 基础服务</view></view><text class="chevron">›</text></view>
+    <view class="entry" data-page="recognize" bindtap="navigate"><view class="entry-icon leaf">⌁</view><view class="grow"><view class="title">认识一片校园绿意</view><view class="copy">有限类别识别 / 模型说明 / 个人记录</view></view><text class="chevron">›</text></view>
     <view class="entry" data-page="learn" bindtap="navigate"><view class="entry-icon book">▤</view><view class="grow"><view class="title">收集一点生态知识</view><view class="copy">科普阅读 / 预设路线 / 个人收藏</view></view><text class="chevron">›</text></view>
   </view>
   <view class="footer-note">HYHQ · 与自然一起生长</view>

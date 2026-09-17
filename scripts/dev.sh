@@ -13,4 +13,5 @@ if [[ "${1:-}" == '--help' ]]; then
 fi
 "$HYHQ_ROOT/scripts/manage.sh" migrate --noinput
 "$HYHQ_ROOT/scripts/manage.sh" seed_demo
+"$HYHQ_ROOT/scripts/manage.sh" seed_recognition_knowledge
 exec "$HYHQ_ROOT/scripts/manage.sh" runserver "${1:-127.0.0.1:8000}"

@@ -11,3 +11,6 @@
 .upload-consent label { display: flex; align-items: center; }
 .upload-consent checkbox { transform: scale(.75); margin-left: -8rpx; }
 .privacy-link { color: #376f4a; margin-left: 10rpx; }
+.scope-card { padding: 26rpx; background: #edf1e2; border-radius: 24rpx; }
+.scope-labels { display: flex; flex-wrap: wrap; margin-top: 14rpx; }
+.scope-labels text { background: #fffefa; color: #698552; padding: 5rpx 15rpx; border-radius: 99rpx; font-size: 21rpx; margin: 8rpx 10rpx 0 0; }

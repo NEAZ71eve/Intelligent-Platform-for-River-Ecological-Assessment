@@ -11,8 +11,10 @@ from rest_framework.response import Response
 def health(request):
     with connection.cursor() as cursor:
         cursor.execute('SELECT 1')
+    from recognition.registry import public_status
+    recognition = public_status()
     return Response({'status': 'ok', 'mode': settings.DATA_MODE, 'dev_auth_enabled': settings.ALLOW_DEV_AUTH,
-                     'features': {'recognition': False, 'llm': False}, 'version': 'm1'})
+                     'features': {'recognition': recognition['enabled'], 'llm': False}, 'recognition': recognition, 'version': 'm3'})
 
 
 def not_found(request, exception=None):
@@ -21,4 +23,3 @@ def not_found(request, exception=None):
 
 def server_error(request):
     return JsonResponse({'error': {'code': 'INTERNAL_ERROR', 'message': '服务暂不可用，请稍后重试'}, 'request_id': getattr(request, 'request_id', None)}, status=500)
-

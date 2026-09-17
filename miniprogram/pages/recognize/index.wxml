@@ -1,17 +1,21 @@
 <view class="page">
   <text class="eyebrow">DISCOVER / 校园植物</text>
   <view class="page-title">你好，这片绿。</view>
-  <view class="subtitle">未来，用一张照片认识身边的植物。</view>
-  <view class="notice">M1 图片与任务联调：真实识别模型将在 M3 接入。当前可验证上传、排队与明确失败状态，不产生植物识别结论。</view>
+  <view class="subtitle">用一张照片，开始一次观察。</view>
+  <view class="scope-card section" wx:if="{{capabilityKnown && capability.enabled}}"><view class="row"><text class="title">当前可识别范围</text><text class="pill">教学模型</text></view><view class="copy">{{capability.scope}}</view><view class="scope-labels"><text wx:for="{{capability.labels}}" wx:key="id">{{item.name}}</text></view><view class="small muted gap" wx:if="{{capability.modelName}}">{{capability.modelName}} · {{capability.modelVersion}}</view></view>
+  <view class="notice" wx:elif="{{capabilityKnown}}">识别模型当前未启用。仍可验证图片上传和任务处理；服务端会明确返回未配置模型，不产生识别结论。</view>
+  <view class="error-inline" wx:if="{{capabilityError}}">{{capabilityError}}</view>
   <view class="upload-panel section" bindtap="choose"><image wx:if="{{imagePath}}" class="preview" src="{{imagePath}}" mode="aspectFit" /><block wx:else><view class="scan-frame"><view class="plant-stem"></view><view class="plant-leaf one"></view><view class="plant-leaf two"></view></view><view class="title">拍下或选择一张植物照片</view><view class="copy">单个主体 · JPEG / PNG / WebP · 最大 5MB</view></block><view class="replace" wx:if="{{imagePath}}">点击重新选择</view></view>
+  <view class="small muted gap" wx:if="{{imageUnavailable}}">{{imageUnavailable}}</view>
   <view wx:if="{{!loggedIn}}" class="gap"><button class="primary" bindtap="login">登录后体验上传</button><view class="small muted gap">公开资料无需登录即可浏览。</view></view>
   <block wx:else>
     <checkbox-group class="upload-consent" bindchange="consentChange"><label><checkbox value="agree" checked="{{consent}}" color="#427450" />我同意将此图片上传至服务端处理</label></checkbox-group>
     <view class="small muted">请上传有权使用的植物图片。图片按服务端保留期限清理。<text class="privacy-link" bindtap="privacy">查看隐私说明</text></view>
-    <button class="primary gap" disabled="{{busy || !imagePath || !consent || task.status === 'queued' || task.status === 'running'}}" loading="{{busy}}" bindtap="submit">{{busy ? '正在上传并创建任务' : '上传并创建演示任务'}}</button>
+    <button class="primary gap" disabled="{{busy || !imagePath || imageOrigin === 'history' || !consent || task.status === 'queued' || task.status === 'running'}}" loading="{{busy}}" bindtap="submit">{{busy ? '正在处理' : capability.enabled ? '上传并识别' : '上传并验证任务流程'}}</button>
   </block>
-  <view class="card section" wx:if="{{task}}"><view class="row"><text class="title">{{task.status_label}}</text><text class="pill">任务状态</text></view><view class="copy">{{task.error_label || (task.status === 'queued' ? '等待服务端工作进程处理。' : task.status === 'running' ? '工作进程正在处理任务。' : '请查看任务记录。')}}</view><view class="small muted gap">{{task.created_label}}</view><button class="secondary gap" bindtap="refreshTask">刷新任务状态</button></view>
+  <view class="card section" wx:if="{{task && !task.result_view}}"><view class="row"><text class="title">{{task.status_label}}</text><text class="pill">任务状态</text></view><view class="copy">{{task.error_label || (task.status === 'queued' ? '图片正在排队，请稍候。' : task.status === 'running' ? '正在分析图片，请稍候。' : '本次未提供可展示的识别结果。')}}</view><view class="small muted gap">{{task.created_label}}</view><button class="secondary gap" bindtap="refreshTask">刷新任务状态</button></view>
+  <recognition-result result="{{task.result_view}}" bindcontent="openContent" bindretake="choose" />
   <page-state loading="{{loading}}" error="{{error}}" bindretry="refreshTask" />
-  <view class="section" wx:if="{{jobs.length}}"><view class="section-head"><text class="section-title">最近的任务</text><text class="small muted">仅自己可见</text></view><view class="card" wx:for="{{jobs}}" wx:key="id"><view class="row"><text>{{item.status_label}}</text><text class="small muted">{{item.created_label}}</text></view><view class="copy" wx:if="{{item.error_label}}">{{item.error_label}}</view></view></view>
+  <view class="section" wx:if="{{jobs.length}}"><view class="section-head"><text class="section-title">最近的任务</text><text class="small muted">仅自己可见 · 点击查看</text></view><view class="card" wx:for="{{jobs}}" wx:key="id" data-id="{{item.id}}" bindtap="openJob"><view class="row"><text>{{item.result_view ? item.result_view.heading : item.status_label}}</text><text class="chevron">›</text></view><view class="copy" wx:if="{{item.error_label}}">{{item.error_label}}</view><view class="small muted gap">{{item.created_label}}</view></view></view>
   <view class="footer-note">观察，是认识自然的第一步</view>
 </view>
