@@ -103,7 +103,11 @@ ORIGINAL_RETENTION_HOURS = 24
 RECORD_RETENTION_DAYS = 30
 RECOGNITION_QUEUE_LIMIT = 20
 RECOGNITION_QUEUE_TIMEOUT_SECONDS = 300
-RECOGNITION_RUN_TIMEOUT_SECONDS = 60
+RECOGNITION_RUN_TIMEOUT_SECONDS = int(os.getenv('HYHQ_RECOGNITION_TIMEOUT_SECONDS', '10'))
+if not 1 <= RECOGNITION_RUN_TIMEOUT_SECONDS <= 60:
+    raise ImproperlyConfigured('HYHQ_RECOGNITION_TIMEOUT_SECONDS must be between 1 and 60')
+RECOGNITION_MODEL_ROOT = Path(os.getenv('HYHQ_MODEL_ROOT', str(BASE_DIR.parent / 'inference' / 'artifacts'))).resolve()
+RECOGNITION_LOCK_PATH = BASE_DIR / 'var' / 'recognition.lock'
 LOGGING = {
     'version': 1, 'disable_existing_loggers': False,
     'filters': {'redact': {'()': 'common.logging.RedactFilter'}},

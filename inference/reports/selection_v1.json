@@ -1,0 +1,13 @@
+{
+  "selected_model": "efficientnet_b0",
+  "basis": "validation macro F1 only; no test result used",
+  "thresholds": {
+    "mobilenet_v3_small": 0.0,
+    "efficientnet_b0": 0.0
+  },
+  "validation_report_sha256": {
+    "mobilenet_v3_small": "7ec7ae591146f462e155d3517e6731d17073cd8b03cead12f297ef635906c6b6",
+    "efficientnet_b0": "b5120f50250ecaaed602f83d80a6bf9d09b1d1d145324e828025873f6630f623"
+  },
+  "test_metrics_seen": false
+}

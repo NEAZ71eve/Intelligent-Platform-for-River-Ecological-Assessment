@@ -6,12 +6,14 @@ const path = require('node:path');
 const { createClient } = require('../lib/client');
 const { createSession } = require('../lib/session');
 const baseURL = process.env.HYHQ_TEST_API || 'http://127.0.0.1:8000/api/v1';
+const expectRecognition = process.env.HYHQ_EXPECT_RECOGNITION === '1';
 const config = { baseURL, development: true, timeout: 10000, uploadTimeout: 15000 };
 const output = [];
 const temp = fs.mkdtempSync(path.join(os.tmpdir(), 'hyhq-mini-smoke-'));
-const imagePath = path.join(temp, 'pixel.png');
+const generatedImagePath = path.join(temp, 'pixel.png');
 // A complete, valid tiny PNG (CRC verified by the backend decoder).
-fs.writeFileSync(imagePath, Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=', 'base64'));
+fs.writeFileSync(generatedImagePath, Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=', 'base64'));
+const imagePath = process.env.HYHQ_TEST_IMAGE || generatedImagePath;
 
 function transport() {
   const storage = new Map();
@@ -70,6 +72,7 @@ const second = application(transport());
 async function main() {
   const health = (await app.api.request('health/')).data;
   assert.equal(health.dev_auth_enabled, true, 'Only a development server with explicit dev auth can run this smoke test');
+  if (expectRecognition) assert.equal(health.features.recognition, true, 'Start the server with an enabled model');
   const home = loadPage('home', app, wx);
   await home.load();
   assert.equal(home.data.error, '');
@@ -127,22 +130,40 @@ async function main() {
 
   const asset = await app.api.upload(imagePath, 'recognition');
   const job = (await app.api.request('recognition-jobs/', { method: 'POST', data: { asset_id: asset.id } })).data;
-  assert.ok(['queued', 'failed'].includes(job.status));
+  assert.ok(['queued', 'running', 'succeeded', 'failed'].includes(job.status));
   let final = job;
   const limit = Date.now() + 20000;
   while (['queued', 'running'].includes(final.status) && Date.now() < limit) {
     await new Promise((resolve) => setTimeout(resolve, 500));
     final = (await app.api.request('recognition-jobs/' + job.id + '/')).data;
   }
-  assert.equal(final.status, 'failed', 'Start run_recognition_worker before running this script');
-  assert.equal(final.error_code, 'MODEL_NOT_CONFIGURED');
+  if (expectRecognition) {
+    assert.equal(final.status, 'succeeded', 'Start the recognition worker with the enabled model before running this script');
+    assert.ok(['recognized', 'uncertain'].includes(final.result.decision));
+    if (final.result.reason === 'LOW_IMAGE_QUALITY') {
+      assert.equal(final.result.decision, 'uncertain');
+      assert.deepEqual(final.result.candidates, []);
+    } else assert.ok(final.result.candidates.length > 0);
+    assert.ok(final.result.candidates.every((candidate) => typeof candidate.score === 'number' && candidate.score >= 0 && candidate.score <= 1));
+    assert.ok(final.result.model.version);
+  } else {
+    assert.equal(final.status, 'failed', 'Start run_recognition_worker before running this script');
+    assert.equal(final.error_code, 'MODEL_NOT_CONFIGURED');
+  }
   const recognize = loadPage('recognize', app, wx);
   await recognize.load();
-  assert.equal(recognize.data.jobs[0].error_code, 'MODEL_NOT_CONFIGURED');
-  assert.match(recognize.data.jobs[0].error_label, /未产生识别结论/);
+  if (expectRecognition) {
+    assert.equal(recognize.data.capability.enabled, true);
+    assert.equal(recognize.data.jobs[0].result_view.decision, final.result.decision);
+    assert.equal(recognize.data.jobs[0].result_view.model_version, final.result.model.version);
+    if (final.result.decision === 'uncertain') assert.equal(recognize.data.jobs[0].result_view.heading, '暂时无法确认');
+  } else {
+    assert.equal(recognize.data.jobs[0].error_code, 'MODEL_NOT_CONFIGURED');
+    assert.match(recognize.data.jobs[0].error_label, /未产生识别结论/);
+  }
   await app.api.request('recognition-jobs/' + job.id + '/', { method: 'DELETE' });
   await assert.rejects(app.api.download(asset.thumbnail_url));
-  output.push('上传、任务队列、明确 MODEL_NOT_CONFIGURED 及任务/图片删除通过');
+  output.push(expectRecognition ? `上传、真实模型响应（${final.result.decision}）、结果视图及任务/图片删除通过；此项只验证协议，不验证分类准确率` : '上传、任务队列、明确 MODEL_NOT_CONFIGURED 及任务/图片删除通过');
 
   const previous = app.session.get();
   await app.api.request('auth/logout/', { method: 'POST' });

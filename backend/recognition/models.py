@@ -1,4 +1,5 @@
 import uuid
+from django.core.exceptions import ValidationError
 from django.conf import settings
 from django.db import models
 
@@ -19,9 +20,28 @@ class ModelVersion(models.Model):
     labels = models.JSONField(default=list, blank=True)
     preprocessing = models.JSONField(default=dict, blank=True)
     threshold = models.FloatField(default=0.8)
+    artifact = models.CharField(max_length=500, blank=True)
+    config_digest = models.CharField(max_length=64, blank=True)
+    scope = models.TextField(blank=True)
+    evaluation = models.JSONField(default=dict, blank=True)
+
+    def clean(self):
+        super().clean()
+        if self.pk and not self._state.adding and RecognitionJob.objects.filter(model_version_id=self.pk).exists():
+            from .artifacts import CONFIG_FIELDS
+            old = type(self).objects.get(pk=self.pk)
+            if any(getattr(old, field) != getattr(self, field) for field in (*CONFIG_FIELDS, 'config_digest')):
+                raise ValidationError('已用于识别的模型版本不可修改，请登记新版本。')
+
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        return super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f'{self.name} / {self.version}'
 
     class Meta:
-        constraints = [models.UniqueConstraint(fields=['name', 'version'], name='unique_model_version'), models.CheckConstraint(condition=models.Q(threshold__gte=0, threshold__lte=1), name='model_threshold_range')]
+        constraints = [models.UniqueConstraint(fields=['name', 'version'], name='unique_model_version'), models.CheckConstraint(condition=models.Q(threshold__gte=0, threshold__lte=1), name='model_threshold_range'), models.UniqueConstraint(fields=['enabled'], condition=models.Q(enabled=True), name='one_enabled_recognition_model')]
         verbose_name = '模型版本'
         verbose_name_plural = verbose_name
 
@@ -31,6 +51,7 @@ class RecognitionJob(models.Model):
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     asset = models.ForeignKey('assets.Asset', null=True, blank=True, on_delete=models.SET_NULL)
     model_version = models.ForeignKey(ModelVersion, null=True, blank=True, on_delete=models.SET_NULL)
+    model_snapshot = models.JSONField(default=dict, blank=True)
     status = models.CharField(max_length=16, default='queued', choices=[(x, x) for x in ['queued', 'running', 'succeeded', 'failed']], db_index=True)
     result = models.JSONField(default=dict, blank=True)
     error_code = models.CharField(max_length=80, blank=True)

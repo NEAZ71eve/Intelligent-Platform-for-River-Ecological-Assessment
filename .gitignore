@@ -20,4 +20,10 @@ miniprogram/config/local.js
 *.pth
 *.gguf
 *.safetensors
+# Training caches and exported feature/head arrays are reproducible local artifacts.
+inference/**/*.npz
+inference/**/*.npy
+inference/**/*.joblib
+inference/**/*.pkl
+inference/**/*.log
 .DS_Store

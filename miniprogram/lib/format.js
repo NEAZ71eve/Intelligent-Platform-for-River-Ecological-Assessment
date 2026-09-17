@@ -1,3 +1,4 @@
+const { resultView } = require('./recognition');
 function list(envelope) { return Array.isArray(envelope && envelope.data) ? envelope.data : []; }
 function time(value) {
   if (!value) return '暂无时间';
@@ -14,7 +15,8 @@ function task(item) {
   return Object.assign({}, item, {
     status_label: states[item.status] || item.status,
     created_label: time(item.created_at),
-    error_label: item.error_code === 'MODEL_NOT_CONFIGURED' ? '真实模型尚未配置（M3），本次未产生识别结论。' : (item.message || item.error_message || ''),
+    error_label: item.error_code === 'MODEL_NOT_CONFIGURED' ? '识别模型当前未启用，本次未产生识别结论。' : (item.message || item.error_message || ''),
+    result_view: item.status === 'succeeded' ? resultView(item.result) : null,
   });
 }
 module.exports = { list, time, value, message, task };

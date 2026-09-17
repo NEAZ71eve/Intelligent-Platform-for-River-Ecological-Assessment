@@ -9,6 +9,7 @@ Python 3.12，锁定依赖见 `requirements.txt`。数据库默认 PostgreSQL；
 ```bash
 scripts/manage.sh migrate
 scripts/manage.sh seed_demo
+scripts/manage.sh seed_recognition_knowledge
 scripts/manage.sh createsuperuser
 scripts/manage.sh runserver 127.0.0.1:8000
 # 另一个终端运行任务消费者：
@@ -73,11 +74,17 @@ scripts/manage.sh cleanup_private_data
 
 清理命令需要在实际部署时设置调度，M1 未自动修改系统定时任务。模拟历史批次的长期保留策略留待 M4。
 
-## M1 识别任务边界
+## M3 识别任务与模型版本
 
-队列全局上限 20，通过数据库共享锁行控制入队；单个工作进程读取任务。任务有 queued/running/succeeded/failed 状态，排队 300 秒、执行 60 秒后在消费者运行时可恢复为明确超时失败。
+队列全局上限 20，通过数据库共享锁行控制入队。任务有 queued/running/succeeded/failed 状态，排队超过 300 秒会由消费者标记失败。单机文件锁覆盖领取到保存结果，多消费者仍只执行一个任务；推理在没有数据库凭据的独立子进程内运行。执行默认 10 秒超时，超时会终止并等待子进程回收。消费者意外退出后，新消费者取得执行锁时会将遗留的 running 任务终止为明确失败。
 
-M1 没有真实模型，工作进程返回 `MODEL_NOT_CONFIGURED` 并保存运行记录。模型元数据登记与 enabled 字段尚不能启动推理，M3 会接入实际模型适配器。不要把上传成功、模型登记或队列流转称为植物识别成功。
+登记/启用模型后，消费者校验 SHA-256、输入预处理和五类标签，使用 ONNX Runtime CPU 推理。`result.decision` 为 `recognized` 或 `uncertain`；包含候选列表、阈值、模型版本和范围说明。低图质图片返回 `uncertain`、`reason=LOW_IMAGE_QUALITY` 和空候选；低分返回 `LOW_CONFIDENCE`。这些都是已完成的判断流程，任务状态为 succeeded，并不意味着一定识别成功。
+
+候选 `score` 是未经校准的模型分数，不是正确率。该模型只在五类公开花卉数据上训练，可能把未知对象高分误判为已知类别。`content_id` 仅链接对应 `plant_label` 的已发布科普文章，未发布内容不会返回链接。
+
+`health/` 的 `recognition` 返回是否启用、模型名称/版本、类别、范围和阈值，不暴露制品路径；`features.recognition` 与之同步。没有启用模型时返回 `MODEL_NOT_CONFIGURED`，缺失/损坏模型或执行错误返回具体错误码，不生成固定答案。
+
+同一时刻最多启用一个模型版本。登记、启停与回退见 [推理说明](../inference/README.md)。历史任务保存当时的模型配置快照，停用、切换或删除登记不改写既有结果；已用于任务的版本不能修改配置，需登记新版本。生产实例只支持同一主机和共享锁路径，不支持分布式消费。
 
 ## 检查
 

@@ -1,0 +1,15 @@
+<view wx:if="{{result}}" class="result-card {{result.recognized ? 'recognized' : 'uncertain'}}">
+  <view class="result-eyebrow">{{result.recognized ? 'MODEL RESULT / 模型结果' : 'NEEDS A CLOSER LOOK / 需要再看一眼'}}</view>
+  <view class="result-heading">{{result.heading}}</view>
+  <view class="result-copy">{{result.explanation}}</view>
+  <view class="candidate-title" wx:if="{{result.candidates.length}}">候选类别 · 最多 3 项</view>
+  <view class="candidate" wx:for="{{result.candidates}}" wx:key="label">
+    <view class="candidate-row"><view><text class="candidate-rank">0{{item.rank}}</text><text class="candidate-name">{{item.name}}</text></view><text class="candidate-score">分数 {{item.score_label}}</text></view>
+    <view class="score-track"><view class="score-fill" style="width: {{item.bar_width}}%;"></view></view>
+    <button wx:if="{{item.content_id}}" class="content-link" data-id="{{item.content_id}}" bindtap="content">阅读相关科普 ›</button>
+  </view>
+  <view class="score-note" wx:if="{{result.candidates.length}}">以上为模型输出分数，未经校准，不是正确率。</view>
+  <view class="model-meta"><view>模型：{{result.model_name}}</view><view>版本：{{result.model_version}} · 分类分数阈值：{{result.threshold_label}}</view></view>
+  <view class="disclaimer">{{result.disclaimer}}</view>
+  <button class="retake" bindtap="retake">重新拍摄或选择照片</button>
+</view>

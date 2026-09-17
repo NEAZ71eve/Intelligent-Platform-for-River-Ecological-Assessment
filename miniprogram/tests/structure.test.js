@@ -25,7 +25,7 @@ test('JavaScript parses without any transpiler and fresh checkout configuration 
 });
 
 test('WXML uses known native/custom tags with balanced nesting and bound handlers', () => {
-  const native = new Set(['view', 'text', 'button', 'input', 'image', 'block', 'picker', 'scroll-view', 'checkbox', 'checkbox-group', 'label', 'switch', 'page-state', 'source-label']);
+  const native = new Set(['view', 'text', 'button', 'input', 'image', 'block', 'picker', 'scroll-view', 'checkbox', 'checkbox-group', 'label', 'switch', 'page-state', 'source-label', 'recognition-result']);
   for (const file of files(root).filter((file) => file.endsWith('.wxml'))) {
     const content = fs.readFileSync(file, 'utf8');
     const source = fs.readFileSync(file.replace(/\.wxml$/, '.js'), 'utf8');
