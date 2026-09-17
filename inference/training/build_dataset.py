@@ -22,12 +22,9 @@ from training.audit_datasets import _dhash
 # 各源原始标签 → 细类（Task 3 fine_labels）
 # 键值以 Task 2 审计到的实际标签为准；当前为依据论文/README 的初版，数据到位后修正
 SOURCES_LABEL_MAP = {
+    # 实测（2026-09-17 下载核验）：3000 图 / 23692 框，单一标签 floater
     "IWHR_AI_Lable_Floater_V1": {
-        "bottle": "bottle", "foam": "foam_board", "foam_board": "foam_board",
-        "water_plant": "water_plant", "watergrass": "water_plant",
-        "algae": "algae_mass", "algae_mass": "algae_mass",
-        "plastic": "plastic", "paper": "paper", "glass": "glass",
-        "metal": "metal", "fabric": "fabric",
+        "floater": "misc_debris",
     },
     "YRDG": {
         "bottle": "bottle", "plastic": "plastic", "paper": "paper",
