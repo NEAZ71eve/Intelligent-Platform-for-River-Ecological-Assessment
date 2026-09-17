@@ -1,0 +1,8 @@
+﻿.runtime/
+data/raw/
+data/splits/
+*.onnx
+*.pt
+*.weights
+__pycache__/
+*.pyc
