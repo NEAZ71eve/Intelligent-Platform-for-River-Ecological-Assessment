@@ -20,6 +20,9 @@ miniprogram/config/local.js
 *.pth
 *.gguf
 *.safetensors
+# 训练产物白名单：runs/ 训练权重与推理 ONNX 制品纳入版本管理
+!inference/runs/**/*.pt
+!inference/artifacts/*.onnx
 # Training caches and exported feature/head arrays are reproducible local artifacts.
 inference/**/*.npz
 inference/**/*.npy

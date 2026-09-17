@@ -4,5 +4,8 @@ data/splits/
 *.onnx
 *.pt
 *.weights
+# 训练产物白名单：runs/ 权重与 artifacts/ ONNX 制品纳入版本管理
+!runs/**/*.pt
+!artifacts/*.onnx
 __pycache__/
 *.pyc
