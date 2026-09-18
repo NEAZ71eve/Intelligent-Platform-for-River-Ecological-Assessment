@@ -1,0 +1,42 @@
+{
+  "pages": [
+    "pages/home/index", "pages/explore/index", "pages/recognize/index",
+    "pages/learn/index", "pages/profile/index", "pages/detail/index",
+    "pages/records/index", "pages/assessment/index", "pages/legal/index"
+  ],
+  "window": {
+    "navigationBarTitleText": "HYHQ 海晏河清",
+    "navigationBarBackgroundColor": "#f5f7ef",
+    "navigationBarTextStyle": "black",
+    "backgroundColor": "#f5f7ef",
+    "backgroundTextStyle": "dark",
+    "enablePullDownRefresh": true
+  },
+  "tabBar": {
+    "color": "#788478",
+    "selectedColor": "#246746",
+    "backgroundColor": "#fffefa",
+    "borderStyle": "white",
+    "list": [
+      { "pagePath": "pages/home/index", "text": "首页" },
+      { "pagePath": "pages/explore/index", "text": "生态导览" },
+      { "pagePath": "pages/recognize/index", "text": "河道巡查" },
+      { "pagePath": "pages/learn/index", "text": "科普智游" },
+      { "pagePath": "pages/profile/index", "text": "我的" }
+    ]
+  },
+  "usingComponents": {
+    "page-state": "/components/page-state/index",
+    "source-label": "/components/source-label/index",
+    "recognition-result": "/components/recognition-result/index"
+  },
+  "style": "v2",
+  "lazyCodeLoading": "requiredComponents",
+  "sitemapLocation": "sitemap.json",
+  "permission": {
+    "scope.userLocation": {
+      "desc": "定位用于巡查上报时自动关联最近的监测河段"
+    }
+  },
+  "requiredPrivateInfos": ["getLocation"]
+}

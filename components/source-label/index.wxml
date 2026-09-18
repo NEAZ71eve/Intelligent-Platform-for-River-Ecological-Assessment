@@ -1,0 +1,1 @@
+<text class="source {{source}}">{{source === 'simulation' ? '模拟数据' : source === 'dataset' ? '历史数据' : source === 'api' ? '接口数据' : source === 'manual' ? '管理员整理' : '来源待确认'}}</text>

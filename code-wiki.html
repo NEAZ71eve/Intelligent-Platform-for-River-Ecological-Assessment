@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HYHQ 海晏河清小程序 — Code Wiki</title>
+<style>
+  :root{
+    --brand:#0052d9; --brand-soft:#e8efff; --ink:#1f2329; --ink-2:#4e5969; --ink-3:#86909c;
+    --line:#e5e6eb; --bg:#f7f8fa; --card:#ffffff; --ok:#008858; --warn:#e37318; --err:#d54941;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html{scroll-behavior:smooth;}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif; color:var(--ink); background:var(--bg); font-size:15px; line-height:1.7;}
+  .wrap{max-width:1080px; margin:0 auto; padding:0 20px 80px;}
+  header.hero{background:linear-gradient(135deg,#0b3d91 0%,#0052d9 55%,#2f6fed 100%); color:#fff; padding:44px 20px 36px; margin-bottom:28px;}
+  .hero-inner{max-width:1080px; margin:0 auto;}
+  .hero h1{font-size:30px; font-weight:700; letter-spacing:.5px;}
+  .hero .sub{margin-top:10px; font-size:15px; opacity:.92; max-width:880px;}
+  .hero .tags{margin-top:16px; display:flex; flex-wrap:wrap; gap:8px;}
+  .tag{background:rgba(255,255,255,.16); border:1px solid rgba(255,255,255,.35); border-radius:999px; padding:3px 12px; font-size:13px;}
+  nav.toc{position:sticky; top:0; z-index:20; background:rgba(255,255,255,.96); backdrop-filter:blur(6px); border-bottom:1px solid var(--line); margin-bottom:28px;}
+  nav.toc .inner{max-width:1080px; margin:0 auto; padding:8px 20px; display:flex; flex-wrap:wrap; gap:4px 14px; font-size:14px;}
+  nav.toc a{color:var(--ink-2); text-decoration:none; white-space:nowrap;}
+  nav.toc a:hover{color:var(--brand);}
+  section{background:var(--card); border:1px solid var(--line); border-radius:12px; padding:26px 28px; margin-bottom:24px;}
+  h2{font-size:21px; margin-bottom:16px; padding-left:12px; border-left:4px solid var(--brand);}
+  h3{font-size:16.5px; margin:20px 0 10px; color:var(--ink);}
+  p{margin:8px 0;}
+  .stats{display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:12px; margin:16px 0;}
+  .stat{background:var(--bg); border:1px solid var(--line); border-radius:10px; padding:14px 12px; text-align:center;}
+  .stat b{display:block; font-size:26px; color:var(--brand); line-height:1.2;}
+  .stat span{font-size:13px; color:var(--ink-3);}
+  table{width:100%; border-collapse:collapse; margin:12px 0; font-size:14px;}
+  th,td{border:1px solid var(--line); padding:7px 10px; text-align:left; vertical-align:top;}
+  th{background:var(--brand-soft); color:#0b3d91; font-weight:600; white-space:nowrap;}
+  tr:nth-child(even) td{background:#fbfcfe;}
+  code{background:#f2f3f5; border:1px solid var(--line); border-radius:4px; padding:1px 6px; font-family:Consolas,"Courier New",monospace; font-size:13px; color:#c0392b;}
+  pre{background:#0f172a; color:#e2e8f0; border-radius:8px; padding:14px 16px; overflow-x:auto; font-size:13px; line-height:1.55; margin:12px 0;}
+  pre code{background:none; border:none; color:inherit; padding:0;}
+  ul,ol{margin:8px 0 8px 22px;}
+  li{margin:3px 0;}
+  .note{background:#fffbe6; border:1px solid #ffe58f; border-radius:8px; padding:10px 14px; font-size:14px; color:#614700; margin:12px 0;}
+  .ok{color:var(--ok); font-weight:600;} .warn{color:var(--warn); font-weight:600;} .err{color:var(--err); font-weight:600;}
+  .fig-title{font-size:13px; color:var(--ink-3); text-align:center; margin-top:8px;}
+  .grid2{display:grid; grid-template-columns:repeat(auto-fit,minmax(320px,1fr)); gap:16px;}
+  details.tree{font-size:14px;}
+  details.tree summary{cursor:pointer; padding:3px 0; font-weight:600; color:var(--brand);}
+  details.tree summary:hover{text-decoration:underline;}
+  details.tree > ul{margin-left:26px;}
+  ul.tree-list{list-style:none; margin:2px 0 2px 22px;}
+  ul.tree-list li{padding:1.5px 0; position:relative;}
+  ul.tree-list li::before{content:""; position:absolute; left:-14px; top:10px; width:10px; height:1px; background:var(--line);}
+  .c-dir{color:#0052d9; font-weight:600;}
+  .c-file{color:#57606a;}
+  .c-cmt{color:var(--ink-3); font-size:13px;}
+  .comp-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:8px; margin:12px 0;}
+  .comp-item{border:1px solid var(--line); border-radius:8px; padding:7px 10px; font-size:13px; background:var(--bg);}
+  .comp-item b{color:var(--brand); font-weight:600;}
+  .comp-item span{color:var(--ink-3);}
+  .flow{width:100%; height:auto;}
+  @media (max-width:720px){ .hero h1{font-size:23px;} section{padding:20px 16px;} }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="hero-inner">
+    <h1>HYHQ 海晏河清小程序 — Code Wiki</h1>
+    <p class="sub">HYHQ 河道生态评估业务小程序（原 TDesign 官方 Demo 已于 2026-09-18 由 <code style="background:rgba(255,255,255,.2);color:#fff;border-color:rgba(255,255,255,.4)">HYHQ\miniprogram</code> 迁移覆盖，TDesign 内容作为素材残留保留）。业务代码同源维护于 HYHQ 仓库，已推送 GitHub：<code style="background:rgba(255,255,255,.2);color:#fff;border-color:rgba(255,255,255,.4)">NEAZ71eve/Intelligent-Platform-for-River-Ecological-Assessment</code>。</p>
+    <div class="tags">
+      <span class="tag">微信原生小程序</span><span class="tag">无第三方依赖</span><span class="tag">9 业务页面</span>
+      <span class="tag">河道巡查</span><span class="tag">基础库 3.7.12</span><span class="tag">2026-09-18 迁移</span>
+    </div>
+  </div>
+</header>
+
+<nav class="toc">
+  <div class="inner">
+    <a href="#overview">项目概览</a><a href="#tree">目录结构</a><a href="#pages">页面体系</a>
+    <a href="#components">组件与依赖</a><a href="#tdesign">TDesign 残留</a><a href="#dev">开发指南</a><a href="#docs">设计文档</a><a href="#yolo">YOLO 状态</a><a href="#git">版本管理</a>
+  </div>
+</nav>
+
+<div class="wrap">
+
+<!-- ============ 概览 ============ -->
+<section id="overview">
+  <h2>1. 项目概览</h2>
+  <table>
+    <tr><th style="width:140px">项目</th><th>说明</th></tr>
+    <tr><td>工程类型</td><td>微信小程序（原生，无第三方依赖、无需 npm 构建）</td></tr>
+    <tr><td>编译基础库</td><td>3.7.12（<code>project.config.json → libVersion</code>）</td></tr>
+    <tr><td>工程名 / AppID</td><td>hyhq-miniprogram / <code>touristappid</code>（游客模式）</td></tr>
+    <tr><td>语言</td><td>JavaScript（ES6 / CommonJS）+ WXML + WXSS</td></tr>
+    <tr><td>后端接口</td><td>统一 REST 客户端（<code>lib/client.js</code>），本地调试关闭域名校验</td></tr>
+    <tr><td>UI 组件</td><td>自研 3 个全局组件（无第三方组件库）</td></tr>
+    <tr><td>渲染</td><td>WebView（无 Skyline 依赖）</td></tr>
+  </table>
+
+  <h3>关键数字（实测统计）</h3>
+  <div class="stats">
+    <div class="stat"><b>9</b><span>注册页面（主包，无分包）</span></div>
+    <div class="stat"><b>5</b><span>tabBar 项（含「河道巡查」）</span></div>
+    <div class="stat"><b>3</b><span>全局组件</span></div>
+    <div class="stat"><b>6</b><span>业务模块（lib/）</span></div>
+    <div class="stat"><b>3</b><span>测试文件（node --test）</span></div>
+    <div class="stat"><b>2541</b><span>文件总数（不含 .git，含 TDesign 残留）</span></div>
+    <div class="stat"><b>59</b><span>TDesign 残留演示页（未注册）</span></div>
+  </div>
+</section>
+
+<!-- ============ 架构 ============ -->
+<section id="arch">
+  <h2>2. 架构总览</h2>
+  <p>业务运行时自底向上分为 5 层：全局配置 / 会话与 API / 业务模块 / 页面层 / 组件层。页面统一经 <code>lib/client.js</code> 访问后端 REST 接口，<code>lib/assessment.js</code> 负责巡查评估任务状态机。</p>
+  <svg class="flow" viewBox="0 0 1000 440" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="业务架构分层图">
+    <defs>
+      <marker id="arrow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#86909c"/></marker>
+    </defs>
+    <!-- Layer 1 config -->
+    <rect x="40" y="20" width="920" height="66" rx="10" fill="#e8efff" stroke="#0052d9"/>
+    <text x="60" y="46" font-size="14" font-weight="bold" fill="#0b3d91">L1 全局配置层</text>
+    <text x="60" y="68" font-size="12.5" fill="#1f2329">app.js 入口（onLaunch 建会话+客户端）· app.json 9 页/5 tab/定位权限 · config/ 后端地址 · project.config.json</text>
+    <!-- Layer 2 session/api -->
+    <rect x="40" y="106" width="920" height="66" rx="10" fill="#f2f3f5" stroke="#4e5969"/>
+    <text x="60" y="132" font-size="14" font-weight="bold" fill="#1f2329">L2 会话与 API 层（lib/）</text>
+    <text x="60" y="154" font-size="12.5" fill="#4e5969">session.js（openid/token）· client.js（REST 封装/错误归一化/重试）· page.js（页面工具）· format.js（格式化）</text>
+    <!-- Layer 3 business modules -->
+    <rect x="40" y="192" width="920" height="66" rx="10" fill="#fffbe6" stroke="#e37318"/>
+    <text x="60" y="218" font-size="14" font-weight="bold" fill="#614700">L3 业务模块层（lib/）</text>
+    <text x="60" y="240" font-size="12.5" fill="#4e5969">assessment.js（评估任务提交/轮询/状态机）· recognition.js（识别上报，M1 遗留）</text>
+    <!-- Layer 4 pages -->
+    <rect x="40" y="278" width="920" height="66" rx="10" fill="#e3f9e9" stroke="#008858"/>
+    <text x="60" y="304" font-size="14" font-weight="bold" fill="#006c45">L4 页面层（pages/，9 业务页）</text>
+    <text x="60" y="326" font-size="12.5" fill="#4e5969">home/explore/recognize(河道巡查)/learn/profile/detail/records/assessment/legal · 巡查主流程 recognize→records→assessment</text>
+    <!-- Layer 5 components -->
+    <rect x="40" y="364" width="920" height="54" rx="10" fill="#f2f3f5" stroke="#86909c"/>
+    <text x="60" y="394" font-size="12.5" fill="#4e5969">L5 组件层（components/）：page-state（加载/空/错误）· source-label（数据来源）· recognition-result（识别结果）</text>
+    <!-- arrows -->
+    <line x1="500" y1="86" x2="500" y2="104" stroke="#86909c" stroke-width="1.5" marker-end="url(#arrow)"/>
+    <line x1="500" y1="172" x2="500" y2="190" stroke="#86909c" stroke-width="1.5" marker-end="url(#arrow)"/>
+    <line x1="500" y1="258" x2="500" y2="276" stroke="#86909c" stroke-width="1.5" marker-end="url(#arrow)"/>
+    <line x1="500" y1="344" x2="500" y2="362" stroke="#86909c" stroke-width="1.5" marker-end="url(#arrow)"/>
+    <text x="700" y="100" font-size="12" fill="#86909c">启动初始化 ↓</text>
+    <text x="700" y="188" font-size="12" fill="#86909c">页面调用 ↓</text>
+    <text x="700" y="274" font-size="12" fill="#86909c">渲染 ↓</text>
+  </svg>
+  <div class="fig-title">图 1：业务运行时五层架构（示意，基于迁移后实际文件）</div>
+  <div class="note"><strong>巡查主流程</strong>：recognize（定位+拍照）→ <code>POST assessment-jobs</code> → records（任务列表）→ assessment（轮询结果：分数/等级/依据，失败可重试）。评估结果依赖后端 ONNX 模型登记，模型未导出前提交任务返回「评估模型未启用」（预期失败路径，见 §7.4）。</div>
+</section>
+
+<!-- ============ 目录树 ============ -->
+<section id="tree">
+  <h2>3. 目录结构</h2>
+  <details class="tree" open>
+    <summary>miniprogram-2/ （HYHQ 业务小程序，点击折叠 / 展开）</summary>
+    <ul class="tree-list">
+      <li><span class="c-file">app.js</span> <span class="c-cmt">— 入口：onLaunch 创建 session + api client（config + lib）</span></li>
+      <li><span class="c-file">app.json</span> <span class="c-cmt">— 9 页注册、5 项 tabBar、定位权限、3 个全局组件</span></li>
+      <li><span class="c-file">app.wxss</span> <span class="c-cmt">— 全局样式（业务）</span></li>
+      <li><span class="c-file">project.config.json</span> <span class="c-cmt">— touristappid / libVersion 3.7.12 / urlCheck:false</span></li>
+      <li><span class="c-file">package.json / README.md</span> <span class="c-cmt">— node --test 测试入口 / 业务说明（无依赖）</span></li>
+      <li><span class="c-dir">config/</span> <span class="c-cmt">— 后端 API 配置</span>
+        <ul class="tree-list">
+          <li><span class="c-file">index.js</span> <span class="c-cmt">— 服务地址 / 超时 / 端点前缀</span></li>
+          <li><span class="c-file">local.example.js</span> <span class="c-cmt">— 本地调试配置样例（复制为 local.js）</span></li>
+        </ul>
+      </li>
+      <li><span class="c-dir">lib/</span> <span class="c-cmt">— 业务核心模块（6 个）</span>
+        <ul class="tree-list">
+          <li><span class="c-file">client.js</span> <span class="c-cmt">— REST 客户端（token/错误归一化/重试）</span></li>
+          <li><span class="c-file">session.js</span> <span class="c-cmt">— 登录会话（openid/token）</span></li>
+          <li><span class="c-file">assessment.js</span> <span class="c-cmt">— 巡查评估：提交/轮询/状态机</span></li>
+          <li><span class="c-file">recognition.js / format.js / page.js</span> <span class="c-cmt">— 识别上报 / 格式化 / 页面工具</span></li>
+        </ul>
+      </li>
+      <li><span class="c-dir">pages/</span> <span class="c-cmt">— 9 个业务页 + TDesign 残留演示页（未注册）</span>
+        <ul class="tree-list">
+          <li><span class="c-dir">home/</span> <span class="c-cmt">— 首页：健康概况 + 区域切换 + 天气/空气/提示</span></li>
+          <li><span class="c-dir">recognize/</span> <span class="c-cmt">— 河道巡查（tab 3）：定位 + 拍照 + 提交评估任务</span></li>
+          <li><span class="c-dir">assessment/</span> <span class="c-cmt">— ★ Phase 3 新增：评估结果页（分数/等级/依据/重试）</span></li>
+          <li><span class="c-dir">records/</span> <span class="c-cmt">— 巡查记录（评估任务列表）</span></li>
+          <li><span class="c-dir">explore / learn / profile / detail / legal</span> <span class="c-cmt">— 其余业务页</span></li>
+          <li><span class="c-dir">button / radio / swiper / …（59 个）</span> <span class="c-cmt">— TDesign 残留演示页，未注册、不参与运行</span></li>
+        </ul>
+      </li>
+      <li><span class="c-dir">components/</span> <span class="c-cmt">— 自研全局组件（3 业务 + 4 TDesign 残留）</span>
+        <ul class="tree-list">
+          <li><span class="c-dir">page-state/ source-label/ recognition-result/</span> <span class="c-cmt">— 业务组件（加载/空/错误、来源标签、识别结果）</span></li>
+          <li><span class="c-dir">demo-block/ demo-header/ pull-down-list/ trd-privacy/</span> <span class="c-cmt">— TDesign 残留</span></li>
+        </ul>
+      </li>
+      <li><span class="c-dir">tests/</span> <span class="c-cmt">— node --test 单元测试（assessment/pages/client）</span></li>
+      <li><span class="c-dir">docs/superpowers/</span> <span class="c-cmt">— 用户设计文档（河道生态评估设计/计划）</span></li>
+      <li><span class="c-dir">hyhq-phase3/</span> <span class="c-cmt">— Phase 3 暂存目录（已合并进业务代码，可清理）</span></li>
+      <li><span class="c-dir">miniprogram_npm/tdesign-miniprogram/</span> <span class="c-cmt">— TDesign 编译产物（残留，勿手改）</span></li>
+    </ul>
+  </details>
+</section>
+
+<!-- ============ 页面体系 ============ -->
+<section id="pages">
+  <h2>4. 业务页面体系</h2>
+  <h3>4.1 路由与 tab（9 页，无分包）</h3>
+  <table>
+    <tr><th>页面</th><th>tab</th><th>职责</th><th>依赖 API</th></tr>
+    <tr><td><code>pages/home/index</code></td><td>首页</td><td>健康概况、区域切换、天气/空气/气象提示</td><td>health/、regions/、weather/、air-quality/、weather-alerts/</td></tr>
+    <tr><td><code>pages/explore/index</code></td><td>生态导览</td><td>河段生态导览</td><td>regions/ 等</td></tr>
+    <tr><td><code>pages/recognize/index</code></td><td><strong>河道巡查</strong></td><td>定位关联河段 → 拍照/选图 → 提交评估任务</td><td>geo 关联、assessment-jobs POST</td></tr>
+    <tr><td><code>pages/learn/index</code></td><td>科普智游</td><td>科普内容</td><td>—</td></tr>
+    <tr><td><code>pages/profile/index</code></td><td>我的</td><td>个人信息/设置</td><td>—</td></tr>
+    <tr><td><code>pages/detail/index</code></td><td>—</td><td>河段详情</td><td>regions/&lt;id&gt; 等</td></tr>
+    <tr><td><code>pages/records/index</code></td><td>—</td><td>巡查记录（评估任务列表）</td><td>assessment-jobs GET</td></tr>
+    <tr><td><code>pages/assessment/index</code></td><td>—</td><td><strong>评估结果页</strong>：分数/等级/依据/失败重试</td><td>assessment-jobs GET 轮询</td></tr>
+    <tr><td><code>pages/legal/index</code></td><td>—</td><td>法律声明</td><td>—</td></tr>
+  </table>
+  <div class="note"><strong>巡查主流程（Phase 3 已实现）</strong>：recognize（拍照+定位）→ <code>POST assessment-jobs</code> → records（任务列表，PENDING/PROCESSING）→ assessment（轮询结果）。评估结果依赖后端 ONNX 模型登记，模型未导出前提交任务返回「评估模型未启用」（预期失败路径，见 §7.4）。</div>
+</section>
+
+<!-- ============ 自定义组件 ============ -->
+<section id="components">
+  <h2>5. 自研全局组件（业务）</h2>
+  <table>
+    <tr><th>组件</th><th>职责</th><th>使用场景</th></tr>
+    <tr><td><code>page-state</code></td><td>页面状态：加载 / 空 / 错误</td><td>首页、巡查记录、评估结果等异步页面</td></tr>
+    <tr><td><code>source-label</code></td><td>数据来源标签</td><td>健康/环境数据展示</td></tr>
+    <tr><td><code>recognition-result</code></td><td>识别结果展示（M1 遗留能力）</td><td>识别/巡查结果</td></tr>
+  </table>
+  <p>均由 <code>app.json → usingComponents</code> 全局注册，页面无需重复引入。另保留 4 个 TDesign 组件（<code>demo-block</code> / <code>demo-header</code> / <code>pull-down-list</code> / <code>trd-privacy</code>）未注册、不参与运行。</p>
+</section>
+
+<!-- ============ TDesign 残留 ============ -->
+<section id="tdesign">
+  <h2>6. TDesign 素材残留（原官方 Demo 内容）</h2>
+  <p>迁移后保留但<strong>未注册、不影响运行</strong>的部分，仅作组件用法参考：</p>
+  <ul>
+    <li><code>miniprogram_npm/tdesign-miniprogram/</code>：80 个组件编译产物（735 文件），<span class="err">勿手改</span>，需「构建 npm」才可再生成。</li>
+    <li><code>pages/</code> 下 59 个组件演示页及 <code>skyline/</code> 变体（button/radio/swiper 等，324 个场景子组件目录）。</li>
+    <li><code>components/</code> 的 demo-block / demo-header / pull-down-list / trd-privacy、<code>behaviors/skyline.js</code>、<code>demos/</code>、<code>utils/gulpError.js</code>、<code>assets/</code>、<code>theme.json</code>、<code>app.d.ts</code>。</li>
+  </ul>
+  <div class="note">如需完全清理（瘦身），需先确认业务无引用后删除，可另行处理。</div>
+</section>
+
+<!-- ============ 开发指南 ============ -->
+<section id="dev">
+  <h2>7. 开发指南</h2>
+  <h3>运行</h3>
+  <ol>
+    <li>微信开发者工具导入本目录（<code>miniprogram-2</code>），AppID 使用 <code>touristappid</code>（游客模式）或自行配置。</li>
+    <li>基础库 ≥ 3.7.12；<code>urlCheck</code> 已关闭，本地调试不校验域名。</li>
+    <li>编译（Ctrl+B）后首页为业务首页；底部 tab 第三项为<strong>河道巡查</strong>。</li>
+    <li>后端联调：按 <code>config/local.example.js</code> 配置本地后端地址，复制为 <code>config/local.js</code>。</li>
+  </ol>
+  <h3>测试</h3>
+  <pre><code>cd C:\Users\21516\WeChatProjects\miniprogram-2
+node --test tests/*.test.js</code></pre>
+  <h3>代码约定</h3>
+  <ul>
+    <li>页面统一使用 <code>lib/page.js</code>（<code>app()</code> 取全局实例、<code>finish()</code> 收尾 loading）。</li>
+    <li>API 调用一律走 <code>app().api.request(path, options)</code>，不直接 <code>wx.request</code>。</li>
+    <li>错误展示走 <code>lib/format.js message()</code> 归一化；列表走 <code>list()</code>；数值/时间走 <code>value()/time()</code>。</li>
+    <li>组件保持 <code>page-state</code> / <code>source-label</code> / <code>recognition-result</code> 全局注册，勿重复引入。</li>
+  </ul>
+</section>
+
+<!-- ============ 设计文档 ============ -->
+<section id="docs">
+  <h2>8. docs/superpowers（用户设计文档）</h2>
+  <p>该目录存放用户自己的项目设计文档（2026-09-17），对应本小程序业务与 HYHQ 后端：</p>
+  <table>
+    <tr><th>文件</th><th>内容</th></tr>
+    <tr><td><code>specs/2026-09-17-river-eco-assessment-design.md</code></td><td>HYHQ 河道生态评估模块设计 v1.0（已批准）：YOLOv8n + ONNX CPU 推理、4 类检测、RULE v1 规则引擎、D0–D3 数据流水线、API 契约、验收标准</td></tr>
+    <tr><td><code>plans/2026-09-17-river-eco-assessment.md</code></td><td>对应实现计划：4 阶段 17 任务，含代码骨架与测试用例</td></tr>
+  </table>
+  <div class="note"><strong>定位</strong>：本目录现已承载 HYHQ 业务小程序代码（2026-09-18 迁移覆盖）；业务代码同源维护于 HYHQ 仓库并推送 GitHub（NEAZ71eve/Intelligent-Platform-for-River-Ecological-Assessment，见 §10）。</div>
+</section>
+
+<!-- ============ YOLO 状态 ============ -->
+<section id="yolo">
+  <h2>9. HYHQ 河道生态评估 YOLO 实现状态</h2>
+  <p>业务代码位于 <code>C:\Users\21516\WeChatProjects\HYHQ</code>（已推送 GitHub，见 §10）。小程序侧（Phase 3）已于 2026-09-18 迁移至本目录。以下为对 HYHQ 仓库的实测核查结果，对应 §8 设计文档的实现进度。</p>
+
+  <svg class="flow" viewBox="0 0 960 460" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="YOLO 实现任务进度图">
+    <rect x="20" y="20" width="920" height="86" rx="10" fill="#fffbe6" stroke="#e37318"/>
+    <text x="36" y="44" font-size="14" font-weight="bold" fill="#614700">Phase 0 环境与决策门</text>
+    <rect x="36" y="56" width="150" height="40" rx="8" fill="#00a870"/><text x="46" y="80" font-size="12.5" fill="#fff">T0 克隆/路径核对 ✓</text>
+    <rect x="196" y="56" width="190" height="40" rx="8" fill="#00a870"/><text x="206" y="80" font-size="12.5" fill="#fff">T1 D0决策门 ✓ 有条件NO-GO</text>
+    <rect x="20" y="120" width="920" height="122" rx="10" fill="#e8efff" stroke="#0052d9"/>
+    <text x="36" y="144" font-size="14" font-weight="bold" fill="#0b3d91">Phase 1 数据与训练（D0-D3）</text>
+    <rect x="36" y="156" width="150" height="74" rx="8" fill="#ff9f1a"/><text x="46" y="178" font-size="12.5" fill="#fff">T2 数据集审计 ⚠</text><text x="46" y="196" font-size="11" fill="#fff">仅 IWHR 到位</text><text x="46" y="212" font-size="11" fill="#fff">其余3源未下载</text>
+    <rect x="196" y="156" width="130" height="74" rx="8" fill="#00a870"/><text x="206" y="190" font-size="12.5" fill="#fff">T3 类别映射 ✓</text>
+    <rect x="336" y="156" width="150" height="74" rx="8" fill="#00a870"/><text x="346" y="190" font-size="12.5" fill="#fff">T4 数据集构建 ✓</text>
+    <rect x="496" y="156" width="150" height="74" rx="8" fill="#00a870"/><text x="506" y="178" font-size="12.5" fill="#fff">T5 训练 ✓ 100轮</text><text x="506" y="196" font-size="11" fill="#fff">脚本已提交</text><text x="506" y="212" font-size="11" fill="#fff">缺报告md</text>
+    <rect x="656" y="156" width="150" height="74" rx="8" fill="#ff9f1a"/><text x="666" y="178" font-size="12.5" fill="#fff">T6 ONNX导出 ⚠</text><text x="666" y="196" font-size="11" fill="#fff">后处理完成</text><text x="666" y="212" font-size="11" fill="#fff">ONNX未导出</text>
+    <rect x="20" y="256" width="920" height="86" rx="10" fill="#e3f9e9" stroke="#008858"/>
+    <text x="36" y="280" font-size="14" font-weight="bold" fill="#006c45">Phase 2 后端演进（全部提交 ✓）</text>
+    <rect x="36" y="292" width="120" height="40" rx="8" fill="#00a870"/><text x="46" y="316" font-size="12.5" fill="#fff">T7 规则引擎 ✓</text>
+    <rect x="166" y="292" width="100" height="40" rx="8" fill="#00a870"/><text x="176" y="316" font-size="12.5" fill="#fff">T8 河段关联 ✓</text>
+    <rect x="276" y="292" width="160" height="40" rx="8" fill="#00a870"/><text x="286" y="316" font-size="12.5" fill="#fff">T9 assessment API ✓</text>
+    <rect x="446" y="292" width="130" height="40" rx="8" fill="#00a870"/><text x="456" y="316" font-size="12.5" fill="#fff">T10 推理worker ✓</text>
+    <rect x="586" y="292" width="110" height="40" rx="8" fill="#00a870"/><text x="596" y="316" font-size="12.5" fill="#fff">T11 Admin ✓</text>
+    <rect x="20" y="356" width="920" height="86" rx="10" fill="#fffbe6" stroke="#e37318"/>
+    <text x="36" y="380" font-size="14" font-weight="bold" fill="#614700">Phase 3 小程序改造（已实现，待提交/联调 ⚠）</text>
+    <rect x="36" y="392" width="130" height="40" rx="8" fill="#ff9f1a"/><text x="46" y="416" font-size="12.5" fill="#fff">T12 巡查上报页 ✓</text>
+    <rect x="176" y="392" width="130" height="40" rx="8" fill="#ff9f1a"/><text x="186" y="416" font-size="12.5" fill="#fff">T13 评估结果页 ✓</text>
+    <rect x="316" y="392" width="150" height="40" rx="8" fill="#ff9f1a"/><text x="326" y="416" font-size="12.5" fill="#fff">T14 记录+入口 ✓</text>
+    <rect x="476" y="392" width="130" height="40" rx="8" fill="#c9cdd4"/><text x="486" y="416" font-size="12.5" fill="#4e5969">T15 联调测试</text>
+    <rect x="616" y="392" width="130" height="40" rx="8" fill="#c9cdd4"/><text x="626" y="416" font-size="12.5" fill="#4e5969">T16 验收清单</text>
+  </svg>
+  <div class="fig-title">图 2：17 任务 × 4 阶段进度（绿=完成 12，橙=部分/待联调 4，灰=未开始 2）</div>
+
+  <h3>已实现模块与训练结果</h3>
+  <div class="grid2">
+    <div>
+      <strong>推理侧（inference/training/，已提交）</strong>
+      <ul>
+        <li><code>audit_datasets.py</code>：数据集审计（SHA-256 + dHash 去重）</li>
+        <li><code>class_mapping.py</code>：类别映射（4 大类 + 15 细类）</li>
+        <li><code>build_dataset.py</code>：统一 YOLO 构建 + 冻结划分（2100/450/450）</li>
+        <li><code>train_yolo.py</code>：yolov8n、640×640、100 轮、seed 42</li>
+        <li><code>export_onnx.py</code>：ONNX 导出 + manifest（<span class="warn">未运行</span>）</li>
+        <li><code>onnx_detector.py</code>：conf 过滤 + 逐类 NMS（测试通过）</li>
+      </ul>
+    </div>
+    <div>
+      <strong>后端侧（backend/ecology/，已提交）</strong>
+      <ul>
+        <li><code>rules.py</code>：RULE v1 规则引擎（DB 优先回退）</li>
+        <li><code>geo.py</code>：Haversine 河段关联（2km）</li>
+        <li><code>detection.py</code>：ONNX 运行时副本（letterbox + NMS + 坐标回映）</li>
+        <li><code>assessment_worker.py</code>：claim → detect → assess → 落库</li>
+        <li><code>views/serializers/urls</code>：assessment-jobs API</li>
+        <li><code>admin.py</code> + <code>tests.py</code>（10 测试类）</li>
+      </ul>
+    </div>
+  </div>
+  <h3>小程序侧（Phase 3，已迁移至本目录）</h3>
+  <ul>
+    <li><code>pages/assessment/index.*</code>：评估结果页（PENDING → PROCESSING → COMPLETED/FAILED，失败可重试）。</li>
+    <li><code>pages/recognize/index.*</code>：改造为巡查上报（定位 + 拍照 + 提交任务）。</li>
+    <li><code>pages/records/index.*</code>：巡查记录列表。</li>
+    <li><code>lib/assessment.js</code>：任务提交 / 轮询客户端。</li>
+    <li><code>tests/assessment.test.js</code> + <code>tests/pages.test.js</code>：16/16 通过（HYHQ 仓库内验证）。</li>
+  </ul>
+  <table>
+    <tr><th>训练指标（runs/river-eco-v1-4 最终轮）</th><th>数值</th><th>说明</th></tr>
+    <tr><td>mAP50 / mAP50-95</td><td><strong>0.904 / 0.658</strong></td><td>yolov8n.pt 预训练，100 轮，4 次迭代训练</td></tr>
+    <tr><td>Precision / Recall</td><td>0.897 / 0.817</td><td>—</td></tr>
+    <tr><td>数据集</td><td>3,000 图 / 23,692 框</td><td><span class="err">仅 IWHR 单源、单细类 misc_debris</span>；其余 14 细类无样本</td></tr>
+    <tr><td>依赖</td><td colspan="2">onnxruntime==1.23.1、onnx==1.19.0、numpy==2.2.6</td></tr>
+  </table>
+
+  <h3>缺口与阻塞</h3>
+  <ol>
+    <li><strong>D0 决策门悬置</strong>：WATER-DET 有条件 NO-GO，2026-10-01 前未获数据将触发回退条款（转花卉识别）。</li>
+    <li><strong>模型覆盖面不足</strong>：水华黑臭 / 排污口 / 岸带三类无训练数据，规则引擎这些大类无真实检出可评。</li>
+    <li><strong>ONNX 制品缺失</strong>：未导出、未登记 → 后端运行时报 <code>MODEL_NOT_CONFIGURED</code>；小程序提交任务显示「评估模型未启用」（预期失败路径）。</li>
+    <li><strong>Phase 3 未提交 / 未联调</strong>：HYHQ 工作区含小程序改动（app.json + assessment 页 + lib 等），尚未 git 提交；与后端联调（Phase 4 T15/T16）未开始。</li>
+    <li><strong>缺 yolo-v1-report.md</strong>：训练报告文档未补。</li>
+  </ol>
+
+  <h3>建议下一步（按依赖序）</h3>
+  <ol>
+    <li>运行 <code>export_onnx.py</code> 导出 ONNX + manifest → <code>register_model</code> 登记。</li>
+    <li>提交 HYHQ 工作区 Phase 3 改动，启动后端 + 小程序联调（Phase 4 T15/T16）。</li>
+    <li>补下载 YRDG / FloW / TU Delft → 重训 → 补 <code>yolo-v1-report.md</code>。</li>
+    <li>等待 2026-10-01 WATER-DET 结果，决定是否回退花卉识别方案。</li>
+  </ol>
+</section>
+
+<!-- ============ 版本管理 ============ -->
+<section id="git">
+  <h2>10. Git 仓库与版本管理</h2>
+  <h3>10.1 HYHQ 远程仓库</h3>
+  <table>
+    <tr><th>remote</th><th>URL</th><th>状态</th></tr>
+    <tr><td><code>origin</code></td><td>https://github.com/gruTGU/HYHQ.git</td><td>保留（原仓库）</td></tr>
+    <tr><td><code>github</code></td><td>git@github.com:NEAZ71eve/Intelligent-Platform-for-River-Ecological-Assessment.git</td><td><span class="ok">已推送</span>，main=9a8fe62</td></tr>
+  </table>
+  <p>本地身份（仓库级）：<code>gruTGU &lt;gruTGU@users.noreply.github.com&gt;</code>；SSH key：ed25519 / rsa。</p>
+  <h3>10.2 提交历史（main，最近 3 条）</h3>
+  <table>
+    <tr><th>提交</th><th>内容</th></tr>
+    <tr><td><code>9a8fe62</code></td><td>chore: 训练产物纳入版本管理（runs/ 权重与指标，inference 白名单）</td></tr>
+    <tr><td><code>9bf3023</code></td><td>feat(inference): YOLOv8n 训练与 ONNX 导出脚本及 IWHR 审计记录</td></tr>
+    <tr><td><code>2940993</code></td><td>feat(ecology): Phase 2 backend evolution - rule engine + geo + assessment-jobs API + worker + admin</td></tr>
+  </table>
+  <h3>10.3 训练产物白名单策略（双 .gitignore）</h3>
+  <ul>
+    <li>根 <code>.gitignore</code> 与 <code>inference/.gitignore</code> 均新增：<code>!inference/runs/**/*.pt</code>（训练权重入库）、<code>!inference/artifacts/*.onnx</code>（未来 ONNX 制品入库）。</li>
+    <li>仍全局忽略 <code>*.pt</code>/<code>*.onnx</code>/<code>*.pth</code>：预训练权重（如 <code>weights/yolo26n.pt</code>）、临时权重不入库。</li>
+    <li><span class="ok">已入库</span>（9a8fe62，33 文件 / 22.8MB）：runs/ 权重（best.pt/last.pt）、results.csv、混淆矩阵、PR/P/F1 曲线、训练/验证批次图。</li>
+    <li><span class="warn">明确不入库</span>：原始数据 <code>.runtime/</code>（约 2.2GB）、<code>data/raw/</code>、划分缓存 <code>data/splits/</code>（seed 42 可重放重建）。</li>
+  </ul>
+  <h3>10.4 未提交工作</h3>
+  <table>
+    <tr><th>位置</th><th>内容</th></tr>
+    <tr><td>HYHQ 工作区</td><td>Phase 3 小程序改动（app.json、recognize/records/assessment 页、lib/assessment.js、tests）</td></tr>
+    <tr><td>miniprogram-2</td><td>迁移后全部业务文件未跟踪/已修改（本目录无远程仓库，24 项变更）</td></tr>
+  </table>
+</section>
+
+</div>
+</body>
+</html>

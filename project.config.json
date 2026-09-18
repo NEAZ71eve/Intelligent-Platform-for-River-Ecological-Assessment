@@ -1,0 +1,26 @@
+{
+  "description": "HYHQ 海晏河清 · 生态与植物识别教学演示",
+  "miniprogramRoot": "./",
+  "projectname": "HYHQ",
+  "appid": "wxbdfcace5b8894a58",
+  "compileType": "miniprogram",
+  "libVersion": "3.7.12",
+  "setting": {
+    "urlCheck": true,
+    "es6": true,
+    "enhance": true,
+    "postcss": true,
+    "minified": true,
+    "minifyWXSS": true,
+    "minifyWXML": true
+  },
+  "packOptions": {
+    "ignore": [
+      { "type": "folder", "value": "tests" },
+      { "type": "file", "value": "README.md" },
+      { "type": "file", "value": "project.private.config.example.json" },
+      { "type": "file", "value": "config/local.example.js" },
+      { "type": "file", "value": "package.json" }
+    ]
+  }
+}

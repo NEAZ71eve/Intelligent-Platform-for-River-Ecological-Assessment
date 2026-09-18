@@ -1,0 +1,1 @@
+{ "desc": "教学演示，不索引", "rules": [{ "action": "disallow", "page": "*" }] }

@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HYHQ 河道生态评估 — 算法训练缺口数据集调研报告</title>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+<style>
+  :root {
+    --bg: #f7f9f7;
+    --card: #ffffff;
+    --ink: #1a2e22;
+    --muted: #5a6b60;
+    --accent: #246746;
+    --accent-light: #e6f0ea;
+    --warn: #b8860b;
+    --danger: #b33a3a;
+    --ok: #2d7a4a;
+    --border: #d8e2db;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, "PingFang SC", "Microsoft YaHei", "Segoe UI", sans-serif;
+    background: var(--bg); color: var(--ink); line-height: 1.7; padding: 24px;
+  }
+  .container { max-width: 1280px; margin: 0 auto; }
+  header {
+    background: linear-gradient(135deg, #1e5a3e 0%, #2d7a4a 100%);
+    color: #fff; padding: 36px 40px; border-radius: 12px; margin-bottom: 28px;
+  }
+  header h1 { font-size: 26px; margin-bottom: 8px; }
+  header .meta { font-size: 14px; opacity: 0.9; }
+  header .meta span { margin-right: 20px; }
+  h2 {
+    font-size: 20px; color: var(--accent); margin: 32px 0 16px;
+    padding-left: 12px; border-left: 4px solid var(--accent);
+  }
+  h3 { font-size: 16px; margin: 20px 0 10px; color: var(--ink); }
+  .card {
+    background: var(--card); border: 1px solid var(--border); border-radius: 10px;
+    padding: 20px 24px; margin-bottom: 16px;
+  }
+  .alert {
+    border-left: 4px solid; padding: 14px 18px; border-radius: 6px; margin-bottom: 16px;
+  }
+  .alert-danger { background: #fdecea; border-color: var(--danger); color: #7a2424; }
+  .alert-warn { background: #fff8e1; border-color: var(--warn); color: #7a5a00; }
+  .alert-ok { background: #e8f5ec; border-color: var(--ok); color: #1e5a35; }
+  .alert-info { background: #e8f0f8; border-color: #2a5a8a; color: #1e3f66; }
+  table { width: 100%; border-collapse: collapse; font-size: 13.5px; margin: 12px 0; }
+  th, td { padding: 8px 10px; border: 1px solid var(--border); text-align: left; vertical-align: top; }
+  th { background: var(--accent-light); font-weight: 600; white-space: nowrap; }
+  tr:nth-child(even) td { background: #fafcfb; }
+  .tag {
+    display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 12px;
+    font-weight: 600; white-space: nowrap;
+  }
+  .tag-ok { background: #d4edda; color: #155724; }
+  .tag-warn { background: #fff3cd; color: #856404; }
+  .tag-danger { background: #f8d7da; color: #721c24; }
+  .tag-info { background: #d1ecf1; color: #0c5460; }
+  .stars { color: #b8860b; letter-spacing: 1px; }
+  #matrix { width: 100%; height: 720px; margin: 16px 0; }
+  .dataset-card { border: 1px solid var(--border); border-radius: 8px; padding: 14px 18px; margin-bottom: 12px; background: #fff; }
+  .dataset-card h4 { font-size: 15px; margin-bottom: 6px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .dataset-card .field { font-size: 13px; color: var(--muted); margin: 2px 0; }
+  .dataset-card .field b { color: var(--ink); }
+  a { color: #2a5a8a; word-break: break-all; }
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 900px) { .two-col { grid-template-columns: 1fr; } }
+  .priority-p0 { border-left: 4px solid var(--danger); }
+  .priority-p1 { border-left: 4px solid var(--warn); }
+  .priority-p2 { border-left: 4px solid var(--ok); }
+  footer { text-align: center; color: var(--muted); font-size: 12px; margin-top: 40px; padding: 20px; }
+  .stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin: 16px 0; }
+  @media (max-width: 700px) { .stat-grid { grid-template-columns: repeat(2, 1fr); } }
+  .stat { background: var(--accent-light); border-radius: 8px; padding: 14px; text-align: center; }
+  .stat .num { font-size: 28px; font-weight: 700; color: var(--accent); }
+  .stat .label { font-size: 12px; color: var(--muted); }
+</style>
+</head>
+<body>
+<div class="container">
+
+<header>
+  <h1>HYHQ 海晏河清 — 算法训练缺口数据集调研报告</h1>
+  <div class="meta">
+    <span>📅 调研日期：2026-09-18</span>
+    <span>🎯 项目：YOLOv8n + ONNX CPU + RULE v1 规则引擎</span>
+    <span>📊 类别体系：4 大类 / 15 细类</span>
+  </div>
+</header>
+
+<!-- ============ 执行摘要 ============ -->
+<h2>一、执行摘要</h2>
+
+<div class="alert alert-danger">
+  <b>🔴 D0 决策门结论：WATER-DET 不满足"可下载"门槛。</b>
+  Frontiers 论文 Data Availability 原文为 "further inquiries can be directed to the corresponding authors"，
+  无任何 GitHub / Zenodo / Figshare 公开链接。该数据集是 4 大类中唯一同时覆盖
+  <code>bloom_blackwater</code> / <code>outfall_discharge</code> / <code>bank_problem</code> 的来源，
+  但获取路径不可控。<b>建议立即邮件申请（zgg@xaut.edu.cn），但不可作为确定性依赖。</b>
+</div>
+
+<div class="stat-grid">
+  <div class="stat"><div class="num">15</div><div class="label">训练细类总数</div></div>
+  <div class="stat"><div class="num">1</div><div class="label">当前有样本（misc_debris）</div></div>
+  <div class="stat"><div class="num">14</div><div class="label">无训练样本的细类</div></div>
+  <div class="stat"><div class="num">25+</div><div class="label">本次调研候选数据集</div></div>
+</div>
+
+<h3>关键发现</h3>
+<table>
+  <tr><th>缺口方向</th><th>首选数据集</th><th>规模</th><th>下载状态</th><th>覆盖细类</th></tr>
+  <tr>
+    <td><b>排污口 outfall</b></td>
+    <td>iSOOD（清华+长江局）</td>
+    <td>10,481 图 / YOLO / CC BY 4.0</td>
+    <td><span class="tag tag-ok">✅ Zenodo 直下</span></td>
+    <td>outfall（10 类排口全映射）</td>
+  </tr>
+  <tr>
+    <td><b>水面漂浮物 bottle</b></td>
+    <td>PoTATO（ECCV 2024）</td>
+    <td>12,380 塑料瓶实例</td>
+    <td><span class="tag tag-ok">✅ GitHub 直下</span></td>
+    <td>bottle</td>
+  </tr>
+  <tr>
+    <td><b>水面漂浮物 metal</b></td>
+    <td>CANSURF</td>
+    <td>~7,300 图 / 水面金属罐</td>
+    <td><span class="tag tag-ok">✅ Zenodo 直下</span></td>
+    <td>metal</td>
+  </tr>
+  <tr>
+    <td><b>漂浮物多类补充</b></td>
+    <td>TACO + AquaTrash</td>
+    <td>1,500 图 / 4,784 实例 + 369 图</td>
+    <td><span class="tag tag-ok">✅ 直下 / CC BY 4.0</span></td>
+    <td>bottle/plastic/paper/glass/metal</td>
+  </tr>
+  <tr>
+    <td><b>水华/藻华</b></td>
+    <td>Roboflow algae-bloom + IWHR 藻类筛选</td>
+    <td>1,048+ 图（待确认）</td>
+    <td><span class="tag tag-warn">⚠️ 需注册 Roboflow</span></td>
+    <td>algae_mass（弱参考）</td>
+  </tr>
+  <tr>
+    <td><b>黑臭水色 sewage_color</b></td>
+    <td>❌ 无公开数据集</td>
+    <td>—</td>
+    <td><span class="tag tag-danger">🔴 必须自采</span></td>
+    <td>sewage_color</td>
+  </tr>
+  <tr>
+    <td><b>岸线侵占 bank_encroach</b></td>
+    <td>Space-hehu（天津西青，未公开）</td>
+    <td>28,120 图 / 12 类含违建</td>
+    <td><span class="tag tag-danger">🔴 未公开，需邮件申请</span></td>
+    <td>bank_encroach</td>
+  </tr>
+</table>
+
+<!-- ============ D0 决策门 ============ -->
+<h2>二、D0 决策门核实：已规划 4 个数据集可下载性</h2>
+
+<div class="alert alert-info">
+  以下结论基于 2026-09-18 实际访问论文原文、Zenodo 记录页、GitHub API（含 issues 区）核实。
+</div>
+
+<table>
+  <tr>
+    <th>数据集</th><th>下载渠道</th><th>许可</th><th>规模</th><th>标注格式</th><th>有 bbox</th><th>结论</th>
+  </tr>
+  <tr>
+    <td><b>YRDG</b><br><span style="font-size:12px;color:var(--muted)">MDPI Sensors 2024<br>10.3390/s24010050</span></td>
+    <td>GitHub repo 仅 <b>16KB 空壳</b>；真实数据在百度网盘（提取码 yghb）；<b>5 个 issue 全部是"链接过期求重发"</b>（2024-07 至 2025-10）</td>
+    <td>论文 CC BY 4.0；repo LICENSE 为 GPLv3</td>
+    <td>3,807 图 / 7 类 / 84% 小目标</td>
+    <td>YOLO txt ✅</td>
+    <td>✅</td>
+    <td><span class="tag tag-warn">⚠️ 可下但极不稳定</span></td>
+  </tr>
+  <tr>
+    <td><b>FloW-Img</b><br><span style="font-size:12px;color:var(--muted)">IET Image Processing 2025<br>10.1049/ipr2.70248</span></td>
+    <td>orca-tech.cn 官网点击下载触发 <b>"Request for Data" 弹窗</b>；需邮件 datasets@orca-tech.com.cn 申请。PBM-YOLO 论文自陈数据 "The author elects to not share data"</td>
+    <td>未公开，申请时确认</td>
+    <td>2,000 图 / 5,000+ 框 / 单类 bottle</td>
+    <td>VOC XML（需转 YOLO）</td>
+    <td>✅</td>
+    <td><span class="tag tag-warn">⚠️ 需申请</span></td>
+  </tr>
+  <tr>
+    <td><b>TUD-GV</b><br><span style="font-size:12px;color:var(--muted)">Front. Water 2023<br>10.3389/frwa.2023.1298465</span></td>
+    <td>Zenodo 直链（10.5281/zenodo.7636124），5.6GB，361 次下载，无需登录</td>
+    <td><b>CC BY 4.0</b></td>
+    <td>9,473 图</td>
+    <td><b>文件夹级图像分类（无 bbox）</b>；4 类按垃圾数量分（no/little/moderate/lots）</td>
+    <td><b>❌ 无框</b></td>
+    <td><span class="tag tag-warn">⚠️ 可下但对 YOLO 无用</span></td>
+  </tr>
+  <tr>
+    <td><b>WATER-DET</b><br><span style="font-size:12px;color:var(--muted)">Front. Environ. Sci. 2025<br>10.3389/fenvs.2025.1657930</span></td>
+    <td><b>Data Availability 原文：</b>"further inquiries can be directed to the corresponding authors"；无任何公开链接</td>
+    <td>论文 CC BY；数据集许可未知</td>
+    <td>~1,590 图 / 12 类（每类 80-150）</td>
+    <td>labelImg 矩形框</td>
+    <td>✅</td>
+    <td><span class="tag tag-danger">❌ 不可直接下载</span></td>
+  </tr>
+</table>
+
+<div class="alert alert-warn">
+  <b>📌 对已规划数据集的修正判断：</b>
+  <ul style="margin:8px 0 0 20px">
+    <li><b>TUD-GV 应从检测训练计划中剔除</b>——它是图像分类数据集（按垃圾密度分 4 级），没有 bounding box，论文明确说加框是"未来工作"。仅可作 backbone 预训练。</li>
+    <li><b>YRDG 需立即备份</b>——百度网盘链接已反复过期 5 次，GitHub 为空壳。一旦下载成功应自行托管。</li>
+    <li><b>FloW-Img 价值有限</b>——单类 bottle 且需申请，优先级低于 PoTATO（12,380 实例水面瓶直下）。</li>
+  </ul>
+</div>
+
+<!-- ============ 覆盖矩阵 ============ -->
+<h2>三、类别 × 数据集覆盖矩阵</h2>
+<p style="color:var(--muted);font-size:13.5px;margin-bottom:8px">
+  颜色深浅表示覆盖强度：<span style="color:var(--ok)">●</span> 直接覆盖且规模充足　
+  <span style="color:var(--warn)">●</span> 间接/部分覆盖（需筛选或近似映射）　
+  <span style="color:#999">●</span> 需申请/未公开　
+  <span style="color:#ddd">●</span> 无覆盖
+</p>
+<div id="matrix"></div>
+
+<!-- ============ 首选数据集卡片 ============ -->
+<h2>四、首选数据集详情（⭐⭐⭐ 立即可下载）</h2>
+
+<div class="dataset-card">
+  <h4>🏆 iSOOD — 排污口检测"黄金数据集" <span class="tag tag-ok">CC BY 4.0</span> <span class="tag tag-info">outfall 主力</span></h4>
+  <div class="field"><b>机构：</b>清华大学环境学院 + 长江流域生态环境监督管理局（2024）</div>
+  <div class="field"><b>论文：</b>Scientific Data, DOI: <a href="https://doi.org/10.1038/s41597-024-03574-9">10.1038/s41597-024-03574-9</a></div>
+  <div class="field"><b>下载：</b><a href="https://zenodo.org/records/10903574">Zenodo 直链（9.5GB）</a> · 代码 <a href="https://github.com/Daniel00ll/iSOOD-code">GitHub</a></div>
+  <div class="field"><b>规模：</b>10,481 图（长江 9,285 + 黄河 1,196），YOLO txt 标注 + Excel 属性表（10 类排口：合流制/雨水/工业/农业/养殖/生活等）</div>
+  <div class="field"><b>视角：</b>无人机低空近岸 + 手持相机。80% 大目标(>96px)。建议先用 iSOOD 预训练，再用少量自采岸边视角 fine-tune。</div>
+</div>
+
+<div class="dataset-card">
+  <h4>🏆 PoTATO — 水面塑料瓶专项 <span class="tag tag-ok">GitHub 直下</span> <span class="tag tag-info">bottle 主力</span></h4>
+  <div class="field"><b>机构：</b>ECCV 2024 TRICKY Workshop（法国/巴西合作）</div>
+  <div class="field"><b>论文：</b>Batista L.F. et al., "PoTATO", ECCV 2024 Workshops, DOI: 10.1007/978-3-031-91569-7_13</div>
+  <div class="field"><b>下载：</b><a href="https://github.com/luisfelipewb/PoTATO/tree/eccv2024">GitHub</a> · <a href="https://arxiv.org/abs/2409.12659">arXiv:2409.12659</a></div>
+  <div class="field"><b>规模：</b><b>12,380 个水面塑料瓶标注实例</b>，YOLO bbox，含偏振四通道（可提取 RGB）</div>
+  <div class="field"><b>视角：</b>受控水池水面近距离平视，与 HYHQ 水面场景高度一致。是 <code>bottle</code> 类首选补充。</div>
+</div>
+
+<div class="dataset-card">
+  <h4>🏆 CANSURF — 水面金属罐专项 <span class="tag tag-ok">Zenodo 直下</span> <span class="tag tag-info">metal 主力</span></h4>
+  <div class="field"><b>机构：</b>学术研究团队（USV/ASV 方向，2025）</div>
+  <div class="field"><b>论文：</b>"CANSURF: An ASV-View Can Dataset", arXiv:2605.16774</div>
+  <div class="field"><b>下载：</b><a href="https://doi.org/10.5281/zenodo.20100657">Zenodo</a> · <a href="https://github.com/ZaidAljundiHW2/CANSURF">GitHub</a></div>
+  <div class="field"><b>规模：</b>~7,300 图（另一报告称 57,012 图训练集），ASV 无人船第一视角水面易拉罐，bbox + 跟踪 ID</div>
+  <div class="field"><b>映射：</b><code>metal</code> 类核心补充。</div>
+</div>
+
+<div class="dataset-card">
+  <h4>🏆 TACO — 类别最全面的通用垃圾集 <span class="tag tag-ok">CC BY 4.0</span> <span class="tag tag-info">多类补充</span></h4>
+  <div class="field"><b>机构：</b>Universitat Pompeu Fabra, Barcelona（持续更新）</div>
+  <div class="field"><b>论文：</b>Proença P.F. et al., arXiv:2003.06975</div>
+  <div class="field"><b>下载：</b><a href="https://github.com/pedropro/TACO">GitHub</a> · <a href="https://zenodo.org/records/3587843">Zenodo</a> · <a href="http://tacodataset.org/">官网</a></div>
+  <div class="field"><b>规模：</b>1,500 图 / 4,784 实例 / 60+ 细类，COCO 格式（bbox + 分割 mask）</div>
+  <div class="field"><b>映射：</b>bottle ✅ / plastic ✅ / paper ✅ / glass ✅ / metal ✅ / foam_board ⚠️（Styrofoam 近似）。需筛选水边/海滩样本。</div>
+</div>
+
+<div class="dataset-card">
+  <h4>🏆 AquaTrash — TACO 水相关子集 <span class="tag tag-ok">直下</span> <span class="tag tag-info">4 类精准</span></h4>
+  <div class="field"><b>机构：</b>IIT Bombay（2023-2024）</div>
+  <div class="field"><b>下载：</b><a href="https://platform.ultralytics.com/ultralytics/datasets/aqua-trash">Ultralytics Platform</a> · <a href="https://datasetninja.com/aqua-trash">DatasetNinja</a></div>
+  <div class="field"><b>规模：</b>369 图 / 469 框 / YOLO 格式 / 4 类：glass, metal, paper, plastic</div>
+  <div class="field"><b>价值：</b>规模小但类别精准，直接面向水相关场景。</div>
+</div>
+
+<div class="dataset-card">
+  <h4>🏆 IWHR Floater V1 — 已有主力（补充藻类筛选） <span class="tag tag-ok">Figshare 直下</span></h4>
+  <div class="field"><b>机构：</b>中国水利水电科学研究院（2025）</div>
+  <div class="field"><b>论文：</b>Qiao G. et al., Scientific Data 12:385 (2025), DOI: <a href="https://doi.org/10.1038/s41597-025-04594-9">10.1038/s41597-025-04594-9</a></div>
+  <div class="field"><b>下载：</b><a href="https://doi.org/10.6084/m9.figshare.27376851.v1">Figshare</a></div>
+  <div class="field"><b>规模：</b>3,000 图 / 23,692 标注框 / VOC XML / 北京大运河岸基+手机视角</div>
+  <div class="field"><b>新发现：</b>除 misc_debris 外，其中藻类/水草漂浮堆积样本可二次筛选为 <code>algae_mass</code> / <code>water_plant</code> 的弱参考。</div>
+</div>
+
+<!-- ============ 次选与补充 ============ -->
+<h2>五、次选与补充数据集（⭐⭐）</h2>
+
+<table>
+  <tr><th>数据集</th><th>规模</th><th>许可</th><th>下载状态</th><th>覆盖细类</th><th>视角/备注</th></tr>
+  <tr>
+    <td><b>Underwater Plastic PP</b><br><span style="font-size:12px;color:var(--muted)">Kaggle, arnavs19</span></td>
+    <td>5,127 图 / 15 类 / YOLO</td>
+    <td>CC BY 4.0</td>
+    <td><span class="tag tag-warn">需 Kaggle 注册</span></td>
+    <td>bottle / glass / metal / fabric(glove 近似)</td>
+    <td>水下视角，需域适应</td>
+  </tr>
+  <tr>
+    <td><b>River Flow Trash</b><br><span style="font-size:12px;color:var(--muted)">Ultralytics 社区</span></td>
+    <td>4,654 图 / 6,822 框 / 8 类</td>
+    <td>社区开源</td>
+    <td><span class="tag tag-ok">✅ 直下</span></td>
+    <td>bottle / water_plant(grass) / plastic</td>
+    <td><b>河流水面场景，最接近 HYHQ</b></td>
+  </tr>
+  <tr>
+    <td><b>CoxPWD 2025</b><br><span style="font-size:12px;color:var(--muted)">East West Univ.</span></td>
+    <td>4,195 图 / 15 类 / COCO</td>
+    <td>CC BY 4.0</td>
+    <td><span class="tag tag-ok">✅ Mendeley 直下</span></td>
+    <td>bottle / plastic / paper / fabric(rope)</td>
+    <td>孟加拉海滩地面视角</td>
+  </tr>
+  <tr>
+    <td><b>CleanSea / e-CleanSea</b><br><span style="font-size:12px;color:var(--muted)">U. Alicante</span></td>
+    <td>1,223+990 图 / 19 类 / COCO</td>
+    <td>非营利学术</td>
+    <td><span class="tag tag-ok">✅ 官网直下</span></td>
+    <td>bottle / plastic / metal / fabric(towel 近似)</td>
+    <td>水下 ROV 视角，迁移成本高</td>
+  </tr>
+  <tr>
+    <td><b>Marine Debris Images</b><br><span style="font-size:12px;color:var(--muted)">Kaggle, zienabesam</span></td>
+    <td>中等规模 / 4 类</td>
+    <td>社区</td>
+    <td><span class="tag tag-warn">需 Kaggle 注册</span></td>
+    <td><b>foam_board(foam) ✅ 稀缺</b> / bottle / plastic / metal</td>
+    <td>海洋漂浮物</td>
+  </tr>
+  <tr>
+    <td><b>BePLi v2</b><br><span style="font-size:12px;color:var(--muted)">山形大学</span></td>
+    <td>3,722 图 / 118,572 标注 / 13 类</td>
+    <td>CC BY-NC-SA 4.0</td>
+    <td><span class="tag tag-ok">✅ SEANOE 直下</span></td>
+    <td>海滩塑料垃圾多类</td>
+    <td>日本海滩，<b>非商业</b></td>
+  </tr>
+  <tr>
+    <td><b>UAS-Outfall</b><br><span style="font-size:12px;color:var(--muted)">中科院地理所</span></td>
+    <td>8,746 图 / VOC / 7 子类</td>
+    <td>未明确</td>
+    <td><span class="tag tag-warn">样本公开，完整需邮件</span></td>
+    <td>outfall（管道/明渠型）</td>
+    <td>无人机正射俯视，视角偏差大</td>
+  </tr>
+  <tr>
+    <td><b>Roboflow algae-bloom</b><br><span style="font-size:12px;color:var(--muted)">gistwork</span></td>
+    <td>待确认</td>
+    <td>待确认</td>
+    <td><span class="tag tag-warn">需 Roboflow 注册</span></td>
+    <td>algae_mass（水华方向）</td>
+    <td>社区数据集，需手动确认</td>
+  </tr>
+  <tr>
+    <td><b>Roboflow Algae Detection</b></td>
+    <td>1,048 图 / 单类 Algae</td>
+    <td>CC BY 4.0（据称）</td>
+    <td><span class="tag tag-warn">需 Roboflow 注册</span></td>
+    <td>algae_mass</td>
+    <td>水面/鱼塘混合，需筛选</td>
+  </tr>
+</table>
+
+<!-- ============ 需申请/未公开 ============ -->
+<h2>六、需邮件申请或未公开的关键数据集</h2>
+
+<table>
+  <tr><th>数据集</th><th>规模/类别</th><th>状态</th><th>申请渠道</th><th>价值</th></tr>
+  <tr>
+    <td><b>WATER-DET</b><br><span style="font-size:12px;color:var(--muted)">西安理工大学, Front. Environ. Sci. 2025</span></td>
+    <td>~1,590 图 / 12 类：Algae 150, Foam 150, Sewage 150, Oil 80, Red 150, Yellow 150, Garbage 150, Fish 80, Leaves 80, <b>Outfall 150</b>, Sand 150, Building 150</td>
+    <td><span class="tag tag-danger">❌ 无公开渠道</span></td>
+    <td>邮件 <b>zgg@xaut.edu.cn</b></td>
+    <td><b>类别匹配度最高</b>：唯一同时覆盖 algae_mass / foam_pollution / sewage_color / outfall / bank_encroach。含死鱼/落叶异常类。</td>
+  </tr>
+  <tr>
+    <td><b>Space-hehu</b><br><span style="font-size:12px;color:var(--muted)">天津农学院, PMC12944004</span></td>
+    <td><b>28,120 图</b> / 12 类：bottle 2560, packaging 1750, branch 2074, trash 2778, <b>engineering 3800, greenhouse 4090, building 3076</b>, garbage 2383, pollute 746, plastic 3291...</td>
+    <td><span class="tag tag-danger">❌ 未公开</span></td>
+    <td>邮件 <b>liuling@tjau.edu.cn</b></td>
+    <td><b>bank_encroach 方向最匹配的中文数据集</b>：engineering/greenhouse/building 直接映射岸线侵占/违建/大棚。</td>
+  </tr>
+  <tr>
+    <td><b>YRDG</b><br><span style="font-size:12px;color:var(--muted)">兰州理工大, Sensors 2024</span></td>
+    <td>3,807 图 / 7 类：plastic 1432, paper 909, glass 651, metal 466, fabric 991, natural 1772, others 651</td>
+    <td><span class="tag tag-warn">⚠️ 百度网盘（提取码 yghb），链接反复过期</span></td>
+    <td>网盘下载后立即自行托管</td>
+    <td>7 类材质直接映射 floating_debris。小目标 84%。</td>
+  </tr>
+  <tr>
+    <td><b>FloW-Img</b><br><span style="font-size:12px;color:var(--muted)">ORCA TECH + 清华 + 西工大</span></td>
+    <td>2,000 图 / 5,000+ 框 / 单类 bottle / USV 视角</td>
+    <td><span class="tag tag-warn">⚠️ 官网 Request for Data 弹窗</span></td>
+    <td>邮件 <b>datasets@orca-tech.com.cn</b></td>
+    <td>bottle 小目标场景。优先级低于 PoTATO。</td>
+  </tr>
+  <tr>
+    <td><b>河北河道航拍蓝藻</b><br><span style="font-size:12px;color:var(--muted)">河北农业大学, 工程科学与技术 2026</span></td>
+    <td>1,308 图 / 3 类：河道垃圾, <b>蓝藻</b>, 非法采砂 / VOC</td>
+    <td><span class="tag tag-danger">❌ 未公开</span></td>
+    <td>邮件联系作者</td>
+    <td>UAV 倾斜视角蓝藻，蓝藻 mAP=86.9%。</td>
+  </tr>
+  <tr>
+    <td><b>环巢湖视频监控蓝藻</b><br><span style="font-size:12px;color:var(--muted)">中科院城市环境所, 环境化学 2023</span></td>
+    <td>1,847 图 / 42 台岸基摄像头 / LabelMe 分割</td>
+    <td><span class="tag tag-danger">❌ 未公开</span></td>
+    <td>邮件联系作者</td>
+    <td><b>岸基俯拍视角最接近巡河手机</b>，但需从分割转 bbox。</td>
+  </tr>
+</table>
+
+<!-- ============ 缺口分析 ============ -->
+<h2>七、按 15 细类的数据缺口与应对</h2>
+
+<div class="alert alert-danger">
+  <b>🔴 完全空缺、必须自采的细类：</b>
+</div>
+<table>
+  <tr><th>细类</th><th>缺口原因</th><th>推荐应对方案</th></tr>
+  <tr>
+    <td><b>algae_mass</b>（藻类团/水华）</td>
+    <td>所有公开垃圾数据集中均无此独立标注类。WATER-DET 有 150 张但未公开。</td>
+    <td>① 自采 ≥500 张（夏季河道绿色/蓝绿色漂浮藻华、水葫芦聚集）<br>② 用 IWHR 藻类筛选 + Roboflow algae-bloom 预训练<br>③ 邮件申请 WATER-DET 的 Algae Pollution 150 张</td>
+  </tr>
+  <tr>
+    <td><b>sewage_color</b>（黑臭水色）</td>
+    <td>所有中文"黑臭水体"研究均基于高分卫星影像（GF-1/2、Sentinel-2），无岸边手持视角 bbox 标注。</td>
+    <td>① 自采 ≥300 张（黑灰色水色河段）<br>② iSOOD 排口下游水色异常帧人工筛选<br>③ 邮件申请 WATER-DET 的 Sewage 150 张<br>④ 弱监督：HSV 空间颜色规则半自动提取候选区域</td>
+  </tr>
+  <tr>
+    <td><b>bank_encroach</b>（岸线侵占/违建）</td>
+    <td>无公开专用数据集。Space-hehu 最匹配但未公开。</td>
+    <td>① 邮件申请 Space-hehu（liuling@tjau.edu.cn，28,120 图含 engineering/greenhouse/building）<br>② 自采 ≥500 张（违建/堆料/围垦/护坡破坏）<br>③ 合成：从 xView/DOTA 裁剪建筑透视变换叠加河岸背景<br>④ 弱监督：Grounding DINO + SAM 自采视频伪标签</td>
+  </tr>
+</table>
+
+<div class="alert alert-warn">
+  <b>🟡 稀缺但有补充来源的细类：</b>
+</div>
+<table>
+  <tr><th>细类</th><th>公开数据覆盖</th><th>补充建议</th></tr>
+  <tr><td><b>foam_board</b>（泡沫板）</td><td>Marine Debris Images (foam) + TACO (Styrofoam)，仅 2 个间接源</td><td>下载 Kaggle foam 类 + 从 TACO 筛选 Styrofoam；自采 ≥200 张</td></tr>
+  <tr><td><b>fabric</b>（织物）</td><td>Underwater PP (glove/mask) + CleanSea (towel/rope)，均为近似类</td><td>用近似类预训练 + 自采 ≥300 张（编织袋/衣物/渔网碎片）</td></tr>
+  <tr><td><b>water_plant</b>（水草）</td><td>River Flow Trash (grass) + Pasig River (aquatic plants)</td><td>下载 River Flow Trash；自采中国河道本土场景 ≥300 张</td></tr>
+  <tr><td><b>glass</b>（玻璃）</td><td>TACO + AquaTrash + Underwater PP (gbottle)，水面场景稀缺</td><td>三源组合，预计可获 1,000+ 框</td></tr>
+  <tr><td><b>paper</b>（纸）</td><td>TACO + AquaTrash + CoxPWD(packet 近似)</td><td>三源组合；水面纸质垃圾罕见，量可能不足</td></tr>
+</table>
+
+<div class="alert alert-ok">
+  <b>🟢 数据充足的细类（多源可补）：</b>
+  <code>bottle</code>（PoTATO 12.3k + TACO + FloW-Img + 多个海滩集）｜
+  <code>plastic</code>（TACO + AquaTrash + YRDG + 多个集）｜
+  <code>metal</code>（CANSURF 7.3k + TACO + AquaTrash）｜
+  <code>outfall</code>（iSOOD 10,481 图直接覆盖）
+</div>
+
+<!-- ============ 推荐组合 ============ -->
+<h2>八、推荐数据组合方案</h2>
+
+<h3>阶段一：立即下载（1 周内，直链可下）</h3>
+<table>
+  <tr><th>数据集</th><th>用途</th><th>预计贡献</th></tr>
+  <tr><td>iSOOD (Zenodo, 9.5GB)</td><td>outfall 类主力预训练</td><td>10,481 排口图</td></tr>
+  <tr><td>PoTATO (GitHub)</td><td>bottle 类主力</td><td>12,380 水面瓶实例</td></tr>
+  <tr><td>CANSURF (Zenodo)</td><td>metal 类主力</td><td>~7,300 水面罐图</td></tr>
+  <tr><td>TACO (GitHub/Zenodo)</td><td>bottle/plastic/paper/glass/metal 多类补充</td><td>4,784 实例</td></tr>
+  <tr><td>AquaTrash (Ultralytics)</td><td>glass/metal/paper/plastic 精准补充</td><td>469 框</td></tr>
+  <tr><td>River Flow Trash (Ultralytics)</td><td>bottle + water_plant，河流场景</td><td>6,822 框</td></tr>
+  <tr><td>YRDG（百度网盘提取码 yghb）</td><td>plastic/paper/glass/metal/fabric 补充，<b>下载后立即自行托管备份</b></td><td>3,807 图</td></tr>
+</table>
+
+<h3>阶段二：邮件申请（1-2 周内发出）</h3>
+<table>
+  <tr><th>邮件目标</th><th>申请内容</th><th>预期收益</th></tr>
+  <tr><td><b>zgg@xaut.edu.cn</b>（WATER-DET）</td><td>申请 12 类完整数据集</td><td>algae_mass + foam_pollution + sewage_color + outfall + bank_encroach 一次性解决</td></tr>
+  <tr><td><b>liuling@tjau.edu.cn</b>（Space-hehu）</td><td>申请 28,120 图 12 类数据</td><td>bank_encroach（engineering/greenhouse/building）主力</td></tr>
+  <tr><td><b>datasets@orca-tech.com.cn</b>（FloW-Img）</td><td>申请 bottle 2000 图 + 确认许可</td><td>bottle 小目标增强</td></tr>
+  <tr><td>河北农业大学 / 环巢湖团队</td><td>申请蓝藻航拍/监控数据</td><td>algae_mass 岸基视角参考</td></tr>
+</table>
+
+<h3>阶段三：自采 + 弱监督（持续进行）</h3>
+<table>
+  <tr><th>自采目标</th><th>建议量</th><th>拍摄规范</th></tr>
+  <tr><td>algae_mass（藻华/水葫芦聚集）</td><td>≥500 张</td><td>夏季河道绿色/蓝绿色水面聚集</td></tr>
+  <tr><td>sewage_color（黑灰水色）</td><td>≥300 张</td><td>不同河段黑灰色水色</td></tr>
+  <tr><td>foam_pollution（水面泡沫）</td><td>≥200 张</td><td>溢流堰/排口下游白色泡沫</td></tr>
+  <tr><td>bank_encroach（违建/堆料/围垦）</td><td>≥500 张</td><td>城郊河道、工业园区、乡村河段</td></tr>
+  <tr><td>outfall 岸边平视视角</td><td>≥300 张</td><td>补充 iSOOD 的 UAV 视角域差</td></tr>
+  <tr><td>fabric / foam_board / water_plant 本土场景</td><td>各 ≥300 张</td><td>中国城市河道实际漂浮物</td></tr>
+</table>
+<p style="font-size:13px;color:var(--muted)">
+  自采拍摄规范：手机横屏 1080p+，距离目标 5-20 米，覆盖晴天/阴天/傍晚、不同水位，每张 1-3 个目标。标注用 LabelImg 导出 YOLO 格式。弱监督工具推荐 Grounding DINO + SAM 自动预标 + 人工审核。
+</p>
+
+<!-- ============ 下一步行动清单 ============ -->
+<h2>九、下一步行动清单（按优先级）</h2>
+
+<table>
+  <tr><th>#</th><th>优先级</th><th>行动</th><th>负责/状态</th></tr>
+  <tr><td>1</td><td><span class="tag tag-danger">P0</span></td><td>下载 iSOOD（Zenodo, 9.5GB）+ PoTATO + CANSURF + TACO + AquaTrash + River Flow Trash</td><td>本周内</td></tr>
+  <tr><td>2</td><td><span class="tag tag-danger">P0</span></td><td>用 YRDG 当前百度网盘链接（提取码 yghb）下载后立即自行托管到项目仓库/网盘</td><td>本周内（链接可能再过期）</td></tr>
+  <tr><td>3</td><td><span class="tag tag-danger">P0</span></td><td>邮件 zgg@xaut.edu.cn 申请 WATER-DET 完整数据集（D0 决策门正式邮件记录）</td><td>本周内发出</td></tr>
+  <tr><td>4</td><td><span class="tag tag-warn">P1</span></td><td>邮件 liuling@tjau.edu.cn 申请 Space-hehu（bank_encroach 方向）</td><td>本周内</td></tr>
+  <tr><td>5</td><td><span class="tag tag-warn">P1</span></td><td>邮件 datasets@orca-tech.com.cn 申请 FloW-Img 并确认许可协议</td><td>本周内</td></tr>
+  <tr><td>6</td><td><span class="tag tag-warn">P1</span></td><td>注册 Roboflow/Kaggle 账号，下载 algae-bloom、Algae Detection 1048、Marine Debris Images、Underwater Plastic PP</td><td>本周内</td></tr>
+  <tr><td>7</td><td><span class="tag tag-warn">P1</span></td><td>从 IWHR 已有数据中二次筛选藻类/水草样本，重新映射到 algae_mass / water_plant</td><td>下载后立即</td></tr>
+  <tr><td>8</td><td><span class="tag tag-info">P2</span></td><td>剔除 TUD-GV 从检测训练计划（无 bbox），如需仅作 backbone 预训练</td><td>更新设计文档</td></tr>
+  <tr><td>9</td><td><span class="tag tag-info">P2</span></td><td>启动自采计划：algae_mass / sewage_color / foam_pollution / bank_encroach / outfall 岸边视角</td><td>2 周内启动</td></tr>
+  <tr><td>10</td><td><span class="tag tag-info">P2</span></td><td>2026-10-01 前 WATER-DET 无回复 → 触发回退条款评估（花卉识别 or 全力自采）</td><td>10/01 节点</td></tr>
+</table>
+
+<!-- ============ 明确不适用 ============ -->
+<h2>十、明确不适用的方向（避免误选）</h2>
+<table>
+  <tr><th>数据集/方向</th><th>排除原因</th></tr>
+  <tr><td>天池 VisAlgae 2023 / High-Throughput Algae Cell Detection (Kaggle)</td><td>显微镜下微藻图像分类，非水面 bbox 检测</td></tr>
+  <tr><td>THQBCA 太湖蓝藻 / RSBD 黑臭水体 / GF-2 黑臭水体 / Lake Taihu 遥感</td><td>MODIS/Sentinel/高分卫星像素级数据，非岸边手持视角</td></tr>
+  <tr><td>MADOS（海洋污染卫星，含 foam）</td><td>Sentinel-2 卫星 10m 分辨率，语义分割，视角完全不同</td></tr>
+  <tr><td>TUD-GV（TU Delft Green Village）</td><td>图像分类数据集（按垃圾密度分 4 级），无 bounding box</td></tr>
+  <tr><td>RoLID-11K</td><td>道路 dashcam 视角，非河岸视角，仅作弱参考</td></tr>
+  <tr><td>TrashCan / SeaClear（水下 ROV）</td><td>深海/水下视角，与内陆河道水面差异极大</td></tr>
+  <tr><td>SeatizenAtlas</td><td>水下珊瑚/海藻生态调查，非水面</td></tr>
+</table>
+
+<!-- ============ 来源索引 ============ -->
+<h2>十一、来源 URL 索引</h2>
+<table>
+  <tr><th>数据集</th><th>链接</th></tr>
+  <tr><td>iSOOD</td><td><a href="https://zenodo.org/records/10903574">zenodo.org/records/10903574</a> · <a href="https://doi.org/10.1038/s41597-024-03574-9">论文 DOI</a></td></tr>
+  <tr><td>PoTATO</td><td><a href="https://github.com/luisfelipewb/PoTATO/tree/eccv2024">GitHub</a> · <a href="https://arxiv.org/abs/2409.12659">arXiv:2409.12659</a></td></tr>
+  <tr><td>CANSURF</td><td><a href="https://doi.org/10.5281/zenodo.20100657">Zenodo</a> · <a href="https://github.com/ZaidAljundiHW2/CANSURF">GitHub</a></td></tr>
+  <tr><td>TACO</td><td><a href="https://github.com/pedropro/TACO">GitHub</a> · <a href="https://zenodo.org/records/3587843">Zenodo</a> · <a href="http://tacodataset.org/">官网</a></td></tr>
+  <tr><td>AquaTrash</td><td><a href="https://platform.ultralytics.com/ultralytics/datasets/aqua-trash">Ultralytics</a></td></tr>
+  <tr><td>IWHR Floater V1</td><td><a href="https://doi.org/10.6084/m9.figshare.27376851.v1">Figshare</a> · <a href="https://doi.org/10.1038/s41597-025-04594-9">论文 DOI</a></td></tr>
+  <tr><td>YRDG</td><td><a href="https://github.com/jingcodejing/YRDG-dataset">GitHub（空壳说明）</a> · <a href="https://www.mdpi.com/1424-8220/24/1/50">论文</a></td></tr>
+  <tr><td>FloW-Img</td><td><a href="https://orca-tech.cn/datasets/FloW/FloW-Img">官网</a> · <a href="https://github.com/ORCA-Uboat/FloW-Dataset">GitHub</a></td></tr>
+  <tr><td>TUD-GV</td><td><a href="https://doi.org/10.5281/zenodo.7636124">Zenodo</a> · <a href="https://doi.org/10.3389/frwa.2023.1298465">论文 DOI</a></td></tr>
+  <tr><td>WATER-DET</td><td><a href="https://www.frontiersin.org/articles/10.3389/fenvs.2025.1657930/full">论文页面</a>（无数据公开链接）</td></tr>
+  <tr><td>River Flow Trash</td><td><a href="https://platform.ultralytics.com/salamander-wolf/datasets/river-flow-trash">Ultralytics</a></td></tr>
+  <tr><td>CoxPWD</td><td><a href="https://data.mendeley.com/datasets/bdzg4tjy63/1">Mendeley Data</a></td></tr>
+  <tr><td>Underwater Plastic PP</td><td><a href="https://www.kaggle.com/datasets/arnavs19/underwater-plastic-pollution-detection">Kaggle</a></td></tr>
+  <tr><td>Marine Debris Images</td><td><a href="https://www.kaggle.com/datasets/zienabesam/marine-debris-images-dataset">Kaggle</a></td></tr>
+  <tr><td>CleanSea</td><td><a href="https://www.dlsi.ua.es/~jgallego/datasets/cleansea/">官网</a></td></tr>
+  <tr><td>BePLi v2</td><td><a href="https://doi.org/10.17882/96963">SEANOE</a></td></tr>
+  <tr><td>UAS-Outfall</td><td><a href="https://github.com/WuChengbin/GeoDCNN">GitHub</a></td></tr>
+  <tr><td>Roboflow algae-bloom</td><td><a href="https://universe.roboflow.com/gistwork/algae-bloom">Roboflow Universe</a></td></tr>
+  <tr><td>MADOS</td><td><a href="https://zenodo.org/records/10664073">Zenodo</a>（卫星，仅参考）</td></tr>
+</table>
+
+<footer>
+  HYHQ 海晏河清河道生态评估项目 · 算法训练缺口数据集调研报告 · 2026-09-18<br>
+  所有下载链接均于 2026-09-18 实际访问验证 · 标注"需申请/未公开"的数据集需手动操作确认最新状态
+</footer>
+
+</div>
+
+<script>
+// ===== ECharts 覆盖矩阵热力图 =====
+const classes = [
+  'bottle','foam_board','water_plant','algae_mass','plastic','paper','glass','metal','fabric','misc_debris',
+  'sewage_color','foam_pollution',
+  'outfall',
+  'bank_garbage','bank_encroach'
+];
+
+const datasets = [
+  {name:'IWHR Floater V1', vals:[1,1,2,2,1,0,0,0,0,2, 0,0, 0, 1,0]},
+  {name:'iSOOD',           vals:[0,0,0,0,0,0,0,0,0,0, 1,0, 3, 0,0]},
+  {name:'PoTATO',          vals:[3,0,0,0,0,0,0,0,0,0, 0,0, 0, 0,0]},
+  {name:'CANSURF',         vals:[0,0,0,0,0,0,0,3,0,0, 0,0, 0, 0,0]},
+  {name:'TACO',            vals:[2,1,0,0,2,2,2,2,0,1, 0,0, 0, 1,0]},
+  {name:'AquaTrash',       vals:[1,0,0,0,2,2,2,2,0,0, 0,0, 0, 0,0]},
+  {name:'YRDG',            vals:[1,0,0,0,2,2,2,2,2,1, 0,0, 0, 0,0]},
+  {name:'FloW-Img',        vals:[2,0,0,0,0,0,0,0,0,0, 0,0, 0, 0,0]},
+  {name:'River Flow Trash',vals:[2,0,2,0,1,0,0,0,0,1, 0,0, 0, 0,0]},
+  {name:'CoxPWD',          vals:[2,0,0,0,2,1,0,0,1,1, 0,0, 0, 1,0]},
+  {name:'Underwater PP',   vals:[2,0,0,0,2,0,2,2,1,0, 0,0, 0, 0,0]},
+  {name:'Marine Debris',   vals:[2,2,0,0,2,0,0,2,0,0, 0,0, 0, 0,0]},
+  {name:'CleanSea',        vals:[2,0,0,0,2,0,0,2,1,0, 0,0, 0, 0,0]},
+  {name:'TUD-GV',          vals:[0,0,0,0,0,0,0,0,0,0, 0,0, 0, 0,0]},
+  {name:'WATER-DET ⚠️',    vals:[0,0,0,1,0,0,0,0,0,1, 1,1, 1, 1,1]},
+  {name:'Space-hehu ⚠️',   vals:[1,0,0,0,1,0,0,0,0,2, 0,0, 0, 2,2]},
+];
+
+// 构建热力图数据：[colIdx, rowIdx, value]
+const data = [];
+datasets.forEach((ds, r) => {
+  ds.vals.forEach((v, c) => {
+    data.push([c, r, v]);
+  });
+});
+
+const chart = echarts.init(document.getElementById('matrix'));
+chart.setOption({
+  tooltip: {
+    formatter: function(p) {
+      const ds = datasets[p.data[1]].name;
+      const cls = classes[p.data[0]];
+      const v = p.data[2];
+      const label = v === 3 ? '✅ 直接覆盖，规模充足' :
+                    v === 2 ? '✅ 直接覆盖' :
+                    v === 1 ? '⚠️ 间接/部分覆盖（需筛选或近似）' :
+                    v === 0 ? '❌ 无覆盖' : '—';
+      return '<b>' + ds + '</b><br/>细类：' + cls + '<br/>覆盖：' + label;
+    }
+  },
+  grid: { left: 160, right: 80, top: 80, bottom: 60 },
+  xAxis: {
+    type: 'category',
+    data: classes.map((c,i) => {
+      // 按大类分组着色标签
+      const group = i < 10 ? 'floating_debris' : (i < 12 ? 'bloom_blackwater' : (i < 13 ? 'outfall_discharge' : 'bank_problem'));
+      return c + '\n[' + group.split('_')[0] + ']';
+    }),
+    splitArea: { show: true },
+    axisLabel: { rotate: 45, fontSize: 11, interval: 0 }
+  },
+  yAxis: {
+    type: 'category',
+    data: datasets.map(d => d.name),
+    axisLabel: { fontSize: 11 },
+    splitArea: { show: true }
+  },
+  visualMap: {
+    min: 0, max: 3,
+    calculable: false,
+    orient: 'horizontal',
+    left: 'center',
+    bottom: 0,
+    inRange: { color: ['#eeeeee', '#fff3cd', '#90caf9', '#2d7a4a'] },
+    text: ['直接覆盖', '无覆盖'],
+    pieces: [
+      {min: 3, label: '直接覆盖·充足', color: '#2d7a4a'},
+      {min: 2, max: 2, label: '直接覆盖', color: '#66bb6a'},
+      {min: 1, max: 1, label: '间接/近似', color: '#ffd54f'},
+      {min: 0, max: 0, label: '无覆盖', color: '#eeeeee'},
+      {min: -1, max: -1, label: '需申请/未公开', color: '#b33a3a'}
+    ]
+  },
+  series: [{
+    name: '覆盖强度',
+    type: 'heatmap',
+    data: data.map(d => {
+      // 未公开数据集标为 -1 以红色显示
+      const dsName = datasets[d[1]].name;
+      if (dsName.includes('⚠️') && d[2] > 0) return [d[0], d[1], -1];
+      return d;
+    }),
+    label: {
+      show: true,
+      formatter: function(p) {
+        const v = p.data[2];
+        if (v === 3) return '●●';
+        if (v === 2) return '●';
+        if (v === 1) return '○';
+        if (v === -1) return '⚠';
+        return '';
+      },
+      fontSize: 12
+    },
+    emphasis: { itemStyle: { shadowBlur: 8, shadowColor: 'rgba(0,0,0,0.3)' } }
+  }]
+});
+window.addEventListener('resize', () => chart.resize());
+</script>
+
+</body>
+</html>

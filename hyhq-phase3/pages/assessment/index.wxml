@@ -1,0 +1,70 @@
+<view class="page">
+  <text class="eyebrow">ASSESSMENT / 评估结果</text>
+  <view class="page-title">河道体检报告</view>
+  <view class="subtitle">检测结论 + 规则式原因分析。</view>
+  <page-state loading="{{loading}}" error="{{error}}" bindretry="retry" />
+  <block wx:if="{{job && !result}}">
+    <view class="card section">
+      <view class="row"><text class="title">{{job.status_label}}</text><text class="pill">任务状态</text></view>
+      <view class="copy">{{job.error_label || (job.status === 'queued' ? '照片正在排队，请稍候。' : job.status === 'running' ? '正在分析河道照片，请稍候。' : '本次未产生评估结论。')}}</view>
+      <view class="small muted gap">{{job.created_label}}</view>
+      <view class="small muted gap" wx:if="{{pollNotice}}">{{pollNotice}}</view>
+      <button class="secondary gap" bindtap="retry">刷新任务状态</button>
+    </view>
+  </block>
+  <block wx:if="{{result}}">
+    <view class="grade-banner grade-{{result.grade_key}}">
+      <view class="grade-score">{{result.score_label}}<text class="grade-unit">分</text></view>
+      <view class="grade-line">生态等级 · {{result.grade}}</view>
+      <view class="grade-desc">{{result.grade_desc}}</view>
+    </view>
+    <view class="section image-wrap">
+      <image class="result-image" src="{{imagePath}}" mode="widthFix" wx:if="{{imagePath}}" />
+      <canvas type="2d" id="box-canvas" class="box-canvas" wx:if="{{imagePath && result.boxes.length}}"></canvas>
+      <view class="small muted gap" wx:if="{{imageUnavailable}}">{{imageUnavailable}}</view>
+      <view class="legend" wx:if="{{result.boxes.length}}">
+        <view class="legend-item" wx:for="{{result.issues}}" wx:key="key"><view class="legend-dot" style="background: {{item.color}};"></view><text>{{item.label}} × {{item.count}}</text></view>
+      </view>
+      <view class="small muted" wx:if="{{imagePath && result.boxes.length}}">框为目标检测结果，展示模型输出，不代表人工核实。</view>
+    </view>
+    <view class="card section">
+      <view class="row"><text class="title">问题清单</text><text class="pill">共 {{result.issues.length}} 类</text></view>
+      <block wx:if="{{result.issues.length}}">
+        <view class="issue-row" wx:for="{{result.issues}}" wx:key="key">
+          <view class="legend-dot" style="background: {{item.color}};"></view>
+          <text class="issue-name">{{item.label}}</text>
+          <text class="issue-count">检出 {{item.count}} 处</text>
+          <text class="issue-area">面积占比 {{item.area_label}}</text>
+        </view>
+      </block>
+      <view class="copy" wx:else>画面内未检出明显的生态问题目标。</view>
+    </view>
+    <view class="card section">
+      <view class="row"><text class="title">原因分析</text><text class="pill">规则式</text></view>
+      <block wx:if="{{result.causes.length}}">
+        <view class="cause-item" wx:for="{{result.causes}}" wx:key="*this"><text class="cause-index">{{index + 1}}</text><text>{{item}}</text></view>
+      </block>
+      <view class="copy" wx:else>未触发原因分析规则；可结合问题清单与现场情况判断。</view>
+    </view>
+    <view class="card section" wx:if="{{job.station_id}}">
+      <view class="row"><text class="title">关联河段近期指标</text><text class="pill sim-pill">模拟数据</text></view>
+      <block wx:if="{{metrics.length}}">
+        <view class="issue-row" wx:for="{{metrics}}" wx:key="index">
+          <text class="issue-name">{{item.name}}</text>
+          <text class="issue-count">{{item.value_label}}{{item.unit}}</text>
+          <text class="issue-area">{{item.observed_label}}</text>
+        </view>
+        <view class="small muted gap">指标为演示用模拟观测数据，已标注来源，不代表真实监测值。</view>
+      </block>
+      <view class="copy" wx:elif="{{metricNotice}}">{{metricNotice}}</view>
+      <view class="copy" wx:else>暂无该河段的近期指标。</view>
+    </view>
+    <view class="card section meta-card">
+      <view class="row"><text class="title">评估信息</text><text class="pill">可追溯</text></view>
+      <view class="small muted gap">规则版本：{{result.rule_version}}</view>
+      <view class="small muted">评估耗时：{{result.duration_label}} · 提交时间：{{job.created_label}}</view>
+    </view>
+    <view class="disclaimer-card">{{result.disclaimer}}</view>
+  </block>
+  <view class="footer-note">每一次巡查，都让河流更清澈</view>
+</view>

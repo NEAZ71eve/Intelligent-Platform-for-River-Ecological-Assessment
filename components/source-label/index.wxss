@@ -1,0 +1,2 @@
+.source { display: inline-block; border-radius: 9rpx; background: #edf2e6; color: #52643e; font-size: 20rpx; line-height: 1.8; padding: 2rpx 10rpx; font-weight: 500; }
+.simulation { background: #f5edcf; color: #77662f; }

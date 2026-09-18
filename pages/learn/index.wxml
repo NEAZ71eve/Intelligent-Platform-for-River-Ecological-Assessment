@@ -1,0 +1,13 @@
+<view class="page">
+  <text class="eyebrow">JOURNAL / 绿色见闻</text>
+  <view class="page-title"><view>读懂自然，</view><view>再走近一点。</view></view>
+  <view class="subtitle">让每一次校园漫步，都多一份发现。</view>
+  <view class="editorial-card section"><text class="editorial-number">01 —</text><view><text class="small muted">给绿色生活的一封邀请</text><view class="title">把生态知识，带进日常。</view><view class="copy"><view>校园植物、水资源保护与绿色出行，</view><view>从一次阅读开始。</view></view></view><view class="paper-leaf"></view></view>
+  <view class="tabs section"><view class="tab {{tab === 'contents' ? 'selected' : ''}}" data-tab="contents" bindtap="changeTab">科普手记</view><view class="tab {{tab === 'routes' ? 'selected' : ''}}" data-tab="routes" bindtap="changeTab">预设路线</view></view>
+  <page-state loading="{{loading}}" error="{{error}}" empty="{{!loading && !error && (tab === 'contents' ? !contents.length : !routes.length)}}" empty-text="管理员尚未发布此类资料。" bindretry="load" />
+  <block wx:if="{{!loading && !error}}">
+    <block wx:if="{{tab === 'contents'}}"><view class="card" wx:for="{{contents}}" wx:key="id" data-kind="content" data-id="{{item.id}}" bindtap="open"><view class="row"><view class="grow"><source-label source="{{item.source_type || 'manual'}}" /><view class="title gap">{{item.title}}</view><view class="copy">{{item.summary || '阅读完整科普内容'}}</view></view><text class="chevron">›</text></view><view class="tags" wx:if="{{item.category}}"># {{item.category}}</view></view></block>
+    <block wx:else><view class="card" wx:for="{{routes}}" wx:key="id" data-kind="route" data-id="{{item.id}}" bindtap="open"><view class="row"><view class="grow"><text class="pill">管理员预设</text><view class="title gap">{{item.name || item.title}}</view><view class="copy">{{item.description || item.summary || '查看路线节点'}}</view></view><text class="chevron">›</text></view></view></block>
+  </block>
+  <view class="notice">内容来自管理员发布的教学资料。路线仅作游览参考，暂不提供导航或到访核验；AI 问答尚未启用。</view>
+</view>

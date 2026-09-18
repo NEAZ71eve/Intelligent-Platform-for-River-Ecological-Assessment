@@ -1,0 +1,20 @@
+<view class="page">
+  <text class="eyebrow">MY GREEN LIFE / 我的</text>
+  <view class="page-title">留住每一份绿意。</view>
+  <view class="subtitle">你的收藏、发现与校园足迹。</view>
+  <page-state loading="{{loading}}" error="{{error && !busy ? error : ''}}" bindretry="load" />
+  <view wx:if="{{!loading && !user}}" class="card section">
+    <view class="guest-mark">清</view><view class="guest-title">欢迎来到海晏河清</view><view class="copy center"><view>游客可以自由浏览。登录后，</view><view>保存收藏与记录，上传识别图片。</view></view>
+    <checkbox-group bindchange="consent" class="consent"><label><checkbox value="agree" checked="{{agreed}}" color="#326b49" />我已阅读并同意</label><text data-kind="terms" bindtap="legal">用户协议</text><text>和</text><text data-kind="privacy" bindtap="legal">隐私说明</text></checkbox-group>
+    <button class="primary gap" loading="{{busy}}" disabled="{{busy || !agreed}}" data-mode="wechat" bindtap="login">微信登录</button>
+    <button wx:if="{{devAvailable}}" class="secondary gap" loading="{{busy}}" disabled="{{busy || !agreed}}" data-mode="dev" bindtap="login">开发模拟登录</button>
+    <view class="small muted gap center" wx:if="{{devAvailable}}">开发账号仅供联调，不建立微信身份。</view>
+  </view>
+  <block wx:if="{{!loading && user}}">
+    <view class="card section"><view class="row"><button class="avatar-button" open-type="chooseAvatar" bindchooseavatar="chooseAvatar" disabled="{{busy}}"><image wx:if="{{avatar}}" class="avatar" src="{{avatar}}" mode="aspectFill" /><text wx:else>清</text></button><view class="grow"><view class="title">{{user.nickname || '绿色生活体验者'}}</view><view class="copy">点击头像主动设置</view><text wx:if="{{authMode === 'development'}}" class="pill">开发模拟账号</text></view></view><view class="field"><text class="field-label">昵称</text><input type="nickname" maxlength="40" value="{{nickname}}" bindinput="nicknameInput" placeholder="给自己一个名字" disabled="{{busy}}" /></view><button class="secondary gap" loading="{{busy}}" disabled="{{busy}}" bindtap="saveProfile">保存昵称</button></view>
+    <view class="record-grid section"><view data-kind="favorites" bindtap="records"><text class="record-symbol">♡</text><text>我的收藏</text></view><view data-kind="histories" bindtap="records"><text class="record-symbol">◷</text><text>浏览记录</text></view><view data-kind="recognition-jobs" bindtap="records"><text class="record-symbol">⌁</text><text>识别记录</text></view><view data-kind="visits" bindtap="records"><text class="record-symbol">⌖</text><text>游览记录</text></view></view>
+    <view class="card section"><view class="row"><view class="grow"><view class="title">保存浏览记录</view><view class="copy">关闭后不再添加新的浏览记录</view></view><switch checked="{{user.record_history}}" disabled="{{busy}}" color="#527b48" bindchange="privacyChange" /></view><view class="divider"></view><view class="row setting-link" data-kind="privacy" bindtap="legal"><text>隐私说明</text><text class="chevron">›</text></view><view class="row setting-link" data-kind="terms" bindtap="legal"><text>用户协议</text><text class="chevron">›</text></view></view>
+    <view class="actions"><button class="secondary" disabled="{{busy}}" bindtap="logout">退出登录</button><button class="danger" disabled="{{busy}}" bindtap="deleteAccount">注销账号</button></view>
+  </block>
+  <view class="footer-note">每一条记录，都由你掌握</view>
+</view>

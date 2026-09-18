@@ -1,0 +1,20 @@
+.brand { margin-bottom: 30rpx; }
+.page-title { margin-top: 0; }
+.region-bar { padding: 0 2rpx; }
+.weather-card { background: #315e42; border-radius: 30rpx; padding: 28rpx 30rpx; color: #fafbef; overflow: hidden; }
+.weather-kicker { color: #d5e6c6; font-size: 25rpx; }
+.weather-main { display: flex; align-items: center; justify-content: space-between; padding: 16rpx 0; }
+.temperature { font-size: 100rpx; line-height: 1.2; font-weight: 300; }
+.weather-detail { color: #d1e2c6; font-size: 25rpx; }
+.weather-foot { border-top: 1rpx solid rgba(255,255,255,.15); padding-top: 18rpx; color: #bcd2b0; font-size: 20rpx; }
+.sun-art { width: 230rpx; height: 178rpx; position: relative; overflow: hidden; border-radius: 0 0 12rpx 12rpx; }
+.sun { width: 78rpx; height: 78rpx; position: absolute; top: 5rpx; right: 55rpx; border-radius: 50%; background: #e4d392; }
+.hill { width: 240rpx; height: 160rpx; position: absolute; border-radius: 60% 60% 0 0; transform: rotate(-25deg); top: 95rpx; left: -25rpx; background: #86a16a; }
+.hill.front { background: #b1c089; transform: rotate(30deg); left: 90rpx; top: 102rpx; }
+.entry { display: flex; align-items: center; background: #fffefa; border-radius: 24rpx; padding: 24rpx 22rpx; margin-top: 14rpx; }
+.entry-icon { font-size: 46rpx; width: 76rpx; height: 80rpx; line-height: 80rpx; border-radius: 19rpx; text-align: center; margin-right: 22rpx; }
+.water { background: #e1ede9; color: #608d84; }
+.leaf { background: #ebefdf; color: #749349; }
+.book { background: #f3ecdc; color: #aa9560; }
+.entry .title { font-size: 29rpx; }
+.entry .copy { font-size: 22rpx; margin-top: 3rpx; }

@@ -1,0 +1,27 @@
+<view class="page">
+  <text class="eyebrow">PATROL / 河道巡查</text>
+  <view class="page-title">你好，这条河。</view>
+  <view class="subtitle">一张照片、一个定位，为河道做一次体检。</view>
+  <view class="scope-card section">
+    <view class="row"><text class="title">当前评估范围</text><text class="pill">演示模型</text></view>
+    <view class="copy">上传河道照片并获取定位，服务端识别生态问题、给出演示评分并关联最近河段。</view>
+    <view class="scope-labels"><text>水面漂浮物</text><text>水华黑臭</text><text>排污口直排</text><text>岸带问题</text></view>
+    <view class="small muted gap">规则版本与评分口径公开可查 · 评分仅用于演示，非官方水质评价</view>
+  </view>
+  <view class="upload-panel section" bindtap="choose"><image wx:if="{{imagePath}}" class="preview" src="{{imagePath}}" mode="aspectFit" /><block wx:else><view class="scan-frame"><view class="wave one"></view><view class="wave two"></view><view class="wave three"></view></view><view class="title">拍下或选择一张河道照片</view><view class="copy">沿岸视角 · JPEG / PNG / WebP · 最大 5MB</view></block><view class="replace" wx:if="{{imagePath}}">点击重新选择</view></view>
+  <view class="location-card section" bindtap="locate">
+    <view class="row"><text class="title">巡查定位</text><text class="pill">{{location ? '已获取' : '点击获取'}}</text></view>
+    <view class="copy" wx:if="{{location}}">纬度 {{location.latitude}} · 经度 {{location.longitude}}（GCJ-02）</view>
+    <view class="copy" wx:elif="{{!locationError}}">提交时将自动关联 2 公里内最近的监测河段；定位是提交的必要条件。</view>
+    <view class="copy" wx:if="{{locationError}}">{{locationError}}</view>
+  </view>
+  <view wx:if="{{!loggedIn}}" class="gap"><button class="primary" bindtap="login">登录后体验巡查上报</button><view class="small muted gap">公开资料无需登录即可浏览。</view></view>
+  <block wx:else>
+    <checkbox-group class="upload-consent" bindchange="consentChange"><label><checkbox value="agree" checked="{{consent}}" color="#427450" />我同意将此照片与定位上传至服务端处理</label></checkbox-group>
+    <view class="small muted">请上传有权使用的河道照片。照片按服务端保留期限清理。<text class="privacy-link" bindtap="privacy">查看隐私说明</text></view>
+    <button class="primary gap" disabled="{{busy || !imagePath || !location || !consent}}" loading="{{busy}}" bindtap="submit">提交巡查并评估</button>
+  </block>
+  <page-state loading="{{loading}}" error="{{error}}" bindretry="load" />
+  <view class="section" wx:if="{{jobs.length}}"><view class="section-head"><text class="section-title">最近的巡查</text><text class="small muted">仅自己可见 · 点击查看</text></view><view class="card" wx:for="{{jobs}}" wx:key="id" data-id="{{item.id}}" bindtap="openJob"><view class="row"><text>{{item.sub_label || item.status_label}}</text><text class="chevron">›</text></view><view class="copy" wx:if="{{item.error_label}}">{{item.error_label}}</view><view class="small muted gap">{{item.created_label}}</view></view></view>
+  <view class="footer-note">观察河流，是守护它的第一步</view>
+</view>
