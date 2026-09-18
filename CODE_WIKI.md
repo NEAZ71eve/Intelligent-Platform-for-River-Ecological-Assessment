@@ -1,8 +1,8 @@
 # HYHQ 海晏河清小程序 — Code Wiki
 
-> **定位（2026-09-18 变更）**：本目录原为腾讯 **TDesign 组件库官方 Demo**；当日已将 HYHQ 业务小程序（`HYHQ\miniprogram`）**迁移覆盖**至此，作为微信开发者工具可直接打开的业务工程。原 TDesign Demo 内容（组件库、演示页）作为**素材残留**保留，未注册进路由、不影响运行。
+> **定位（2026-09-18 更新）**：本目录原为腾讯 **TDesign 组件库官方 Demo**；当日已将 HYHQ 业务小程序（`HYHQ\miniprogram`）**迁移覆盖**至此，作为微信开发者工具可直接打开的业务工程。原 TDesign Demo 内容（组件库、演示页）作为**素材残留**保留，未注册进路由、不影响运行。
 >
-> 业务代码同源维护于 `C:\Users\21516\WeChatProjects\HYHQ` 仓库（已推送至 GitHub，见 §8）。
+> 业务代码同源维护于 `D:\WeChatProjects\HYHQ` 仓库（已推送 GitHub，见 §8）；小程序工程独立成库（分支 `miniprogram-2`）。
 >
 > 更新日期：2026-09-18 ｜ 统计基于当前工作区实际文件。
 
@@ -37,7 +37,7 @@
 ## 2. 目录结构总览
 
 ```
-miniprogram-2/                     # = HYHQ 业务小程序（迁移后）
+miniprogram-2/                     # = HYHQ 业务小程序（迁移后，D 盘）
 ├── app.js                         # 入口：onLaunch 创建 session + api client
 ├── app.json                       # 9 页注册、5 项 tabBar、定位权限、全局组件
 ├── app.wxss                       # 全局样式（业务）
@@ -46,6 +46,7 @@ miniprogram-2/                     # = HYHQ 业务小程序（迁移后）
 ├── sitemap.json                   # 索引规则
 ├── package.json                   # node --test 测试入口（无依赖）
 ├── README.md                      # HYHQ 业务说明
+├── CODE_WIKI.md                   # 本文档
 │
 ├── config/                        # 后端 API 配置
 │   ├── index.js                   #   服务地址 / 超时 / 端点前缀
@@ -76,7 +77,7 @@ miniprogram-2/                     # = HYHQ 业务小程序（迁移后）
 │   ├── pull-down-list/            #   （TDesign 残留）
 │   └── trd-privacy/               #   （TDesign 残留）
 ├── tests/                         # node --test 单元测试
-├── docs/superpowers/              # 用户设计文档（§6）
+├── docs/                          # 项目文档（§6 设计 + 数据集调研/规范）
 ├── hyhq-phase3/                   # Phase 3 暂存目录（已合并进业务代码，可清理）
 └── miniprogram_npm/               # TDesign 编译产物（残留，勿手改）
 ```
@@ -164,7 +165,7 @@ recognize（拍照+定位）
   → assessment（轮询结果：分数/等级/依据）
 ```
 
-> ⚠️ 评估结果依赖后端 ONNX 模型登记；模型未导出前提交任务将返回"评估模型未启用"（预期失败路径，见 §7.4）。
+> ⚠️ 评估结果依赖后端 ONNX 模型登记；ONNX 已导出（§7.2），登记后提交任务即可正常返回评估结果。
 
 ---
 
@@ -180,43 +181,59 @@ recognize（拍照+定位）
 
 ---
 
-## 6. docs/superpowers（用户设计文档）
+## 6. 项目文档（docs/）
+
+### 6.1 设计文档（docs/superpowers/）
 
 | 文件 | 内容 |
 | --- | --- |
 | `specs/2026-09-17-river-eco-assessment-design.md` | HYHQ 河道生态评估模块设计（v1.0，已批准）：YOLOv8n + ONNX CPU 推理、4 类检测、RULE v1 规则引擎、D0–D3 数据流水线、API 契约、验收标准 |
 | `plans/2026-09-17-river-eco-assessment.md` | 对应实现计划（4 阶段 17 任务），含代码骨架与测试用例 |
 
+### 6.2 数据集调研与规范（docs/）
+
+| 文件 | 内容 |
+| --- | --- |
+| `HYHQ_河道检测数据集调研报告.md` | outfall / bank 方向调研（iSOOD 发现、WATER-DET 申请、bank_encroach 需自采） |
+| `HYHQ_水华黑臭数据集调研报告.md` | 水华/黑臭方向（iSOOD、WATER-DET、黑臭无公开 bbox 结论） |
+| `HYHQ_水面漂浮物补充数据集调研报告.md` | 漂浮物补充（PoTATO/CANSURF/TACO 首选；algae_mass 无公开数据） |
+| `HYHQ_dataset_verification_report.md` | 已规划 4 数据集可下载性核实（YRDG 网盘、FloW 邮件、TUD-GV 无 bbox、WATER-DET 无公开） |
+| `HYHQ_数据集调研报告.html` | 总报告（ECharts 15 细类 × 16 数据集覆盖矩阵热力图） |
+| `数据集申请邮件模板.md` | WATER-DET / Space-hehu / FloW-Img 三封申请邮件模板 + 跟进清单 |
+| `硬缺口自采规范.md` | 5 类硬缺口（algae_mass/sewage_color/foam_pollution/bank_encroach/bank_garbage）采集+标注规范 |
+| `生态等级标签标注规范.md` | 方向 B 图像级四档生态等级（good/fair/poor/critical）双人标注规范 |
+| `数据集清单.md` | 全部数据集来源/大小/校验和/状态索引（数据本体在 D 盘，不入库） |
+
 ---
 
 ## 7. HYHQ 河道生态评估 YOLO 实现状态
 
-> 业务代码位于 `C:\Users\21516\WeChatProjects\HYHQ`（已推送 GitHub，见 §8）。本节为对 HYHQ 仓库的实测核查结果，对应 §6 设计文档的实现进度。
+> 业务代码位于 `D:\WeChatProjects\HYHQ`（已推送 GitHub，见 §8）。本节为对 HYHQ 仓库的实测核查结果，对应 §6.1 设计文档的实现进度。
 
 ### 7.1 进度总览（17 任务 × 4 阶段）
 
 | 阶段 | 任务 | 状态 | 说明 |
 | --- | --- | --- | --- |
 | Phase 0 | T0 克隆 / 路径核对 | ✅ 完成 | 已提交 |
-| | T1 D0 决策门（WATER-DET） | ✅ 完成 | **有条件 NO-GO**：数据不可公开下载，已邮件联系作者，等待至 2026-10-01 |
-| Phase 1 | T2 数据集下载与审计 | ⚠️ 部分 | 仅 IWHR 到位（3000 图 / 2.24GB / 已审计）；YRDG、FloW、TU Delft 未下载；WATER-DET 待定 |
+| | T1 D0 决策门（WATER-DET） | ✅ 完成 | **有条件 NO-GO**：数据不可公开下载；申请邮件模板已就绪，等待至 2026-10-01 |
+| Phase 1 | T2 数据集下载与审计 | 🔄 进行中 | IWHR✅、CANSURF✅（7171 图）、iSOOD✅（10481 图，md5 通过）、TACO 下载中（1500 图）、YRDG 下载中（百度网盘）；详见 §10 |
 | | T3 类别映射 | ✅ 完成 | class_mapping.yaml v1（4 大类 + 15 细类） |
 | | T4 统一数据集构建 | ✅ 完成 | 3000 图（全 IWHR）2100/450/450 划分，seed 42 |
 | | T5 YOLOv8n 训练 | ✅ 完成 | v1-4 完成 100 轮；**缺 yolo-v1-report.md** |
-| | T6 ONNX 导出 + manifest | ⚠️ 部分 | onnx_detector.py 已提交且测试通过；**ONNX 未导出、模型未登记** |
+| | T6 ONNX 导出 + manifest | ✅ 完成 | river-eco-yolov8n-v1.onnx 已导出（11.7MB）+ manifest，已入库 |
 | Phase 2 | T7 规则引擎 | ✅ 完成 | rules.py RULE v1（DB RuleSet 版本回退） |
 | | T8 河段关联 | ✅ 完成 | geo.py Haversine 最近站 2km |
 | | T9 assessment-jobs API | ✅ 完成 | views / serializers / urls 已实现 |
 | | T10 推理 worker | ✅ 完成 | assessment_worker.py 全链路 |
 | | T11 Admin | ✅ 完成 | RuleSet + AssessmentJob 后台 |
-| Phase 3 | T12 巡查上报页 | ✅ 已实现 | recognize 改造 + assessment-jobs 提交（**未提交 git、未联调**） |
-| | T13 评估结果页 | ✅ 已实现 | assessment/index（分数/等级/依据/重试） |
-| | T14 记录页 + 入口 | ✅ 已实现 | records 任务列表 + tab「河道巡查」 |
-| Phase 4 | T15–T16 联调与验收 | ❌ 未开始 | — |
+| Phase 3 | T12 巡查上报页 | ✅ 已实现并提交 | recognize 改造 + assessment-jobs 提交 |
+| | T13 评估结果页 | ✅ 已实现并提交 | assessment/index（分数/等级/依据/重试） |
+| | T14 记录页 + 入口 | ✅ 已实现并提交 | records 任务列表 + tab「河道巡查」 |
+| Phase 4 | T15–T16 联调与验收 | ❌ 未开始 | 待 ONNX 登记后启动 |
 
 ### 7.2 已实现模块（实测核对）
 
-**推理侧（inference/training/，已提交 9bf3023）**
+**推理侧（inference/training/，已提交）**
 
 | 文件 | 说明 |
 | --- | --- |
@@ -224,12 +241,15 @@ recognize（拍照+定位）
 | class_mapping.py | 类别映射加载 / 校验（4 大类 + 15 细类） |
 | build_dataset.py | 各源标注 → 统一 YOLO 格式 + 冻结划分（2100/450/450） |
 | train_yolo.py | yolov8n.pt、640×640、100 轮、seed 42、workers=0（Windows 兼容） |
-| export_onnx.py | ONNX 导出 + 检测 manifest 生成（**未运行**） |
+| export_onnx.py | ONNX 导出 + 检测 manifest 生成（已运行） |
 | onnx_detector.py | ONNX 后处理：conf 过滤 + 逐类 NMS（测试通过） |
+| download_p0_datasets.py | P0 数据集批下载器（iSOOD/TACO/CANSURF/PoTATO/YRDG，断点续传/md5/幂等） |
 
-**训练结果**（runs/river-eco-v1-4，最终轮，**已入库 9a8fe62**）：Precision 0.897 ｜ Recall 0.817 ｜ **mAP50 0.904** ｜ mAP50-95 0.658
+**训练结果（runs/river-eco-v1-4，已入库）**：P 0.897 ｜ R 0.817 ｜ **mAP50 0.904** ｜ mAP50-95 0.658
 
-> ⚠️ 注意：当前数据**仅 IWHR 单源、单细类（misc_debris）**，其余 14 个细类无训练样本；上述指标只代表「水面漂浮物」单一任务的检测效果，不代表河道生态多类评估能力。
+**真实 test 指标（runs/detect/val-5，450 图 / 3560 框，已入库）**：mAP50 = **0.884** ｜ mAP50-95 = **0.630** ｜ P = 0.878 ｜ R = 0.790
+
+> ⚠️ 数据诊断结论（training-direction-v1.md，已入库）：train/val/test **全部仅 misc_debris 单类**，其余 14 细类零样本、三集同源同场景。问题既非模型结构也非 epoch，而是**任务目标与监督信号不匹配**——模型学到的是"水面漂浮物检测"，与生态优劣无监督对应关系。继续调 YOLO 无法解决。
 
 **后端侧（backend/ecology/，已提交）**
 
@@ -244,64 +264,87 @@ recognize（拍照+定位）
 | tests.py | 32KB，10 个测试类（RuleV1 / Geo / API / Worker 等） |
 | requirements.txt | onnxruntime==1.23.1、onnx==1.19.0、numpy==2.2.6 |
 
-### 7.3 小程序侧（Phase 3，已迁移至本目录）
+### 7.3 小程序侧（Phase 3，已提交）
 
 - `pages/assessment/index.*`：评估结果页（状态机：PENDING → PROCESSING → COMPLETED/FAILED，失败可重试）。
 - `pages/recognize/index.*`：改造为巡查上报（定位 + 拍照 + 提交任务）。
 - `pages/records/index.*`：巡查记录列表。
 - `lib/assessment.js`：任务提交 / 轮询客户端。
-- `tests/assessment.test.js` + `tests/pages.test.js`：16/16 通过（在 HYHQ 仓库内验证）。
+- `tests/assessment.test.js` + `tests/pages.test.js`：16/16 通过。
 
-### 7.4 缺口与阻塞
+### 7.4 方向决策与剩余缺口
 
-1. **D0 决策门悬置**：WATER-DET 有条件 NO-GO，2026-10-01 前未获数据将触发回退条款（转花卉识别）。
-2. **模型覆盖面不足**：15 细类仅 1 类有样本；水华黑臭 / 排污口 / 岸带三类无数据，规则引擎这些大类无真实检出可评。
-3. **ONNX 制品缺失**：未导出、未登记 → 后端运行时将报 `MODEL_NOT_CONFIGURED`；小程序提交任务显示"评估模型未启用"（预期行为）。
-4. **Phase 3 未提交**：HYHQ 工作区含小程序改动（app.json + assessment 页 + lib 等），尚未 git 提交；与后端联调（Phase 4）未开始。
+**方向判定（training-direction-v1.md）**：转向 A（短期）或 B（正式）。
+
+- **方向 A（短期）**：目标收敛为"漂浮物风险评分"——保留检测器 + 四档人工标签 + 按地点分组划分 + macro-F1 验收。
+- **方向 B（正式）**：补齐四类数据（漂浮物/水华黑臭/排污口/岸带）+ 每图生态等级标签 + 检测/等级多任务模型。附 5 条实验门禁（数据/标签/基线/指标/泛化）。
+
+**剩余硬缺口（无公开数据，须自采，见 docs/硬缺口自采规范.md）**：
+
+| 细类 | 归属大类 | 最小量 |
+| --- | --- | --- |
+| algae_mass（藻类团） | 水华黑臭 | ≥500 张 |
+| sewage_color（黑臭水色） | 水华黑臭 | ≥300 张 |
+| foam_pollution（泡沫） | 水华黑臭 | ≥300 张 |
+| bank_encroach（岸线侵占） | 岸带 | ≥500 张 |
+| bank_garbage（岸边视角） | 岸带 | ≥500 张 |
+
+**待办**：3 封申请邮件（WATER-DET/Space-hehu/FloW-Img，模板见 docs/）；iSOOD 后续拼接；自采 + 生态等级标注（双人一致，见 docs/生态等级标签标注规范.md）。
 
 ### 7.5 建议下一步（按依赖序）
 
-1. 补下载 YRDG / FloW / TU Delft → 重训 → 补 `yolo-v1-report.md`。
-2. 运行 `export_onnx.py` 导出 ONNX + manifest → 扩展模型登记校验的检测分支 → `register_model` 登记。
-3. 提交 HYHQ 工作区 Phase 3 改动，然后启动后端 + 小程序联调（Phase 4 T15/T16）。
-4. 等待 2026-10-01 WATER-DET 结果，决定是否回退花卉识别方案。
+1. 完成 TACO / YRDG 下载 → 校验入库 → 数据组装（build_dataset.py 扩展多源）。
+2. 启动硬缺口自采（试点 50 张/类）+ 发送 3 封申请邮件。
+3. 方向 B：生态等级标签试点（50 张/类双人标注）→ 多任务模型基线。
+4. 登记 ONNX 模型 → 后端 + 小程序联调（Phase 4 T15/T16）。
+5. 等待 2026-10-01 WATER-DET 结果，决定是否触发回退条款。
 
 ---
 
 ## 8. Git 仓库与版本管理（2026-09-18）
 
-### 8.1 HYHQ 远程仓库
+### 8.1 远程仓库
 
-| remote | URL | 状态 |
+**HYHQ（业务 + 推理）**：`git@github.com:NEAZ71eve/Intelligent-Platform-for-River-Ecological-Assessment.git`，分支 `main`。
+
+| remote | URL | 说明 |
 | --- | --- | --- |
-| `origin` | https://github.com/gruTGU/HYHQ.git | 保留（原仓库） |
-| `github` | git@github.com:NEAZ71eve/Intelligent-Platform-for-River-Ecological-Assessment.git | **已推送**，main=9a8fe62 |
+| `github` | git@github.com:NEAZ71eve/Intelligent-Platform-for-River-Ecological-Assessment.git | 主远程（SSH 可达） |
+| `origin` | https://github.com/gruTGU/HYHQ.git | 旧远程（HTTPS 被网络阻断，保留） |
+
+**miniprogram-2（小程序工程）**：同一远程仓库，分支 `miniprogram-2`。
 
 本地身份（仓库级）：`gruTGU <gruTGU@users.noreply.github.com>`；SSH key：ed25519/rsa。
 
-### 8.2 提交历史（main，最近 3 条）
+### 8.2 提交历史（2026-09-18 全部已推送）
+
+**HYHQ `main` 分支**：
 
 | 提交 | 内容 |
 | --- | --- |
+| `e6e1f4e` | feat(inference): 训练方向报告、test 评估（val-5）与 river-eco ONNX 产物 |
+| `b9ae1c3` | refactor: 移除花卉识别遗留模块，迭代河流生态评估（backend+miniprogram） |
 | `9a8fe62` | chore: 训练产物纳入版本管理（runs/ 权重与指标，inference 白名单） |
 | `9bf3023` | feat(inference): YOLOv8n 训练与 ONNX 导出脚本及 IWHR 审计记录 |
 | `2940993` | feat(ecology): Phase 2 backend evolution - rule engine + geo + assessment-jobs API + worker + admin |
 
+**miniprogram-2 分支**：
+
+| 提交 | 内容 |
+| --- | --- |
+| `5f75177` | feat: 河道生态评估小程序前端与数据集调研报告（15 细类缺口全景） |
+| `0254dbd` / `a1d362a` | docs: 河道生态评估实现计划 / 模块设计 |
+
 ### 8.3 训练产物白名单策略（双 .gitignore）
 
-- 根 `.gitignore` + `inference/.gitignore` 均新增：
-  - `!inference/runs/**/*.pt`（训练权重入库）
-  - `!inference/artifacts/*.onnx`（未来 ONNX 制品入库）
-- 仍全局忽略：`*.pt`/`*.onnx`/`*.pth`（预训练权重如 `weights/yolo26n.pt`、临时权重不入库）。
-- **已入库**（9a8fe62，33 文件 / 22.8MB）：`runs/` 权重（best.pt/last.pt）、results.csv、混淆矩阵、PR/P/F1 曲线、训练/验证批次图。
-- **明确不入库**：原始数据 `.runtime/`（约 2.2GB）、`data/raw/`、划分缓存 `data/splits/`（seed 42 可重放重建）。
+- 根 `.gitignore` + `inference/.gitignore`：`!inference/runs/**/*.pt`、`!inference/artifacts/*.onnx`。
+- 仍全局忽略：`*.pt`/`*.onnx`/`*.pth`（预训练权重不入库）。
+- 已入库（约 23MB）：runs 权重、results、混淆矩阵、PR/F1 曲线、val-5 评估图、ONNX 制品。
+- **明确不入库**：原始数据 `.runtime/`（约 27GB，在 D 盘）、`data/raw/`、划分缓存（seed 42 可重放）。
 
-### 8.4 未提交工作
+### 8.4 工作区状态
 
-| 位置 | 内容 |
-| --- | --- |
-| HYHQ 工作区 | Phase 3 小程序改动（app.json、recognize/records/assessment 页、lib/assessment.js、tests） |
-| miniprogram-2 | 迁移后全部业务文件未跟踪/已修改（本目录无远程仓库，24 项变更） |
+两个仓库工作区均已提交干净；数据集本体在 D 盘（§10），不入 GitHub。
 
 ---
 
@@ -309,7 +352,7 @@ recognize（拍照+定位）
 
 ### 9.1 运行
 
-1. 微信开发者工具导入本目录（`miniprogram-2`），AppID 使用 `touristappid`（游客模式）或自行配置。
+1. 微信开发者工具导入 `D:\WeChatProjects\miniprogram-2`，AppID 使用 `touristappid`（游客模式）或自行配置。
 2. 基础库 ≥ 3.7.12；`urlCheck` 已关闭，本地调试不校验域名。
 3. 编译（Ctrl+B）后首页为业务首页；底部 tab 第三项为**河道巡查**。
 4. 后端联调：按 `config/local.example.js` 配置本地后端地址，复制为 `config/local.js`。
@@ -317,11 +360,9 @@ recognize（拍照+定位）
 ### 9.2 测试
 
 ```bash
-cd C:\Users\21516\WeChatProjects\miniprogram-2
+cd D:\WeChatProjects\miniprogram-2
 node --test tests/*.test.js
 ```
-
-（`tests/` 依赖 `lib/` 与页面文件，迁移后可直接在业务目录运行。）
 
 ### 9.3 代码约定
 
@@ -329,3 +370,46 @@ node --test tests/*.test.js
 - API 调用一律走 `app().api.request(path, options)`，不直接 `wx.request`。
 - 错误展示走 `lib/format.js message()` 归一化；列表走 `list()`；数值/时间走 `value()/time()`。
 - 组件保持 `page-state` / `source-label` / `recognition-result` 全局注册，勿重复引入。
+
+---
+
+## 10. 数据集落地与调研现状（2026-09-18）
+
+### 10.1 数据落盘位置（全部在 D 盘，C 盘原路径为 junction 或已清空）
+
+```
+D:\HYHQ_data\
+├── .runtime\                    # 数据集（约 27GB）
+│   ├── IWHR_AI_Lable_Floater_V1 #   统一数据集源（约 2.2GB）
+│   ├── CANSURF\                 #   水面金属罐（7171 图 + 7171 label，已验证）
+│   ├── iSOOD\                   #   排污口检测（10481 图 + 10481 label，md5 通过）
+│   ├── TACO_git\                #   TACO 标注 + Flickr 图片下载（1500 图，进行中）
+│   └── downloads\               #   压缩包 + 下载脚本（iSOOD zip 8.8GB、YRDG 下载中…）
+├── docs\                        # 数据工作文档（邮件模板/自采规范/标注规范/数据集清单）
+└── (小程序项目) D:\WeChatProjects\miniprogram-2
+    (后端+推理) D:\WeChatProjects\HYHQ
+```
+
+### 10.2 数据集状态表
+
+| 数据集 | 类别覆盖 | 状态 | 说明 |
+| --- | --- | --- | --- |
+| IWHR（统一集源） | misc_debris 主力 | ✅ 已落地 | 3000 图 / 2.2GB，训练/验证/测试划分 seed 42 |
+| CANSURF | metal | ✅ 已落地 | 7171 图，Zenodo/GitHub 直下，校验通过 |
+| iSOOD | outfall（排污口） | ✅ 已落地 | 10481 图 / 9.5GB，Zenodo CC BY 4.0，md5 通过 |
+| TACO | bottle/plastic/paper/glass/metal/foam | 🔄 下载中 | 1500 图 Flickr 拉取（~50%），标注已到位 |
+| YRDG | 漂浮物 6 类 | 🔄 下载中 | 百度网盘（提取码 yghb），3.6GB 已下载 |
+| PoTATO | bottle（水面专项） | ⏸ 待下 | SharePoint 被 DNS 阻断，需代理 |
+| MarineDebris | foam 等 | ⏸ 待下 | Kaggle（可选） |
+| River Flow Trash | water_plant | ⏸ 待下 | Ultralytics（需 key） |
+| WATER-DET | 三大类全 | ⏸ 申请中 | 唯一覆盖 4 大类的数据集，通讯作者 zgg@xaut.edu.cn |
+| Space-hehu | bank_encroach | ⏸ 申请中 | 天津西青 28120 图，通讯作者 liuling@tjau.edu.cn |
+| FloW-Img | bottle | ⏸ 申请中 | datasets@orca-tech.com.cn |
+| TU Delft-GV | 分类无 bbox | ❌ 已剔除 | 对 YOLO 训练无用 |
+
+### 10.3 关键结论
+
+- **已到位即可训练**：IWHR + CANSURF + iSOOD + TACO（下完）→ 覆盖漂浮物材质类 + outfall。
+- **硬缺口（须自采）**：algae_mass / sewage_color / foam_pollution / bank_encroach / bank_garbage（量见 §7.4）。
+- **环境事实**：真实评估环境 = anaconda base（Python 3.12.7，numpy 1.26.4）；系统 python 3.13 为误导；zenodo 需本地代理 127.0.0.1:7897。
+- **git 事实**：HTTPS 直连 github.com 被阻断，SSH（22 端口）可用——推送一律走 SSH remote。
