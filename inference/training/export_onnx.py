@@ -93,8 +93,7 @@ def main():
         "threshold": 0.5,
         "scope": "内河水面漂浮物检测原型（公开数据集训练）；仅 IWHR floater 单类有真实样本，"
                  "其余细类为预留头，不代表真实河道巡查识别准确率；非官方水质评价。",
-        "license": "IWHR_AI_Lable_Floater_V1 CC BY 4.0 (10.6084/m9.figshare.27376851.v1); "
-                   "YOLOv8n pretrained: AGPL-3.0 (Ultralytics)",
+        "license": "IWHR CC BY 4.0; Ultralytics YOLOv8n AGPL-3.0",
         "source_url": "https://doi.org/10.1038/s41597-025-04594-9",
         "evaluation": evaluation,
     }

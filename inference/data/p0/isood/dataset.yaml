@@ -1,0 +1,7 @@
+# iSOOD (Sewage Outfalls), placeholder — 请在下载后按实际目录修正
+path: C:\Users\21516\WeChatProjects\HYHQ\inference\data\p0\isood
+train: images/train
+val: images/val
+test: images/test
+nc: 1
+names: ['sewage_outfall']
