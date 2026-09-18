@@ -1,0 +1,26 @@
+.grade-banner { border-radius: 30rpx; padding: 44rpx 34rpx; color: #ffffff; text-align: center; }
+.grade-banner .grade-score { font-size: 110rpx; font-weight: 700; line-height: 1.1; }
+.grade-banner .grade-unit { font-size: 30rpx; font-weight: 400; margin-left: 8rpx; }
+.grade-banner .grade-line { font-size: 32rpx; margin-top: 6rpx; font-weight: 600; }
+.grade-banner .grade-desc { font-size: 23rpx; opacity: .92; margin-top: 12rpx; }
+.grade-excellent { background: linear-gradient(135deg, #4c8c5a, #2f6b3f); }
+.grade-good { background: linear-gradient(135deg, #4a7fb5, #33608f); }
+.grade-fair { background: linear-gradient(135deg, #cf8a2f, #b06f1d); }
+.grade-poor { background: linear-gradient(135deg, #c0504d, #9c3835); }
+.grade-unknown { background: linear-gradient(135deg, #8a8a8a, #666666); }
+.image-wrap { position: relative; }
+.result-image { width: 100%; border-radius: 24rpx; }
+.box-canvas { position: absolute; left: 0; top: 0; width: 100%; height: 100%; border-radius: 24rpx; pointer-events: none; }
+.legend { display: flex; flex-wrap: wrap; margin-top: 14rpx; }
+.legend-item { display: flex; align-items: center; font-size: 21rpx; color: #607751; margin: 6rpx 18rpx 0 0; }
+.legend-dot { width: 16rpx; height: 16rpx; border-radius: 5rpx; margin-right: 8rpx; flex-shrink: 0; }
+.issue-row { display: flex; align-items: center; flex-wrap: wrap; padding: 16rpx 0; border-bottom: 1rpx solid #e8ead9; font-size: 24rpx; }
+.issue-row:last-child { border-bottom: none; }
+.issue-name { flex: 1; color: #3f4c38; font-weight: 600; }
+.issue-count { color: #5b6b52; margin-right: 16rpx; }
+.issue-area { color: #8b9583; font-size: 21rpx; }
+.cause-item { display: flex; align-items: flex-start; gap: 14rpx; padding: 14rpx 0; font-size: 24rpx; color: #4a5744; line-height: 1.6; }
+.cause-index { flex-shrink: 0; width: 34rpx; height: 34rpx; border-radius: 50%; background: #e3ead6; color: #5d7a4e; font-size: 21rpx; display: flex; align-items: center; justify-content: center; }
+.sim-pill { background: #f4ead2 !important; color: #9c7b31 !important; }
+.meta-card .small { line-height: 1.8; }
+.disclaimer-card { background: #f6f2e4; border-radius: 20rpx; padding: 22rpx 26rpx; font-size: 21rpx; color: #8b8266; line-height: 1.7; margin-top: 24rpx; }

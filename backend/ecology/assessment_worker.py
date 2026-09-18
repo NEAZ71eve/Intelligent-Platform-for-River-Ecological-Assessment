@@ -4,7 +4,11 @@
 但检测+评估管道独立于花卉识别；同进程内运行 ONNX 推理（dev/test 可用，
 Linux 生产环境建议改用 recognition/isolation.run_child 子进程隔离）。
 """
+import fcntl
+import os
 import time
+from contextlib import contextmanager
+from pathlib import Path
 from datetime import timedelta
 
 from django.conf import settings
@@ -29,17 +33,22 @@ ERROR_MESSAGES = {
 
 
 def _try_lock():
-    """跨进程文件锁；Linux 用 recognition.isolation.execution_lock，Windows 退化为无操作。
-
-    返回值：非 None 上下文管理器结果（锁成功）；None 表示锁被占用。
-    """
-    try:
-        from recognition.isolation import execution_lock
-        return execution_lock(settings.RECOGNITION_LOCK_PATH)
-    except Exception:
-        # Windows 或测试环境：跳过文件锁，假定单进程
-        from contextlib import nullcontext
-        return nullcontext(object())
+    """获取单机评估执行锁；锁被占用时返回 None。"""
+    @contextmanager
+    def lock():
+        path = Path(settings.RECOGNITION_LOCK_PATH)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        fd = os.open(path, os.O_RDWR | os.O_CREAT, 0o600)
+        try:
+            try:
+                fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            except BlockingIOError:
+                yield None
+            else:
+                yield fd
+        finally:
+            os.close(fd)
+    return lock()
 
 
 def _recover_stale():

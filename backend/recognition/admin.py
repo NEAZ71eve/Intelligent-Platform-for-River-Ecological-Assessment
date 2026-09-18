@@ -2,7 +2,7 @@ from django.contrib import admin, messages
 from django.core.exceptions import ValidationError
 
 from .artifacts import ModelError
-from .models import ModelVersion, RecognitionJob
+from .models import ModelVersion
 from .registry import activate_model
 
 
@@ -37,15 +37,3 @@ class ModelVersionAdmin(admin.ModelAdmin):
             activate_model(None, actor=request.user)
             self.message_user(request, '图像识别已停用。')
 
-
-@admin.register(RecognitionJob)
-class RecognitionJobAdmin(admin.ModelAdmin):
-    list_display = ('id', 'owner', 'status', 'error_code', 'model_version', 'created_at', 'duration_ms')
-    list_filter = ('status', 'error_code')
-    readonly_fields = tuple(field.name for field in RecognitionJob._meta.fields)
-
-    def has_add_permission(self, request):
-        return False
-
-    def has_change_permission(self, request, obj=None):
-        return False

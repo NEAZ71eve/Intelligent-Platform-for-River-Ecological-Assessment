@@ -53,31 +53,26 @@ def validate_config(config):
         if not isinstance(artifact, str) or Path(artifact).is_absolute() or '..' in Path(artifact).parts or Path(artifact).suffix != '.onnx':
             raise ValueError('artifact')
         labels = config['labels']
-        if not isinstance(labels, list) or len(labels) != 5:
-            raise ValueError('five labels required')
+        if not isinstance(labels, list) or not 1 <= len(labels) <= 100:
+            raise ValueError('labels required')
         ids = set()
         for label in labels:
-            if not isinstance(label, dict) or set(label) - {'id', 'name', 'knowledge_slug'}:
+            if not isinstance(label, dict) or set(label) - {'id', 'name', 'fine', 'eval_category'}:
                 raise ValueError('label')
-            if not re.fullmatch(r'[a-z0-9][a-z0-9_-]{0,63}', label['id']) or label['id'] in ids:
+            if isinstance(label['id'], bool) or not isinstance(label['id'], int) or label['id'] < 0 or label['id'] in ids:
                 raise ValueError('label id')
             if not isinstance(label['name'], str) or not 1 <= len(label['name']) <= 100:
                 raise ValueError('label name')
-            slug = label.get('knowledge_slug', '')
-            if not isinstance(slug, str) or (slug and not re.fullmatch(r'[-a-zA-Z0-9_]{1,100}', slug)):
-                raise ValueError('knowledge slug')
+            if not isinstance(label.get('fine'), str) or not re.fullmatch(r'[a-z0-9][a-z0-9_-]{0,63}', label['fine']):
+                raise ValueError('fine label')
+            if not isinstance(label.get('eval_category'), str) or not re.fullmatch(r'[a-z0-9][a-z0-9_-]{0,63}', label['eval_category']):
+                raise ValueError('eval category')
             ids.add(label['id'])
         prep = config['preprocessing']
-        if set(prep) != {'resize_shorter', 'crop_size', 'interpolation', 'mean', 'std'}:
+        if set(prep) != {'resize_size', 'letterbox', 'pad_value', 'interpolation', 'scale'}:
             raise ValueError('preprocessing')
-        if prep['resize_shorter'] != 256 or prep['crop_size'] != 224 or prep['interpolation'] != 'bilinear':
+        if prep['resize_size'] != 640 or prep['letterbox'] is not True or prep['pad_value'] != 114 or prep['interpolation'] != 'bilinear' or prep['scale'] != [0.0, 1.0]:
             raise ValueError('image contract')
-        for field in ['mean', 'std']:
-            values = prep[field]
-            if not isinstance(values, list) or len(values) != 3 or any(isinstance(v, bool) or not isinstance(v, (int, float)) or not math.isfinite(v) for v in values):
-                raise ValueError(field)
-        if any(not 0 <= v <= 1 for v in prep['mean']) or any(not 0 < v <= 1 for v in prep['std']):
-            raise ValueError('normalization')
         threshold = config['threshold']
         if isinstance(threshold, bool) or not isinstance(threshold, (int, float)) or not math.isfinite(threshold) or not 0 <= threshold <= 1:
             raise ValueError('threshold')

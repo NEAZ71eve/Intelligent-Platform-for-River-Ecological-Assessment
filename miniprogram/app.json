@@ -2,7 +2,7 @@
   "pages": [
     "pages/home/index", "pages/explore/index", "pages/recognize/index",
     "pages/learn/index", "pages/profile/index", "pages/detail/index",
-    "pages/records/index", "pages/legal/index"
+    "pages/records/index", "pages/assessment/index", "pages/legal/index"
   ],
   "window": {
     "navigationBarTitleText": "HYHQ 海晏河清",
@@ -20,7 +20,7 @@
     "list": [
       { "pagePath": "pages/home/index", "text": "首页" },
       { "pagePath": "pages/explore/index", "text": "生态导览" },
-      { "pagePath": "pages/recognize/index", "text": "AI 识别" },
+      { "pagePath": "pages/recognize/index", "text": "河道巡查" },
       { "pagePath": "pages/learn/index", "text": "科普智游" },
       { "pagePath": "pages/profile/index", "text": "我的" }
     ]
@@ -32,5 +32,11 @@
   },
   "style": "v2",
   "lazyCodeLoading": "requiredComponents",
-  "sitemapLocation": "sitemap.json"
+  "sitemapLocation": "sitemap.json",
+  "permission": {
+    "scope.userLocation": {
+      "desc": "定位用于巡查上报时自动关联最近的监测河段"
+    }
+  },
+  "requiredPrivateInfos": ["getLocation"]
 }

@@ -1,10 +1,12 @@
 import time
+
 from django.core.management.base import BaseCommand
-from recognition.worker import process_one
+
+from ecology.assessment_worker import process_one
 
 
 class Command(BaseCommand):
-    help = '逐个处理识别任务：独立 CPU 子进程、全局执行锁与硬超时。'
+    help = '逐个处理河道生态评估任务。'
 
     def add_arguments(self, parser):
         parser.add_argument('--once', action='store_true')

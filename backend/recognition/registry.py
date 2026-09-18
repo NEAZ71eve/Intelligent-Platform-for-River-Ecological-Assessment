@@ -23,14 +23,9 @@ def registry_lock():
 
 def register_model(manifest_path, activate=False):
     config = read_manifest(settings.RECOGNITION_MODEL_ROOT, manifest_path)
-    # Validate the graph in a short-lived process, not inside the web interpreter.
-    from .isolation import execution_lock, run_child
-    with execution_lock(settings.RECOGNITION_LOCK_PATH) as lock_fd:
-        if lock_fd is None:
-            raise ModelError('MODEL_WORKER_BUSY', '当前有任务运行，请稍后登记模型。')
-        validation = dict(config, id='registration')
-        run_child(validation, '', settings.RECOGNITION_MODEL_ROOT, settings.MEDIA_ROOT,
-                  settings.RECOGNITION_RUN_TIMEOUT_SECONDS, lock_fd, validate_only=True)
+    # Validate the detection graph before changing the registry.
+    from ecology.detection import create_session
+    create_session(verify_artifact(settings.RECOGNITION_MODEL_ROOT, config, return_bytes=True))
     with transaction.atomic():
         registry_lock()
         existing = ModelVersion.objects.filter(name=config['name'], version=config['version']).first()
