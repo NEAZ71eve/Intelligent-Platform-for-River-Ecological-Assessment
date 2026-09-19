@@ -157,12 +157,21 @@ async function main() {
     assert.equal(recognize.data.jobs[0].result_view.decision, final.result.decision);
     assert.equal(recognize.data.jobs[0].result_view.model_version, final.result.model.version);
     if (final.result.decision === 'uncertain') assert.equal(recognize.data.jobs[0].result_view.heading, '暂时无法确认');
+    if (final.result.threshold === 0) assert.match(recognize.data.jobs[0].result_view.threshold_note, /未启用低分拒识/);
+    if (final.result.threshold === 0 && final.result.decision === 'recognized') assert.match(recognize.data.jobs[0].result_view.heading, /^候选参考：/);
   } else {
     assert.equal(recognize.data.jobs[0].error_code, 'MODEL_NOT_CONFIGURED');
     assert.match(recognize.data.jobs[0].error_label, /未产生识别结论/);
   }
+  await recognize.selectJob(job.id);
+  assert.equal(recognize.data.task.id, job.id);
+  assert.ok(fs.existsSync(recognize.data.imagePath));
+  if (expectRecognition) assert.equal(recognize.data.task.result_view.model_version, final.result.model.version);
   await app.api.request('recognition-jobs/' + job.id + '/', { method: 'DELETE' });
   await assert.rejects(app.api.download(asset.thumbnail_url));
+  await recognize.load();
+  assert.equal(recognize.data.task, null);
+  assert.equal(recognize.data.imagePath, '');
   output.push(expectRecognition ? `上传、真实模型响应（${final.result.decision}）、结果视图及任务/图片删除通过；此项只验证协议，不验证分类准确率` : '上传、任务队列、明确 MODEL_NOT_CONFIGURED 及任务/图片删除通过');
 
   const previous = app.session.get();

@@ -17,6 +17,7 @@ import numpy as np
 import onnx
 from onnx import TensorProto, helper, numpy_helper
 from PIL import Image
+from django.contrib.auth.models import Permission
 from django.core.exceptions import ValidationError
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.core.management import call_command
@@ -28,6 +29,7 @@ from rest_framework.test import APIClient
 
 from accounts.models import User
 from accounts.services import issue_session
+from assets.models import Asset
 from assets.services import create_asset
 from knowledge.models import Content
 from .adapter import infer, low_image_quality, preprocess, validate_graph
@@ -35,7 +37,7 @@ from .artifacts import ModelError, config_digest, read_manifest, verify_artifact
 from .isolation import execution_lock, run_child
 from .models import ModelVersion, RecognitionJob
 from .registry import activate_model, public_status, register_model, snapshot_for
-from .worker import process_one, recover_stale_jobs
+from .worker import _claim, process_one, recover_stale_jobs
 
 
 def tiny_model():
@@ -334,6 +336,53 @@ class RegistryWorkerTests(FixtureMixin, TestCase):
         with patch('recognition.worker.run_child', side_effect=delete_during_inference):
             self.assertTrue(process_one())
         self.assertFalse(RecognitionJob.objects.exists())
+
+    def test_asset_deleted_after_claim_fails_job_without_stopping_worker(self):
+        job = self.job()
+
+        def claim_then_delete_asset():
+            claimed = _claim()
+            Asset.objects.filter(pk=claimed.asset_id).delete()
+            return claimed
+
+        with patch('recognition.worker._claim', side_effect=claim_then_delete_asset):
+            self.assertTrue(process_one())
+        job.refresh_from_db()
+        self.assertEqual(job.status, 'failed')
+        self.assertEqual(job.error_code, 'ASSET_EXPIRED')
+        self.assertIsNone(job.asset_id)
+        next_job = self.job()
+        self.assertTrue(process_one())
+        next_job.refresh_from_db()
+        self.assertEqual(next_job.status, 'succeeded')
+
+    def test_view_only_staff_cannot_activate_or_disable_models(self):
+        staff = User.objects.create_user(username='model-viewer', is_staff=True)
+        staff.user_permissions.add(Permission.objects.get(content_type__app_label='recognition', codename='view_modelversion'))
+        self.client.force_login(staff)
+        second = register_model(self.write_manifest('v2'))
+        for action, selected in [('activate_selected', second), ('disable_selected', self.model)]:
+            response = self.client.post('/admin/recognition/modelversion/', {
+                'action': action, '_selected_action': [str(selected.pk)], 'index': '0',
+            })
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(ModelVersion.objects.get(enabled=True).pk, self.model.pk)
+
+    def test_change_staff_can_activate_and_disable_models(self):
+        staff = User.objects.create_user(username='model-editor', is_staff=True)
+        staff.user_permissions.add(Permission.objects.get(content_type__app_label='recognition', codename='change_modelversion'))
+        self.client.force_login(staff)
+        second = register_model(self.write_manifest('v2'))
+        response = self.client.post('/admin/recognition/modelversion/', {
+            'action': 'activate_selected', '_selected_action': [str(second.pk)], 'index': '0',
+        })
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(ModelVersion.objects.get(enabled=True).pk, second.pk)
+        response = self.client.post('/admin/recognition/modelversion/', {
+            'action': 'disable_selected', '_selected_action': [str(second.pk)], 'index': '0',
+        })
+        self.assertEqual(response.status_code, 302)
+        self.assertFalse(ModelVersion.objects.filter(enabled=True).exists())
 
     def test_cli_registration_activation_and_disable(self):
         output = io.StringIO()

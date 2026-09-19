@@ -1,0 +1,29 @@
+{
+  "date": "2026-09-19",
+  "environment": "Apple M2, macOS arm64, Python 3.12.6; single CPU inference thread",
+  "sample": "daisy/10172636503_21bededa75_n.jpg",
+  "sample_split": "validation",
+  "note": "One cold standalone runtime invocation per model, no Django/PyTorch imports; diagnostic smoke, not latency percentile or accuracy evaluation. Start excludes interpreter startup. Local macOS only.",
+  "models": [
+    {
+      "model": "flowers-efficientnet-b0",
+      "version": "v1",
+      "checksum": "01d132fd6fc189adf636060adbe633de57343977d124590e944150f3084fac8f",
+      "decision": "recognized",
+      "label": "daisy",
+      "threshold": 0.0,
+      "elapsed_from_before_runtime_import_ms": 353.37937499934924,
+      "peak_rss_mb": 177.703125
+    },
+    {
+      "model": "flowers-mobilenet-v3-small",
+      "version": "v1",
+      "checksum": "3905908ee93c09cbc2a82fa563f8b258142f66f29a917381b7236e9d1dd93298",
+      "decision": "recognized",
+      "label": "sunflowers",
+      "threshold": 0.0,
+      "elapsed_from_before_runtime_import_ms": 138.39004100009333,
+      "peak_rss_mb": 103.21875
+    }
+  ]
+}

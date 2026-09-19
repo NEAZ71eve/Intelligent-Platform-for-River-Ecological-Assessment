@@ -78,7 +78,7 @@ scripts/manage.sh cleanup_private_data
 
 队列全局上限 20，通过数据库共享锁行控制入队。任务有 queued/running/succeeded/failed 状态，排队超过 300 秒会由消费者标记失败。单机文件锁覆盖领取到保存结果，多消费者仍只执行一个任务；推理在没有数据库凭据的独立子进程内运行。执行默认 10 秒超时，超时会终止并等待子进程回收。消费者意外退出后，新消费者取得执行锁时会将遗留的 running 任务终止为明确失败。
 
-登记/启用模型后，消费者校验 SHA-256、输入预处理和五类标签，使用 ONNX Runtime CPU 推理。`result.decision` 为 `recognized` 或 `uncertain`；包含候选列表、阈值、模型版本和范围说明。低图质图片返回 `uncertain`、`reason=LOW_IMAGE_QUALITY` 和空候选；低分返回 `LOW_CONFIDENCE`。这些都是已完成的判断流程，任务状态为 succeeded，并不意味着一定识别成功。
+登记/启用模型后，消费者校验 SHA-256、输入预处理和五类标签，使用 ONNX Runtime CPU 推理。`result.decision` 为 `recognized` 或 `uncertain`；包含候选列表、阈值、模型版本和范围说明。低图质图片返回 `uncertain`、`reason=LOW_IMAGE_QUALITY` 和空候选；分数低于所用阈值时返回 `LOW_CONFIDENCE`。当前 v1 的验证集规则选出阈值 0，未启用低分拒识，正常图片均返回候选参考；低分分支另有配置测试。任务状态 succeeded 代表流程完成，并不意味着结论一定正确。
 
 候选 `score` 是未经校准的模型分数，不是正确率。该模型只在五类公开花卉数据上训练，可能把未知对象高分误判为已知类别。`content_id` 仅链接对应 `plant_label` 的已发布科普文章，未发布内容不会返回链接。
 

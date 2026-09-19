@@ -9,8 +9,10 @@ Page({
     this._pollCount = 0;
     const current = app().session.get();
     const userId = current && current.user && current.user.id;
-    if (this._userId !== userId) this.clearPrivate();
+    const sessionToken = app().session.token();
+    if (this._userId !== userId || this._sessionToken !== sessionToken) this.clearPrivate();
     this._userId = userId;
+    this._sessionToken = sessionToken;
     return this.load();
   },
   onHide() { this._visible = false; this.stopPolling(); },
@@ -88,8 +90,9 @@ Page({
   consentChange(event) { this.setData({ consent: event.detail.value.includes('agree') }); },
   choose() {
     if (this._destroyed || this.data.busy || !requireLogin()) return;
+    const sentToken = app().session.token();
     wx.chooseMedia({ count: 1, mediaType: ['image'], sourceType: ['album', 'camera'], sizeType: ['compressed'], success: (result) => {
-      if (this._destroyed) return;
+      if (this._destroyed || app().session.token() !== sentToken) return;
       const file = result.tempFiles[0];
       if (!file) return;
       if (file.size > app().config.maxUploadBytes) { toast(new Error('图片不能超过 5MB，请压缩后重试')); return; }

@@ -1,0 +1,10 @@
+# Training/export only. The API and worker use backend/requirements.txt.
+# Verified local environment: CPython 3.12.6, macOS arm64.
+torch==2.8.0
+torchvision==0.23.0
+numpy==2.2.6
+scipy==1.16.2
+scikit-learn==1.7.2
+onnx==1.19.0
+onnxruntime==1.23.1
+Pillow==12.3.0

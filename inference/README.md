@@ -21,11 +21,11 @@
 scripts/manage.sh migrate
 scripts/manage.sh seed_recognition_knowledge
 # 先按训练说明生成制品，或从开发电脑复制经过校验的 ONNX + manifest。
-scripts/manage.sh register_model "$PWD/inference/artifacts/flowers-mobilenet-v3-small-v1.manifest.json" --activate
+scripts/manage.sh register_model "$PWD/inference/artifacts/flowers-efficientnet-b0-v1.manifest.json" --activate
 scripts/manage.sh run_recognition_worker
 ```
 
-选择模型应以报告中预先固定的验证集结论为准，上面的 MobileNet 文件名只展示命令用法。也可登记第二个模型以备比较和回退；登记不带 `--activate` 时不会切换当前版本。重复登记相同清单幂等；同名同版本不同配置会被拒绝，需显式新版本。
+本轮根据验证集 macro F1 选定 EfficientNet-B0；550 张独立测试图片的准确率为 92.18%、macro F1 为 0.9200。MobileNetV3-Small 为备选，测试准确率 90.00%。详见 [评估报告](reports/M3模型评估报告.md)。也可登记第二个模型以备回退；登记不带 `--activate` 时不会切换当前版本。重复登记相同清单幂等；同名同版本不同配置会被拒绝，需显式新版本。
 
 `HYHQ_MODEL_ROOT` 默认为仓库内 `inference/artifacts`。manifest 必须位于该目录内；`artifact` 为 manifest 同目录的 ONNX 文件名。登记命令会验证文件边界、SHA-256、标签/预处理契约及图结构，拒绝外部权重、非标准自定义运算、错误输入/输出。服务不从用户提交的 URL 下载或执行模型。
 
@@ -52,6 +52,8 @@ scripts/manage.sh activate_model --disable
 ## 结果解释
 
 `result` 包括 `decision`、前三个 `candidates`、`threshold`、`model`、`scope`、`disclaimer`。候选分数是 softmax 模型分数，未经概率校准。阈值基于验证集选择，高分未知图片仍可能误判。
+
+**本轮两个 v1 模型的阈值均为 0。** 预设规则是在验证集接受准确率达到 90% 时最大化覆盖率，结果无需拒绝任何样本。因此当前 v1 不会产生 `LOW_CONFIDENCE`，界面明确标注“候选参考、未启用低分拒识”；低图质仍会拦截。此结果保留在冻结报告中，不通过修改阈值和重复调试测试集美化结果。未来若需要更严格拒识，需另立版本并补充未知对象数据验证。
 
 - `recognized`：最高分达到阈值，仍需结合实物核对。
 - `uncertain / LOW_CONFIDENCE`：分数未达阈值，可查看候选并换角度重拍。

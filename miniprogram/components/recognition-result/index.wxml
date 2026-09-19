@@ -10,6 +10,7 @@
   </view>
   <view class="score-note" wx:if="{{result.candidates.length}}">以上为模型输出分数，未经校准，不是正确率。</view>
   <view class="model-meta"><view>模型：{{result.model_name}}</view><view>版本：{{result.model_version}} · 分类分数阈值：{{result.threshold_label}}</view></view>
+  <view class="disclaimer">{{result.threshold_note}}</view>
   <view class="disclaimer">{{result.disclaimer}}</view>
   <button class="retake" bindtap="retake">重新拍摄或选择照片</button>
 </view>

@@ -19,7 +19,7 @@ class ModelVersionAdmin(admin.ModelAdmin):
     def has_delete_permission(self, request, obj=None):
         return False
 
-    @admin.action(description='启用所选版本（可回退旧版本）')
+    @admin.action(description='启用所选版本（可回退旧版本）', permissions=['change'])
     def activate_selected(self, request, queryset):
         if queryset.count() != 1:
             self.message_user(request, '请只选择一个版本。', messages.ERROR)
@@ -31,7 +31,7 @@ class ModelVersionAdmin(admin.ModelAdmin):
         else:
             self.message_user(request, '模型已切换；历史识别保留原版本快照。')
 
-    @admin.action(description='停用所选的当前启用版本')
+    @admin.action(description='停用所选的当前启用版本', permissions=['change'])
     def disable_selected(self, request, queryset):
         if queryset.filter(enabled=True).exists():
             activate_model(None, actor=request.user)

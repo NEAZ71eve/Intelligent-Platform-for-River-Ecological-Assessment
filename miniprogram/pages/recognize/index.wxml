@@ -2,7 +2,7 @@
   <text class="eyebrow">DISCOVER / 校园植物</text>
   <view class="page-title">你好，这片绿。</view>
   <view class="subtitle">用一张照片，开始一次观察。</view>
-  <view class="scope-card section" wx:if="{{capabilityKnown && capability.enabled}}"><view class="row"><text class="title">当前可识别范围</text><text class="pill">教学模型</text></view><view class="copy">{{capability.scope}}</view><view class="scope-labels"><text wx:for="{{capability.labels}}" wx:key="id">{{item.name}}</text></view><view class="small muted gap" wx:if="{{capability.modelName}}">{{capability.modelName}} · {{capability.modelVersion}}</view></view>
+  <view class="scope-card section" wx:if="{{capabilityKnown && capability.enabled}}"><view class="row"><text class="title">当前可识别范围</text><text class="pill">教学模型</text></view><view class="copy">{{capability.scope}}</view><view class="scope-labels"><text wx:for="{{capability.labels}}" wx:key="id">{{item.name}}</text></view><view class="small muted gap" wx:if="{{capability.modelName}}">{{capability.modelName}} · {{capability.modelVersion}}</view><view class="copy">{{capability.thresholdNote}}</view></view>
   <view class="notice" wx:elif="{{capabilityKnown}}">识别模型当前未启用。仍可验证图片上传和任务处理；服务端会明确返回未配置模型，不产生识别结论。</view>
   <view class="error-inline" wx:if="{{capabilityError}}">{{capabilityError}}</view>
   <view class="upload-panel section" bindtap="choose"><image wx:if="{{imagePath}}" class="preview" src="{{imagePath}}" mode="aspectFit" /><block wx:else><view class="scan-frame"><view class="plant-stem"></view><view class="plant-leaf one"></view><view class="plant-leaf two"></view></view><view class="title">拍下或选择一张植物照片</view><view class="copy">单个主体 · JPEG / PNG / WebP · 最大 5MB</view></block><view class="replace" wx:if="{{imagePath}}">点击重新选择</view></view>

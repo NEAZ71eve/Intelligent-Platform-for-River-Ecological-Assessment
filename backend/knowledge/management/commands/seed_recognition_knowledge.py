@@ -22,7 +22,8 @@ NOTES = [
 BOUNDARY = (
     "\n\n识别范围：首版模型只比较 flower_photos 数据集中的五类花卉，"
     "这些标签不是严格的物种级鉴定。模型分数不等于结果正确的概率；"
-    "未知植物也可能得到高分，低分会显示无法确认。"
+    "未知植物也可能得到高分，分数未达到所用模型的阈值时会显示无法确认。"
+    "当前 v1 模型阈值为 0，未启用按低分拒识；结果仅供候选参考。"
     "本功能不判断食用、药用或接触安全。请勿采摘或食用未知植物。"
     "\n\n观察建议：不采摘、不踩踏、不干扰生境；优先在自然光下拍摄清晰的单一主体。"
     "如结果与实物明显不符，请保留观察记录并重新拍摄其他角度。"
@@ -36,6 +37,12 @@ class Command(BaseCommand):
     @transaction.atomic
     def handle(self, *args, **options):
         created = 0
+        corrected = 0
+        legacy_boundary = BOUNDARY.replace(
+            "未知植物也可能得到高分，分数未达到所用模型的阈值时会显示无法确认。"
+            "当前 v1 模型阈值为 0，未启用按低分拒识；结果仅供候选参考。",
+            "未知植物也可能得到高分，低分会显示无法确认。",
+        )
         for label, title, summary, body in NOTES:
             article, is_new = Content.objects.get_or_create(
                 slug=f"flower-{label}",
@@ -49,5 +56,11 @@ class Command(BaseCommand):
             )
             if article.plant_label != label:
                 raise CommandError(f"{article.slug} 已存在且标签不同，停止写入；请管理员核对。")
+            # Correct only the exact original seeded copy, preserving administrator edits.
+            if not is_new:
+                corrected += Content.objects.filter(
+                    pk=article.pk, title=title, body=body + legacy_boundary,
+                    source="HYHQ 原创观察稿；类别来源：https://www.tensorflow.org/tutorials/load_data/images",
+                ).update(body=body + BOUNDARY, updated_at=timezone.now())
             created += is_new
-        self.stdout.write(self.style.SUCCESS(f"新增 {created} 篇；五类花卉观察稿已就绪，已有稿件保持不变。"))
+        self.stdout.write(self.style.SUCCESS(f"新增 {created} 篇，订正原始示范稿 {corrected} 篇；管理员修改保持不变。"))

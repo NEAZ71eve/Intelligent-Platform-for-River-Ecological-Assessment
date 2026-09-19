@@ -60,3 +60,14 @@ test('low-quality result explains that classification was not performed and show
   assert.equal(view.candidates.length, 0);
   assert.equal(view.model_version, '1.0');
 });
+
+test('zero threshold is disclosed as candidate reference without promising low-score rejection', () => {
+  const current = capability({ recognition: { enabled: true, threshold: 0 } });
+  assert.match(current.thresholdNote, /未启用低分拒识/);
+  const view = resultView({ decision: 'recognized', threshold: 0, candidates: [{ label: 'a', name: '类别甲', score: .21 }], model: { version: 'v1' } });
+  assert.equal(view.heading, '候选参考：类别甲');
+  assert.match(view.threshold_note, /未启用低分拒识/);
+  const historical = resultView({ decision: 'uncertain', threshold: .8, candidates: [{ label: 'a', score: .5 }], model: { version: 'older' } });
+  assert.match(historical.threshold_note, /低于分类分数阈值/);
+  assert.doesNotMatch(historical.threshold_note, /未启用/);
+});

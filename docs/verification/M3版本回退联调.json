@@ -1,0 +1,31 @@
+{
+  "date": "2026-09-19",
+  "status": "passed",
+  "transport": "real HTTP; development identity; actual ONNX CPU worker",
+  "sample": "daisy/10172636503_21bededa75_n.jpg",
+  "checks": [
+    "two real models executed",
+    "published knowledge link matches predicted label",
+    "switch to backup",
+    "disable health feature",
+    "reactivate selected model",
+    "first historical result unchanged across switches"
+  ],
+  "tasks": [
+    {
+      "model": "flowers-efficientnet-b0",
+      "version": "v1",
+      "status": "succeeded",
+      "worker_duration_ms": 415,
+      "create_poll_and_content_read_ms": 915.72
+    },
+    {
+      "model": "flowers-mobilenet-v3-small",
+      "version": "v1",
+      "status": "succeeded",
+      "worker_duration_ms": 244,
+      "create_poll_and_content_read_ms": 680.2
+    }
+  ],
+  "boundary": "Single local diagnostic run, not accuracy/performance percentile/WeChat or server acceptance; temporary account and images deleted."
+}

@@ -217,3 +217,77 @@ test('401 during submission clears private data and releases the busy state', as
   assert.equal(instance.data.busy, false);
   assert.match(instance.data.error, /Session expired/);
 });
+
+test('renewing the same account session during upload releases stale busy state without creating a job', async () => {
+  const upload = deferred();
+  let created = 0;
+  const app = loggedApp({
+    upload: () => upload.promise,
+    request: async (url, options) => {
+      if (options && options.method === 'POST') created += 1;
+      return { data: url === 'health/' ? { features: { recognition: true } } : [] };
+    },
+  });
+  const instance = page('recognize', app);
+  await instance.onShow();
+  Object.assign(instance.data, { imagePath: '/tmp/chosen.jpg', imageOrigin: 'selected', consent: true });
+  const submitting = instance.submit();
+  assert.equal(instance.data.busy, true);
+  instance.onHide();
+  app.session.save({ token: 'renewed-token', user: { id: 'active-user' } });
+  await instance.onShow();
+  assert.equal(instance.data.busy, false);
+  assert.equal(instance.data.imagePath, '');
+  upload.resolve({ id: 'old-session-upload' });
+  await submitting;
+  assert.equal(created, 0);
+  assert.equal(instance.data.task, null);
+});
+
+test('record responses from a previous session never populate the new account view', async () => {
+  const pending = deferred();
+  const app = loggedApp({ request: () => pending.promise });
+  const instance = page('records', app);
+  Object.assign(instance.data, { kind: 'recognition-jobs', records: [{ id: 'cached-private' }], next: 'recognition-jobs/?page=2' });
+  const loading = instance.load();
+  app.session.save({ token: 'new-token', user: { id: 'new-user' } });
+  pending.resolve({ data: [{ id: 'old-private', status: 'succeeded' }], meta: { next: '/api/v1/recognition-jobs/?page=2' } });
+  await loading;
+  assert.deepEqual(instance.data.records, []);
+  assert.equal(instance.data.next, null);
+  assert.equal(instance.data.loading, false);
+  assert.match(instance.data.error, /登录状态已变化/);
+});
+
+test('an in-flight records request does not write to an unloaded page', async () => {
+  const pending = deferred();
+  const instance = page('records', loggedApp({ request: () => pending.promise }));
+  instance.data.kind = 'recognition-jobs';
+  const loading = instance.load();
+  instance.onUnload();
+  instance.setData = () => { throw new Error('setData after unload'); };
+  pending.resolve({ data: [] });
+  await loading;
+});
+
+test('record pagination clears all private items and next URL when a 401 expires the session', async () => {
+  const app = loggedApp({});
+  app.api.request = async () => { app.session.clear(); throw Object.assign(new Error('Session expired'), { status: 401 }); };
+  const instance = page('records', app);
+  Object.assign(instance.data, { kind: 'recognition-jobs', records: [{ id: 'private' }], next: 'recognition-jobs/?page=2' });
+  await instance.load(true);
+  assert.deepEqual(instance.data.records, []);
+  assert.equal(instance.data.next, null);
+  assert.equal(instance.data.loadingMore, false);
+});
+
+test('record deletion confirmation cannot send a request after the page is unloaded', async () => {
+  let options;
+  const instance = page('records', loggedApp({ request: async () => { throw new Error('request after unload'); } }));
+  instance.data.kind = 'recognition-jobs';
+  global.wx.showModal = (value) => { options = value; };
+  instance.remove({ currentTarget: { dataset: { id: 'private-job' } } });
+  instance.onUnload();
+  instance.setData = () => { throw new Error('setData after unload'); };
+  await options.success({ confirm: true });
+});

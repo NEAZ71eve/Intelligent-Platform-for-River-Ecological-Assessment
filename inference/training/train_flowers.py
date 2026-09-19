@@ -50,7 +50,17 @@ def digest(path):
 
 
 def write(path, value):
-    Path(path).write_text(json.dumps(value, ensure_ascii=False, indent=2, allow_nan=False) + '\n')
+    Path(path).write_text(json.dumps(value, ensure_ascii=False, indent=2, allow_nan=False) + '\n', encoding='utf-8')
+
+
+def ensure_fit_writable(names):
+    # Fail before changing either validation evidence or the fitted head. A clone
+    # contains committed reports but deliberately has no model/feature binaries.
+    protected = [REPORTS / 'selection_v1.json']
+    protected += list(REPORTS.glob('*-test.json'))
+    protected += [REPORTS / (name + '-validation.json') for name in names]
+    if any(path.exists() for path in protected):
+        raise ValueError('Frozen experiment output already exists. Use --reproduction-dir with an empty directory; do not overwrite v1 evidence.')
 
 
 def backbone(name):
@@ -102,6 +112,7 @@ def peak_mb():
 
 
 def fit(name):
+    ensure_fit_writable([name])
     started = time.monotonic()
     feature_path = CACHE / (name + '-features.npz')
     key = digest(DATA / 'flowers_split_v1.json') + ':' + digest(DATA / 'experiment_v1.json')
@@ -163,22 +174,32 @@ def freeze_selection():
                  'validation_report_sha256': {name: digest(REPORTS / (name + '-validation.json')) for name in MODELS},
                  'test_metrics_seen': False}
     path = REPORTS / 'selection_v1.json'
-    if path.exists() and json.loads(path.read_text()) != selection:
-        raise ValueError('Selection already frozen differently; create a new experiment')
+    if path.exists():
+        if json.loads(path.read_text()) != selection:
+            raise ValueError('Selection already frozen differently; create a new experiment')
+        print('Existing frozen selection verified: ' + selection['selected_model'], flush=True)
+        return
     write(path, selection)
     print('Frozen preferred model: ' + selection['selected_model'], flush=True)
 
 
 def evaluate(name):
     selection = json.loads((REPORTS / 'selection_v1.json').read_text())
-    if digest(REPORTS / (name + '-validation.json')) != selection['validation_report_sha256'][name]:
-        raise ValueError('Validation results changed after selection freeze')
+    for candidate in MODELS:
+        if digest(REPORTS / (candidate + '-validation.json')) != selection['validation_report_sha256'][candidate]:
+            raise ValueError('Validation results changed after selection freeze')
     destination = REPORTS / (name + '-test.json')
     if destination.exists():
         raise ValueError('Final test already recorded. Do not tune repeatedly against test data.')
     validation = json.loads((REPORTS / (name + '-validation.json')).read_text())
+    key = digest(DATA / 'flowers_split_v1.json') + ':' + digest(DATA / 'experiment_v1.json')
+    if key != validation['split_sha256'] + ':' + validation['experiment_sha256']:
+        raise ValueError('Dataset or experiment changed after validation')
     saved = np.load(CACHE / (name + '-head.npz'), allow_pickle=False)
-    features = np.load(CACHE / (name + '-features.npz'), allow_pickle=False)['features']
+    cached = np.load(CACHE / (name + '-features.npz'), allow_pickle=False)
+    if cached['cache_key'].item() != key:
+        raise ValueError('Feature cache belongs to a different experiment')
+    features = cached['features']
     threshold = float(saved['threshold'])
     if threshold != selection['thresholds'][name]:
         raise ValueError('Threshold changed after freeze')
@@ -239,7 +260,8 @@ def evaluate(name):
                 'scope': EXPERIMENT['scope'], 'license': 'Photos CC-BY-2.0; pretrained weights: see model report',
                 'source_url': 'https://www.tensorflow.org/tutorials/load_data/images',
                 'evaluation': {'validation': validation['validation'], 'test': score, 'split_sha256': validation['split_sha256'],
-                               'pretrained': validation['pretrained'], 'report': f'inference/reports/{name}-test.json'}}
+                               'pretrained': validation['pretrained'],
+                               'report': str(destination.relative_to(ROOT)) if destination.is_relative_to(ROOT) else str(destination)}}
     write(ARTIFACTS / (artifact_stem + '.manifest.json'), manifest)
     print(json.dumps({'test_complete': name, 'test': score, 'benchmark': report['benchmark']}, ensure_ascii=False), flush=True)
 
@@ -248,13 +270,23 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--stage', choices=['fit', 'freeze', 'evaluate', 'all'], default='all')
     parser.add_argument('--model', choices=MODELS)
+    parser.add_argument('--reproduction-dir', type=Path,
+                        help='Write fresh reports, caches and artifacts here, preserving the committed v1 experiment.')
     args = parser.parse_args()
+    child_arguments = []
+    if args.reproduction_dir:
+        reproduction = args.reproduction_dir.resolve()
+        REPORTS, CACHE, ARTIFACTS = [reproduction / name for name in ('reports', 'cache', 'artifacts')]
+        for directory in (REPORTS, CACHE, ARTIFACTS):
+            directory.mkdir(parents=True, exist_ok=True)
+        child_arguments = ['--reproduction-dir', str(reproduction)]
     if args.stage == 'all':
+        ensure_fit_writable(MODELS)
         for name in MODELS:
-            subprocess.run([sys.executable, __file__, '--stage', 'fit', '--model', name], check=True)
+            subprocess.run([sys.executable, __file__, '--stage', 'fit', '--model', name, *child_arguments], check=True)
         freeze_selection()
         for name in MODELS:
-            subprocess.run([sys.executable, __file__, '--stage', 'evaluate', '--model', name], check=True)
+            subprocess.run([sys.executable, __file__, '--stage', 'evaluate', '--model', name, *child_arguments], check=True)
     elif args.stage == 'freeze':
         freeze_selection()
     elif args.model:

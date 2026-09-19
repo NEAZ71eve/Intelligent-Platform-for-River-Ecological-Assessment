@@ -6,6 +6,7 @@ from django.conf import settings
 from django.db import connection, transaction
 from django.utils import timezone
 
+from assets.models import Asset
 from common.models import TaskLog
 from knowledge.models import Content
 from .artifacts import ModelError
@@ -88,7 +89,11 @@ def process_one():
                 raise ModelError('MODEL_NOT_CONFIGURED')
             if job.model_snapshot.get('invalid'):
                 raise ModelError('MODEL_CONFIG_INVALID')
-            asset = job.asset
+            try:
+                asset = job.asset
+            except Asset.DoesNotExist as exc:
+                # Retention cleanup or user deletion can remove the row after claim.
+                raise ModelError('ASSET_EXPIRED') from exc
             now = timezone.now()
             if asset is None or not asset.original or asset.original_expires_at <= now or (asset.expires_at and asset.expires_at <= now) or job.expires_at <= now:
                 raise ModelError('ASSET_EXPIRED')
