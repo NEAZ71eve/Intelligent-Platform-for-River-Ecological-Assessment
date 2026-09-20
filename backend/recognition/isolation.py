@@ -67,6 +67,8 @@ def run_child(snapshot, image_path, model_root, media_root, timeout, lock_fd, *,
                 message = json.loads(raw)
             except (ValueError, UnicodeError) as exc:
                 raise ModelError('MODEL_OUTPUT_INVALID') from exc
+            if not isinstance(message, dict):
+                raise ModelError('MODEL_OUTPUT_INVALID')
             if 'error_code' in message:
                 raise ModelError(message['error_code'])
             if not isinstance(message.get('result'), dict):

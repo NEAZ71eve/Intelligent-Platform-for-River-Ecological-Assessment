@@ -60,4 +60,5 @@ Page({
     finally { this._loading = false; finish(this); }
   },
   navigate(event) { wx.switchTab({ url: '/pages/' + event.currentTarget.dataset.page + '/index' }); },
+  assessment() { wx.navigateTo({ url: '/pages/assessment/index' }); },
 });

@@ -7,6 +7,7 @@ from rest_framework import generics
 from rest_framework.response import Response
 from accounts.models import User
 from assets.models import Asset
+from assessments.models import AssessmentJob
 from common.audit import audit
 from common.exceptions import ServiceError
 from .models import QueueControl, RecognitionJob
@@ -28,9 +29,13 @@ class JobList(generics.ListCreateAPIView):
             existing = RecognitionJob.objects.filter(owner=request.user, asset=asset).first()
             if existing:
                 return Response(JobSerializer(existing).data)
+            if AssessmentJob.objects.filter(asset=asset).exists():
+                raise ServiceError('这张上传图片已用于河道观察，请重新上传后用于花卉识别', 'ASSET_IN_USE', 409)
             QueueControl.objects.get_or_create(name='recognition')
             QueueControl.objects.select_for_update().get(name='recognition')
-            if RecognitionJob.objects.filter(status__in=['queued', 'running']).count() >= settings.RECOGNITION_QUEUE_LIMIT:
+            active_count = (RecognitionJob.objects.filter(status__in=['queued', 'running']).count()
+                            + AssessmentJob.objects.filter(status__in=['queued', 'running']).count())
+            if active_count >= settings.RECOGNITION_QUEUE_LIMIT:
                 raise ServiceError('等待处理的图片较多，请稍后重试', 'QUEUE_FULL', 429)
             job = RecognitionJob.objects.create(owner=request.user, asset=asset, expires_at=timezone.now() + timedelta(days=settings.RECORD_RETENTION_DAYS))
             audit('recognition.queued', request.user, job.pk)

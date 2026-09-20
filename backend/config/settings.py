@@ -44,7 +44,7 @@ else:
 INSTALLED_APPS = [
     'django.contrib.admin', 'django.contrib.auth', 'django.contrib.contenttypes',
     'django.contrib.sessions', 'django.contrib.messages', 'django.contrib.staticfiles',
-    'rest_framework', 'common', 'accounts', 'ecology', 'knowledge', 'assets', 'recognition', 'activity',
+    'rest_framework', 'common', 'accounts', 'ecology', 'knowledge', 'assets', 'recognition', 'activity', 'assessments',
 ]
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware', 'common.middleware.RequestLogMiddleware',
@@ -108,6 +108,10 @@ if not 1 <= RECOGNITION_RUN_TIMEOUT_SECONDS <= 60:
     raise ImproperlyConfigured('HYHQ_RECOGNITION_TIMEOUT_SECONDS must be between 1 and 60')
 RECOGNITION_MODEL_ROOT = Path(os.getenv('HYHQ_MODEL_ROOT', str(BASE_DIR.parent / 'inference' / 'artifacts'))).resolve()
 RECOGNITION_LOCK_PATH = BASE_DIR / 'var' / 'recognition.lock'
+ASSESSMENT_MODEL_ROOT = Path(os.getenv('HYHQ_ASSESSMENT_MODEL_ROOT', str(RECOGNITION_MODEL_ROOT))).resolve()
+ASSESSMENT_RUN_TIMEOUT_SECONDS = int(os.getenv('HYHQ_ASSESSMENT_TIMEOUT_SECONDS', '10'))
+if not 1 <= ASSESSMENT_RUN_TIMEOUT_SECONDS <= 60:
+    raise ImproperlyConfigured('HYHQ_ASSESSMENT_TIMEOUT_SECONDS must be between 1 and 60')
 LOGGING = {
     'version': 1, 'disable_existing_loggers': False,
     'filters': {'redact': {'()': 'common.logging.RedactFilter'}},

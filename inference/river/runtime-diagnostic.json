@@ -1,0 +1,50 @@
+{
+  "purpose": "Integration diagnostic only; not an independent accuracy evaluation.",
+  "source_commit": "c80982473418502fbff28f5864dbad8b97441ded",
+  "artifact_sha256": "96fc7178c28f1eb29bae9703f440d6bda9c041433edb3e335691f38a5ee6da6c",
+  "manifest_config_digest": "a3b40b945f29b1ed255bda801cfc8c60bcc8942889276bf0da309364f2bc387a",
+  "supported_class_ids": [
+    9
+  ],
+  "samples": [
+    {
+      "source_path": "inference/runs/river-eco-v1-4/train_batch0.jpg",
+      "sample_sha256": "d5a9283eb7cf214bf0448d89d17c02ad16995f0274373912d58ba3cc19e000be",
+      "decision": "detected",
+      "detection_count": 25,
+      "class_ids": [
+        9
+      ],
+      "max_confidence": 0.85193932056427,
+      "image_width": 1920,
+      "image_height": 1920
+    },
+    {
+      "source_path": "inference/runs/river-eco-v1-4/val_batch0_labels.jpg",
+      "sample_sha256": "cc4b1c59914c72cfcfabe04d6c005ac38d38ef6bd1f4ef9f4bf8e3dea0b87690",
+      "decision": "detected",
+      "detection_count": 22,
+      "class_ids": [
+        9
+      ],
+      "max_confidence": 0.8630234599113464,
+      "image_width": 1920,
+      "image_height": 1100
+    },
+    {
+      "source_path": "inference/runs/river-eco-v1-4/val_batch1_labels.jpg",
+      "sample_sha256": "acd373738f6013c511c89202a76d3c2683b7fe5e7bc07533607963710e5fc85f",
+      "decision": "detected",
+      "detection_count": 20,
+      "class_ids": [
+        9
+      ],
+      "max_confidence": 0.8342243432998657,
+      "image_width": 1920,
+      "image_height": 1100
+    }
+  ],
+  "registration_validation": {
+    "validated": true
+  }
+}

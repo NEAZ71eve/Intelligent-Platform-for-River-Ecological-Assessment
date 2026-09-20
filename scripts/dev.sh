@@ -14,4 +14,5 @@ fi
 "$HYHQ_ROOT/scripts/manage.sh" migrate --noinput
 "$HYHQ_ROOT/scripts/manage.sh" seed_demo
 "$HYHQ_ROOT/scripts/manage.sh" seed_recognition_knowledge
+"$HYHQ_ROOT/scripts/manage.sh" seed_assessment_rules --activate
 exec "$HYHQ_ROOT/scripts/manage.sh" runserver "${1:-127.0.0.1:8000}"

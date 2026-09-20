@@ -2,7 +2,7 @@
   "pages": [
     "pages/home/index", "pages/explore/index", "pages/recognize/index",
     "pages/learn/index", "pages/profile/index", "pages/detail/index",
-    "pages/records/index", "pages/legal/index"
+    "pages/records/index", "pages/legal/index", "pages/assessment/index"
   ],
   "window": {
     "navigationBarTitleText": "HYHQ 海晏河清",
@@ -30,6 +30,8 @@
     "source-label": "/components/source-label/index",
     "recognition-result": "/components/recognition-result/index"
   },
+  "permission": { "scope.userLocation": { "desc": "仅在主动点击后，用于查找附近水体并可选保存个人观察位置" } },
+  "requiredPrivateInfos": ["getLocation"],
   "style": "v2",
   "lazyCodeLoading": "requiredComponents",
   "sitemapLocation": "sitemap.json"

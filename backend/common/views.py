@@ -12,9 +12,12 @@ def health(request):
     with connection.cursor() as cursor:
         cursor.execute('SELECT 1')
     from recognition.registry import public_status
+    from assessments.registry import public_status as assessment_status
     recognition = public_status()
+    assessment = assessment_status()
     return Response({'status': 'ok', 'mode': settings.DATA_MODE, 'dev_auth_enabled': settings.ALLOW_DEV_AUTH,
-                     'features': {'recognition': recognition['enabled'], 'llm': False}, 'recognition': recognition, 'version': 'm3'})
+                     'features': {'recognition': recognition['enabled'], 'assessment': assessment['enabled'], 'llm': False},
+                     'recognition': recognition, 'assessment': assessment, 'version': 'm3'})
 
 
 def not_found(request, exception=None):

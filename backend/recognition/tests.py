@@ -191,6 +191,17 @@ class AdapterTests(FixtureMixin, SimpleTestCase):
             result = run_child(self.snapshot(), self.image, self.artifacts, self.media, 10, fd)
         self.assertEqual(result['decision'], 'recognized')
 
+    def test_non_object_child_json_is_rejected_as_invalid_output(self):
+        real_popen = subprocess.Popen
+        for raw in ('[]', '42', 'null', '"unexpected"'):
+            with self.subTest(raw=raw):
+                def malformed_child(command, **kwargs):
+                    return real_popen([sys.executable, '-c', 'import sys; sys.stdout.write(sys.argv[1])', raw], **kwargs)
+                with execution_lock(self.lock) as fd, patch('recognition.isolation.subprocess.Popen', side_effect=malformed_child):
+                    with self.assertRaises(ModelError) as caught:
+                        run_child(self.snapshot(), self.image, self.artifacts, self.media, 10, fd)
+                self.assertEqual(caught.exception.code, 'MODEL_OUTPUT_INVALID')
+
     def test_timeout_kills_real_child_and_releases_lock(self):
         real_popen = subprocess.Popen
         children = []
@@ -336,6 +347,31 @@ class RegistryWorkerTests(FixtureMixin, TestCase):
         with patch('recognition.worker.run_child', side_effect=delete_during_inference):
             self.assertTrue(process_one())
         self.assertFalse(RecognitionJob.objects.exists())
+
+    def test_asset_deleted_during_inference_discards_result(self):
+        job = self.job()
+
+        def delete_during_inference(*args, **kwargs):
+            Asset.objects.filter(pk=job.asset_id).delete()
+            return {'decision': 'recognized', 'candidates': [{'label': 'daisy', 'name': '雏菊', 'score': 0.9}]}
+
+        with patch('recognition.worker.run_child', side_effect=delete_during_inference):
+            self.assertTrue(process_one())
+        job.refresh_from_db()
+        self.assertIsNone(job.asset_id)
+        self.assertEqual((job.status, job.error_code, job.result), ('failed', 'ASSET_EXPIRED', {}))
+
+    def test_original_expiring_during_inference_discards_result(self):
+        job = self.job()
+
+        def expire_during_inference(*args, **kwargs):
+            Asset.objects.filter(pk=job.asset_id).update(original_expires_at=timezone.now() - timedelta(seconds=1))
+            return {'decision': 'recognized', 'candidates': [{'label': 'daisy', 'name': '雏菊', 'score': 0.9}]}
+
+        with patch('recognition.worker.run_child', side_effect=expire_during_inference):
+            self.assertTrue(process_one())
+        job.refresh_from_db()
+        self.assertEqual((job.status, job.error_code, job.result), ('failed', 'ASSET_EXPIRED', {}))
 
     def test_asset_deleted_after_claim_fails_job_without_stopping_worker(self):
         job = self.job()

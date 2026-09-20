@@ -10,6 +10,7 @@ Python 3.12，锁定依赖见 `requirements.txt`。数据库默认 PostgreSQL；
 scripts/manage.sh migrate
 scripts/manage.sh seed_demo
 scripts/manage.sh seed_recognition_knowledge
+scripts/manage.sh seed_assessment_rules --activate
 scripts/manage.sh createsuperuser
 scripts/manage.sh runserver 127.0.0.1:8000
 # 另一个终端运行任务消费者：
@@ -52,6 +53,9 @@ scripts/manage.sh run_recognition_worker
 | `uploads/{id}/` | DELETE | 仅所有者 |
 | `recognition-jobs/` | GET/POST | 仅本人；创建参数 `asset_id`，同一图片幂等 |
 | `recognition-jobs/{id}/` | GET/DELETE | 仅本人；删除任务同时删除其图片 |
+| `assessment-jobs/`、`assessment-jobs/{id}/` | GET/POST、GET/DELETE | 仅本人；河道图像观察任务和私有历史 |
+| `water-bodies/` | GET | 公开；已发布的河流/湖泊列表 |
+| `nearby-water-bodies/` | GET | 公开；同坐标系的 2km 内水体建议，无匹配返回 null |
 | `favorites/`、`histories/` | GET/POST | 仅本人；参数 `place_id` 或 `content_id` 二选一 |
 | `favorites/{id}/`、`histories/{id}/` | DELETE | 仅本人 |
 | `visits/`、`visits/{id}/` | GET/POST、DELETE | 自记游览；同一用户/地点/日期去重，无定位核验 |
@@ -85,6 +89,25 @@ scripts/manage.sh cleanup_private_data
 `health/` 的 `recognition` 返回是否启用、模型名称/版本、类别、范围和阈值，不暴露制品路径；`features.recognition` 与之同步。没有启用模型时返回 `MODEL_NOT_CONFIGURED`，缺失/损坏模型或执行错误返回具体错误码，不生成固定答案。
 
 同一时刻最多启用一个模型版本。登记、启停与回退见 [推理说明](../inference/README.md)。历史任务保存当时的模型配置快照，停用、切换或删除登记不改写既有结果；已用于任务的版本不能修改配置，需登记新版本。生产实例只支持同一主机和共享锁路径，不支持分布式消费。
+
+## 河道图像观察
+
+通过 `assessment-jobs/` 提交 `asset_id`，可选 `water_body_id`。定位字段为成对的 `latitude`、`longitude` 和 `coordinate_system`（`GCJ02` 或 `WGS84`）；不定位时全部省略。坐标只用于当前账号的记录和附近建议，不作为到访证明。示范水体没有真实坐标时可以手动选择，也可以不关联水体。
+
+`nearby-water-bodies/` 使用上述三个定位查询参数，只匹配同坐标系、公开水体关联的有效水站。接口不会替用户确认河段，客户端取得建议后由用户选择关联。后台不会把 WGS84 与 GCJ02 数字直接混算距离。
+
+河道与花卉使用独立的模型登记及消费者，但共用 20 个排队/运行任务的容量和同一主机推理锁。同一上传资产不能跨两类任务重复使用，需重新上传；删除任务会删除其私有图片。定位和评估记录保留 30 天，原图 24 小时，均纳入 `cleanup_private_data` 和账号注销。
+
+模型登记和启停见 [河道模型说明](../inference/river/README.md)。初始化教学规则、启动消费者：
+
+```bash
+scripts/manage.sh seed_assessment_rules --activate
+scripts/manage.sh run_assessment_worker
+```
+
+规则在入队时保存快照；模型在领取任务时保存快照。已使用的版本不能原地改写配置，应登记新版本。空检测、低图质返回 `decision=uncertain`、`score=null`，缺少模型则任务失败。模型当前只开放漂浮物实验检测；检测框并集占整张图片的比例用于透明教学规则，不能视为水面污染比例或官方水质指标。
+
+`health/` 的 `assessment` 和 `features.assessment` 公布河道模型状态，与花卉模型分别管理。`HYHQ_ASSESSMENT_TIMEOUT_SECONDS` 默认 10 秒（1～60 秒），`HYHQ_ASSESSMENT_MODEL_ROOT` 默认沿用 `HYHQ_MODEL_ROOT`。两类消费者均通过受限子进程执行推理，工作进程未启动时任务不会自动被 Web 服务处理。
 
 ## 检查
 

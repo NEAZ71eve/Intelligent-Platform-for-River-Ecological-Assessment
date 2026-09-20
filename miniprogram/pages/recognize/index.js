@@ -172,5 +172,6 @@ Page({
   openContent(event) { if (event.detail.id) detail('content', event.detail.id); },
   refreshTask() { if (this.data.task) { this._pollCount = 0; this.poll(this.data.task.id); } else this.load(); },
   login() { wx.switchTab({ url: '/pages/profile/index' }); },
+  assessment() { wx.navigateTo({ url: '/pages/assessment/index' }); },
   privacy() { wx.navigateTo({ url: '/pages/legal/index?kind=privacy' }); },
 });

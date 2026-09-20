@@ -65,12 +65,21 @@ def _claim():
 
 def _finish(job, started, result=None, error_code=''):
     duration = int((time.monotonic() - started) * 1000)
-    status = 'failed' if error_code else 'succeeded'
     with transaction.atomic():
-        changed = RecognitionJob.objects.filter(pk=job.pk, status='running').update(
-            status=status, result={} if result is None else result, error_code=error_code,
+        current = RecognitionJob.objects.select_for_update().filter(pk=job.pk, status='running').first()
+        if current is None:
+            return
+        now = timezone.now()
+        asset = Asset.objects.filter(pk=current.asset_id).first() if current.asset_id else None
+        # The image or account can be removed while the isolated child is running.
+        if not error_code and (current.expires_at <= now or asset is None or not asset.original
+                               or asset.original_expires_at <= now or (asset.expires_at and asset.expires_at <= now)):
+            error_code = 'ASSET_EXPIRED'
+        status = 'failed' if error_code else 'succeeded'
+        changed = RecognitionJob.objects.filter(pk=current.pk, status='running').update(
+            status=status, result={} if error_code or result is None else result, error_code=error_code,
             message=ERROR_MESSAGES.get(error_code, '识别暂不可用，请重试或联系管理员') if error_code else '',
-            finished_at=timezone.now(), duration_ms=duration)
+            finished_at=now, duration_ms=duration)
         if changed:
             TaskLog.objects.create(task='recognition', status=status, error_code=error_code, count=1, duration_ms=duration)
 

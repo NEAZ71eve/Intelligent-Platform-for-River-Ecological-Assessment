@@ -46,7 +46,7 @@ scripts/dev.sh --sqlite
 scripts/dev.sh
 ```
 
-脚本顺序执行迁移、`seed_demo`、`seed_recognition_knowledge`、开发服务器，默认监听 `127.0.0.1:8000`。种子命令创建示范资料、五类花卉观察稿和最近 48 小时正常场景模拟快照；重复执行保留管理员对文章的修改，同一个时间窗口不会重复生成同批数据。下一个小时重新执行会产生新的完整快照，查询默认选择一个成功批次，不把不同批次混成曲线。
+脚本顺序执行迁移、`seed_demo`、`seed_recognition_knowledge`、`seed_assessment_rules`、开发服务器，默认监听 `127.0.0.1:8000`。种子命令创建示范资料、五类花卉观察稿、河道教学规则和最近 48 小时正常场景模拟快照；重复执行保留管理员对文章的修改，同一个时间窗口不会重复生成同批数据。下一个小时重新执行会产生新的完整快照，查询默认选择一个成功批次，不把不同批次混成曲线。
 
 另开终端创建自己的管理员，按提示输入凭据：
 
@@ -94,6 +94,7 @@ scripts/manage.sh import_observations /absolute/path/observations.csv
 
 ```bash
 scripts/manage.sh run_recognition_worker --once
+scripts/manage.sh run_assessment_worker --once
 scripts/check.sh
 # 仅 SQLite 的快速检查：
 scripts/check.sh --sqlite
@@ -115,10 +116,13 @@ scripts/check.sh --sqlite
 - `backend.production.env.example`：生产配置样例。
 - `systemd/hyhq-api.service`：2 个 Gunicorn Web 进程，不加载模型。
 - `systemd/hyhq-recognition.service`：单独队列消费进程。
+- `systemd/hyhq-assessment.service`：河道检测消费进程，与花卉消费者共享 `backend/var/recognition.lock`。
 - `systemd/hyhq-simulation.*`：可选小时模拟任务。
 - `nginx.conf.example`：HTTPS、反向代理与公开静态文件。
 
 模板假定源码放在 `/srv/hyhq`、运行账号为 `hyhq`、环境文件为 `/etc/hyhq/backend.env`、数据库在本机。安装前替换域名、路径、随机密钥和数据库密码，配置真实证书，并根据自己的系统创建服务账号与目录权限。不要将开发密码用于外部服务。
+
+河道权重的固定版本获取和登记见 [河道推理说明](../inference/river/README.md)。它通过 `DetectionModel` 独立启停，不替换花卉 `ModelVersion`。迁移后运行 `seed_assessment_rules --activate`，登记模型再启动 assessment 服务；只启用 API 不会执行后台评估。初始化命令保留已有的活动规则，后续切换在管理后台进行。两个推理服务串行争用同一个锁，不会同时加载两份任务模型进行前向。河道超时配置 `HYHQ_ASSESSMENT_TIMEOUT_SECONDS` 默认为 10 秒，仍须在目标 2 核 / 4GB 服务器验证端到端耗时和整机资源。
 
 部署顺序：准备 PostgreSQL 与独立应用账号 → 安装锁定依赖 → 配置生产环境变量 → 迁移数据库 → `collectstatic --noinput` → 创建管理员 → 配置 Nginx/证书 → 启用 API 服务 → 验证真实微信链路。
 

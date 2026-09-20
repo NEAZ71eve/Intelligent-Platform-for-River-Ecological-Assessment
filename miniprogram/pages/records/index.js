@@ -1,6 +1,7 @@
 const { app, requireLogin, detail, toast, finish } = require('../../lib/page');
 const { list, time, task, message } = require('../../lib/format');
-const titles = { favorites: '我的收藏', histories: '浏览记录', 'recognition-jobs': '识别记录', visits: '游览记录' };
+const { assessmentTask } = require('../../lib/assessment');
+const titles = { favorites: '我的收藏', histories: '浏览记录', 'recognition-jobs': '识别记录', 'assessment-jobs': '河道观察记录', visits: '游览记录' };
 Page({
   data: { loading: true, loadingMore: false, error: '', kind: '', title: '', records: [], next: null, busy: false },
   onLoad(options) {
@@ -30,6 +31,7 @@ Page({
       }
       const records = list(response).map((record) => {
         if (this.data.kind === 'recognition-jobs') return Object.assign(task(record), { title: '植物识别任务' });
+        if (this.data.kind === 'assessment-jobs') return assessmentTask(record);
         const kind = record.content || record.content_id ? 'content' : 'place';
         const item = record[kind];
         const unavailable = item === null || (!item && !record[kind + '_id']);
@@ -51,6 +53,7 @@ Page({
   },
   more() { this.load(true); },
   open(event) {
+    if (this.data.kind === 'assessment-jobs') { wx.navigateTo({ url: '/pages/assessment/index?jobId=' + encodeURIComponent(event.currentTarget.dataset.id) }); return; }
     if (this.data.kind === 'recognition-jobs') { app().globalData.recognitionJobId = event.currentTarget.dataset.id; wx.switchTab({ url: '/pages/recognize/index' }); return; }
     const record = this.data.records.find((item) => item.id === event.currentTarget.dataset.id);
     if (record && record.target_id && !record.unavailable) detail(record.target_kind, record.target_id);
@@ -60,7 +63,7 @@ Page({
     if (this._destroyed || this.data.busy || !requireLogin()) return;
     const sentToken = app().session.token();
     const id = event.currentTarget.dataset.id;
-    wx.showModal({ title: '删除这条记录', content: this.data.kind === 'recognition-jobs' ? '删除识别任务及其关联图片，无法恢复。' : '删除后，这条个人记录将不再显示。', confirmText: '删除', confirmColor: '#a25e4a', success: async (result) => {
+    wx.showModal({ title: '删除这条记录', content: ['recognition-jobs', 'assessment-jobs'].includes(this.data.kind) ? '删除任务、关联图片及可选位置，无法恢复。' : '删除后，这条个人记录将不再显示。', confirmText: '删除', confirmColor: '#a25e4a', success: async (result) => {
       if (this._destroyed || !result.confirm || app().session.token() !== sentToken) return;
       this.setData({ busy: true });
       try { await app().api.request(this.data.kind + '/' + encodeURIComponent(id) + '/', { method: 'DELETE' }); await this.load(); }

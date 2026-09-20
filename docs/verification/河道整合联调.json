@@ -1,0 +1,51 @@
+{
+  "date": "2026-09-20",
+  "environment": "macOS Apple M2 / Python 3.12.6 / PostgreSQL 17.9 / ONNX Runtime 1.23.1 / Node 20.19.6",
+  "backend_tests": {
+    "total": 125,
+    "passed": 125
+  },
+  "frontend_tests": {
+    "total": 58,
+    "passed": 58
+  },
+  "checks": {
+    "river_detected": {
+      "status": "passed",
+      "checks": [
+        "首页天气/空气/预警状态与真实 API 对接通过",
+        "开发登录、昵称、头像上传及鉴权缩略图下载通过",
+        "收藏、浏览、游览、个人记录标题与隐私开关联调通过",
+        "第二个账号无法访问第一个账号的收藏或私有头像",
+        "河道观察真实HTTP/队列/模型（16个漂浮物候选）/原图框比例/历史版本/手选水体无定位/跨账号隔离/互斥图片/删除预览通过；仅验证协议，不验证精度",
+        "退出与注销后旧会话失效、客户端 401 清理通过"
+      ],
+      "boundary": "真实 HTTP + wx mock；未运行微信开发者工具或真机"
+    },
+    "river_low_quality": {
+      "status": "passed",
+      "checks": [
+        "首页天气/空气/预警状态与真实 API 对接通过",
+        "开发登录、昵称、头像上传及鉴权缩略图下载通过",
+        "收藏、浏览、游览、个人记录标题与隐私开关联调通过",
+        "第二个账号无法访问第一个账号的收藏或私有头像",
+        "河道观察真实HTTP/队列/模型（uncertain，LOW_IMAGE_QUALITY，0个漂浮物候选）/原图框比例/历史版本/手选水体无定位/跨账号隔离/互斥图片/删除预览通过；仅验证协议，不验证精度",
+        "退出与注销后旧会话失效、客户端 401 清理通过"
+      ],
+      "boundary": "真实 HTTP + wx mock；未运行微信开发者工具或真机"
+    },
+    "flower_regression": {
+      "status": "passed",
+      "checks": [
+        "首页天气/空气/预警状态与真实 API 对接通过",
+        "开发登录、昵称、头像上传及鉴权缩略图下载通过",
+        "收藏、浏览、游览、个人记录标题与隐私开关联调通过",
+        "第二个账号无法访问第一个账号的收藏或私有头像",
+        "上传、真实模型响应（recognized）、结果视图及任务/图片删除通过；此项只验证协议，不验证分类准确率",
+        "退出与注销后旧会话失效、客户端 401 清理通过"
+      ],
+      "boundary": "真实 HTTP + wx mock；未运行微信开发者工具或真机"
+    }
+  },
+  "boundary": "Real HTTP plus wx mock and actual ONNX inference; no WeChat device, Seoul deployment or independent field accuracy validation."
+}
