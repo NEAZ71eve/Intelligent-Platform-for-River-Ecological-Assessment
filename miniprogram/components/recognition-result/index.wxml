@@ -6,11 +6,11 @@
   <view class="candidate" wx:for="{{result.candidates}}" wx:key="label">
     <view class="candidate-row"><view><text class="candidate-rank">0{{item.rank}}</text><text class="candidate-name">{{item.name}}</text></view><text class="candidate-score">分数 {{item.score_label}}</text></view>
     <view class="score-track"><view class="score-fill" style="width: {{item.bar_width}}%;"></view></view>
-    <button wx:if="{{item.content_id}}" class="content-link" data-id="{{item.content_id}}" bindtap="content">阅读相关科普 ›</button>
+    <button wx:if="{{item.content_id}}" class="content-link result-action" data-id="{{item.content_id}}" bindtap="content">阅读相关科普 ›</button>
   </view>
   <view class="score-note" wx:if="{{result.candidates.length}}">以上为模型输出分数，未经校准，不是正确率。</view>
   <view class="model-meta"><view>模型：{{result.model_name}}</view><view>版本：{{result.model_version}} · 分类分数阈值：{{result.threshold_label}}</view></view>
   <view class="disclaimer">{{result.threshold_note}}</view>
   <view class="disclaimer">{{result.disclaimer}}</view>
-  <button class="retake" bindtap="retake">重新拍摄或选择照片</button>
+  <button class="retake result-action" bindtap="retake">重新拍摄或选择照片</button>
 </view>
