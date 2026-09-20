@@ -7,3 +7,16 @@
 .tab.selected { color: #2b6547; font-weight: 600; border-bottom: 4rpx solid #427450; }
 .tags { margin-top: 18rpx; color: #8a967b; font-size: 22rpx; }
 .tags text { margin-right: 18rpx; }
+.selector { display: flex; justify-content: space-between; align-items: center; min-height: 80rpx; padding: 15rpx 18rpx; border-radius: 16rpx; background: #f2f5eb; font-size: 25rpx; }
+.selector text { margin-left: 10rpx; color: #79906d; }
+.filter-grid { display: flex; gap: 16rpx; }
+.filter-grid > view { width: calc(50% - 8rpx); min-width: 0; }
+.search-row { display: flex; align-items: center; gap: 14rpx; }
+.search-row input { flex: 1; min-width: 0; font-size: 24rpx; }
+.search-row button { flex-shrink: 0; font-size: 24rpx; }
+.linked-place { display: flex; justify-content: space-between; align-items: center; gap: 12rpx; font-size: 24rpx; }
+.reset { margin-top: 18rpx; text-align: right; }
+.badges { display: flex; flex-wrap: wrap; align-items: center; gap: 12rpx; }
+.source-note { margin-top: 14rpx; overflow-wrap: break-word; }
+.list-footer { text-align: center; padding: 28rpx 0 8rpx; }
+.list-footer .error-inline { margin: 0 0 16rpx; }

@@ -1,0 +1,16 @@
+{
+  "status": "passed",
+  "checks": [
+    "B01_real_pagination_and_combined_category_plant_search",
+    "B01_place_related_articles_and_public_association",
+    "B02_six_ordered_stops_selection_return_and_region_list",
+    "B01_B02_public_browsing_without_login_location_or_writes"
+  ],
+  "catalogue_pages": 4,
+  "public_articles": 8,
+  "route_public_stops": 6,
+  "transport": "real_local_http_with_wx_mock",
+  "page_size_override": 2,
+  "wechat_device_verified": false,
+  "server_deployed": false
+}

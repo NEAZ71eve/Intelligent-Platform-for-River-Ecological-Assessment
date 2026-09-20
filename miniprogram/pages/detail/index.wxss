@@ -2,5 +2,7 @@
 .article { display: block; white-space: pre-wrap; line-height: 2; font-size: 29rpx; color: #40543d; }
 .route-stop { margin-top: 18rpx; display: flex; align-items: center; background: #fffefa; padding: 24rpx; border-radius: 22rpx; }
 .stop-index { border-radius: 50%; height: 56rpx; width: 56rpx; background: #e9eeda; text-align: center; line-height: 56rpx; margin-right: 22rpx; color: #729452; }
+.stop-selected { outline: 2rpx solid #729452; background: #f0f4e5; }
+.route-stop .stop-index { flex-shrink: 0; }
 .observation { background: #fffefa; padding: 20rpx 24rpx; border-bottom: 1rpx solid #eff2e6; }
 .observation-value { font-size: 32rpx; color: #426643; }

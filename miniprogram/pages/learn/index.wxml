@@ -1,13 +1,43 @@
 <view class="page">
   <text class="eyebrow">JOURNAL / 绿色见闻</text>
   <view class="page-title"><view>读懂自然，</view><view>再走近一点。</view></view>
-  <view class="subtitle">让每一次校园漫步，都多一份发现。</view>
-  <view class="editorial-card section"><text class="editorial-number">01 —</text><view><text class="small muted">给绿色生活的一封邀请</text><view class="title">把生态知识，带进日常。</view><view class="copy"><view>校园植物、水资源保护与绿色出行，</view><view>从一次阅读开始。</view></view></view><view class="paper-leaf"></view></view>
+  <view class="subtitle">公开科普与管理员预设路线，无需登录或定位即可浏览。</view>
+  <view class="editorial-card section"><text class="editorial-number">01 —</text><view><text class="small muted">给绿色生活的一封邀请</text><view class="title">把生态知识，带进日常。</view><view class="copy">校园植物、水资源保护与绿色出行，<view>从一次阅读开始。</view></view></view><view class="paper-leaf"></view></view>
+  <view class="card section filters">
+    <text class="field-label">浏览区域</text>
+    <picker range="{{regions}}" range-key="name" value="{{regionIndex}}" bindchange="changeRegion"><view class="selector">{{regions[regionIndex].name}}<text>⌄</text></view></picker>
+    <view class="small muted gap">选择区域后，仍会显示不关联具体地点的通用科普。</view>
+    <view wx:if="{{regionError}}" class="error-inline">区域目录：{{regionError}}<button class="text-button" bindtap="load">重新加载区域</button></view>
+    <block wx:if="{{tab === 'contents'}}">
+      <view class="filter-grid gap">
+        <view><text class="field-label">内容分类</text><picker range="{{categories}}" range-key="name" value="{{categoryIndex}}" bindchange="changeCategory"><view class="selector">{{categories[categoryIndex].name}}<text>⌄</text></view></picker></view>
+        <view><text class="field-label">植物标签</text><picker range="{{plantLabels}}" range-key="name" value="{{plantIndex}}" bindchange="changePlant"><view class="selector">{{plantLabels[plantIndex].name}}<text>⌄</text></view></picker></view>
+      </view>
+      <view wx:if="{{tagsLoading}}" class="small muted gap">正在读取可用标签…</view>
+      <view wx:if="{{tagsError}}" class="error-inline">标签目录：{{tagsError}}<button class="text-button" bindtap="retryTags">重试标签</button></view>
+      <view class="search-row gap"><input value="{{searchInput}}" placeholder="搜索标题或摘要" maxlength="100" confirm-type="search" bindinput="inputSearch" bindconfirm="searchContents" /><button class="secondary" bindtap="searchContents">搜索</button></view>
+      <view wx:if="{{place}}" class="linked-place gap"><text>已限定关联地点的科普</text><button class="text-button" bindtap="clearPlace">清除地点</button></view>
+      <button wx:if="{{category || plant_label || search || place}}" class="text-button reset" bindtap="resetFilters">清除科普筛选</button>
+    </block>
+  </view>
   <view class="tabs section"><view class="tab {{tab === 'contents' ? 'selected' : ''}}" data-tab="contents" bindtap="changeTab">科普手记</view><view class="tab {{tab === 'routes' ? 'selected' : ''}}" data-tab="routes" bindtap="changeTab">预设路线</view></view>
-  <page-state loading="{{loading}}" error="{{error}}" empty="{{!loading && !error && (tab === 'contents' ? !contents.length : !routes.length)}}" empty-text="管理员尚未发布此类资料。" bindretry="load" />
-  <block wx:if="{{!loading && !error}}">
-    <block wx:if="{{tab === 'contents'}}"><view class="card" wx:for="{{contents}}" wx:key="id" data-kind="content" data-id="{{item.id}}" bindtap="open"><view class="row"><view class="grow"><source-label source="{{item.source_type || 'manual'}}" /><view class="title gap">{{item.title}}</view><view class="copy">{{item.summary || '阅读完整科普内容'}}</view></view><text class="chevron">›</text></view><view class="tags" wx:if="{{item.category}}"># {{item.category}}</view></view></block>
-    <block wx:else><view class="card" wx:for="{{routes}}" wx:key="id" data-kind="route" data-id="{{item.id}}" bindtap="open"><view class="row"><view class="grow"><text class="pill">管理员预设</text><view class="title gap">{{item.name || item.title}}</view><view class="copy">{{item.description || item.summary || '查看路线节点'}}</view></view><text class="chevron">›</text></view></view></block>
+  <block wx:if="{{tab === 'contents'}}">
+    <page-state loading="{{contentsLoading}}" error="{{contentsError}}" empty="{{!contentsLoading && !contentsError && !contents.length}}" empty-text="暂时没有符合筛选的公开科普，可清除筛选或切换区域。" bindretry="retryContents" />
+    <block wx:if="{{!contentsLoading && !contentsError}}">
+      <view class="card article" wx:for="{{contents}}" wx:key="id" data-kind="content" data-id="{{item.id}}" bindtap="open"><view class="row"><view class="grow"><view class="badges"><source-label source="manual" /><text wx:if="{{item.is_demo}}" class="pill">教学示范</text></view><view class="title gap">{{item.title}}</view><view class="copy">{{item.summary || '阅读完整科普内容'}}</view></view><text class="chevron">›</text></view><view class="tags"><text wx:if="{{item.category_name}}"># {{item.category_name}}</text><text wx:if="{{item.plant_name}}"># {{item.plant_name}}</text></view><view wx:if="{{item.place_summary}}" class="small muted gap">关联地点：{{item.place_summary.name}} · {{item.place_summary.region_name}}</view><view wx:if="{{item.source}}" class="small muted source-note">资料来源：{{item.source}}</view></view>
+      <view wx:if="{{contents.length}}" class="list-footer">
+        <view wx:if="{{contentsMoreError}}" class="error-inline">{{contentsMoreError}}</view>
+        <button wx:if="{{contentsNext}}" class="secondary" loading="{{contentsLoadingMore}}" disabled="{{contentsLoadingMore}}" bindtap="moreContents">{{contentsMoreError ? '重试加载更多' : '加载更多科普'}}</button>
+        <text wx:else class="small muted">已展示 {{contents.length}} 篇公开科普</text>
+      </view>
+    </block>
   </block>
-  <view class="notice">内容来自管理员发布的教学资料。路线仅作游览参考，暂不提供导航或到访核验；AI 问答尚未启用。</view>
+  <block wx:else>
+    <page-state loading="{{routesLoading}}" error="{{routesError}}" empty="{{!routesLoading && !routesError && !routes.length}}" empty-text="此区域暂无管理员公开的预设路线，可切换区域查看。" bindretry="retryRoutes" />
+    <block wx:if="{{!routesLoading && !routesError}}">
+      <view class="card" wx:for="{{routes}}" wx:key="id" data-kind="route" data-id="{{item.id}}" bindtap="open"><view class="row"><view class="grow"><view class="badges"><text class="pill">管理员预设</text><text wx:if="{{item.is_demo}}" class="pill">教学示范</text></view><view class="title gap">{{item.name || item.title}}</view><view class="copy">{{item.description || item.summary || '查看路线节点'}}</view><view class="small muted gap">{{item.region_name || '区域未标注'}}<text wx:if="{{item.public_stop_count !== null}}"> · {{item.public_stop_count}} 个公开地点</text></view><view wx:if="{{item.public_stop_count === 0}}" class="small muted">当前没有可浏览的公开地点。</view><view wx:if="{{item.source}}" class="small muted source-note">路线来源：{{item.source}}</view></view><text class="chevron">›</text></view></view>
+      <view wx:if="{{routes.length}}" class="list-footer"><view wx:if="{{routesMoreError}}" class="error-inline">{{routesMoreError}}</view><button wx:if="{{routesNext}}" class="secondary" loading="{{routesLoadingMore}}" disabled="{{routesLoadingMore}}" bindtap="moreRoutes">{{routesMoreError ? '重试加载更多' : '加载更多路线'}}</button><text wx:else class="small muted">已展示 {{routes.length}} 条公开路线</text></view>
+    </block>
+  </block>
+  <view class="notice">内容来自管理员发布的资料，示范内容已标注。预设路线仅作游览参考，暂不提供实时导航或到访核验；AI 问答尚未启用。</view>
 </view>

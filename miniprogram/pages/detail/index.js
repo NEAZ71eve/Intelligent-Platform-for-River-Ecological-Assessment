@@ -1,8 +1,9 @@
 const { app, requireLogin, toast, detail } = require('../../lib/page');
 const { list, time, value, message } = require('../../lib/format');
 const { loadAll } = require('../../lib/region');
+const { routeView } = require('../../lib/route-view');
 Page({
-  data: { loading: true, error: '', item: null, kind: '', busy: false, favoriteId: '', stations: [], stationIndex: 0, observations: [], observationError: '', observationLoading: false, recordError: '' },
+  data: { loading: true, error: '', item: null, kind: '', busy: false, favoriteId: '', stations: [], stationIndex: 0, observations: [], observationError: '', observationLoading: false, recordError: '', relatedContents: [], relatedCount: 0, relatedLoading: false, relatedError: '', routeStops: [], stopIndex: 0, activeStop: null },
   onLoad(options) {
     this._alive = true;
     const paths = { place: 'places/', content: 'contents/', route: 'routes/' };
@@ -27,13 +28,18 @@ Page({
     this._hidden = false;
     const generation = this._generation = (this._generation || 0) + 1;
     const token = this._identity = app().session.token();
-    this.setData({ loading: true, error: '', recordError: '', favoriteId: '', busy: false, stations: [], observations: [], observationError: '', observationLoading: false });
+    this.setData({ loading: true, error: '', recordError: '', favoriteId: '', busy: false, stations: [], observations: [], observationError: '', observationLoading: false, relatedContents: [], relatedCount: 0, relatedLoading: false, relatedError: '', routeStops: [], stopIndex: 0, activeStop: null });
     try {
       const item = (await app().api.request(this._path)).data;
       if (!this.current(generation)) return;
       this.setData({ item: Object.assign({}, item, { updated_label: time(item.updated_at || item.published_at) }) });
+      if (this.data.kind === 'route') {
+        const selection = routeView(item, this._selectedStopId);
+        this._selectedStopId = selection.activeStop && selection.activeStop.id;
+        this.setData(selection);
+      }
       wx.setNavigationBarTitle({ title: item.name || item.title || '生态资料' });
-      if (this.data.kind === 'place') await this.loadStations(generation);
+      if (this.data.kind === 'place') await Promise.all([this.loadStations(generation), this.loadRelatedContents()]);
       if (this.data.kind !== 'route' && token && this.sameSession(generation, token)) {
         try {
           const target = this.target();
@@ -58,6 +64,63 @@ Page({
   matches(record) {
     const target = record[this.data.kind];
     return record[this.data.kind + '_id'] === this._id || (typeof target === 'string' ? target === this._id : target && target.id === this._id);
+  },
+  async loadRelatedContents() {
+    const generation = this._generation;
+    if (!this.current(generation) || this.data.kind !== 'place') return;
+    const request = this._relatedGeneration = (this._relatedGeneration || 0) + 1;
+    const current = () => this.current(generation) && request === this._relatedGeneration;
+    this.setData({ relatedLoading: true, relatedError: '' });
+    try {
+      const result = await app().api.request('contents/', { data: { place: this._id, page_size: 3 } });
+      if (!current()) return;
+      if (!Array.isArray(result.data)) throw new Error('关联科普返回格式有误，请重试。');
+      this.setData({ relatedContents: result.data, relatedCount: result.meta && Number.isInteger(result.meta.count) ? result.meta.count : result.data.length });
+    } catch (error) { if (current()) this.setData({ relatedError: message(error) }); }
+    finally { if (current()) this.setData({ relatedLoading: false }); }
+  },
+  browseKnowledge(filter) {
+    if (!this.current(this._generation)) return;
+    app().globalData.pendingKnowledgeFilter = filter;
+    wx.switchTab({ url: '/pages/learn/index' });
+  },
+  openRelatedContents() {
+    if (this.data.kind === 'place' && this.data.item) this.browseKnowledge({ tab: 'contents', region: this.data.item.region, place: this._id });
+  },
+  openPlantContents() {
+    if (this.data.kind === 'content' && this.data.item && this.data.item.plant_label) this.browseKnowledge({ tab: 'contents', plant_label: this.data.item.plant_label });
+  },
+  openRelatedContent(event) {
+    if (!this.current(this._generation)) return;
+    const id = event.currentTarget.dataset.id;
+    if (this.data.relatedContents.some((item) => item.id === id)) detail('content', id);
+  },
+  openAssociatedPlace() {
+    if (!this.current(this._generation)) return;
+    const place = this.data.item && this.data.item.place_summary;
+    if (this.data.kind === 'content' && place && place.id) detail('place', place.id);
+  },
+  selectRouteStop(event) {
+    if (!this.current(this._generation) || this.data.kind !== 'route') return;
+    const index = this.data.routeStops.findIndex((stop) => stop.id === event.currentTarget.dataset.id);
+    if (index < 0) return;
+    this._selectedStopId = this.data.routeStops[index].id;
+    this.setData({ stopIndex: index, activeStop: this.data.routeStops[index] });
+  },
+  stepRoute(event) {
+    if (!this.current(this._generation)) return;
+    const direction = event.currentTarget.dataset.direction;
+    if (!['previous', 'next'].includes(direction)) return;
+    const stop = this.data.routeStops[this.data.stopIndex + (direction === 'next' ? 1 : -1)];
+    if (stop) this.selectRouteStop({ currentTarget: { dataset: { id: stop.id } } });
+  },
+  openRouteStop() {
+    if (!this.current(this._generation) || this.data.kind !== 'route') return;
+    const stop = this.data.routeStops[this.data.stopIndex];
+    if (stop) detail('place', stop.place.id);
+  },
+  openRouteList() {
+    if (this.data.kind === 'route' && this.data.item) this.browseKnowledge({ tab: 'routes', region: this.data.item.region });
   },
   async loadStations(generation = this._generation) {
     try {
