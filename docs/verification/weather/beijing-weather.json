@@ -1,0 +1,39 @@
+{
+  "ok": true,
+  "locations": [
+    {
+      "location": "tianjin",
+      "weather": "fresh",
+      "air": "fresh",
+      "alerts": "empty"
+    },
+    {
+      "location": "tiangong",
+      "weather": "fresh",
+      "air": "fresh",
+      "alerts": "empty"
+    },
+    {
+      "location": "tianjin-normal",
+      "weather": "fresh",
+      "air": "fresh",
+      "alerts": "empty"
+    },
+    {
+      "location": "tianjin-technology",
+      "weather": "fresh",
+      "air": "fresh",
+      "alerts": "empty"
+    },
+    {
+      "location": "beijing",
+      "weather": "fresh",
+      "air": "fresh",
+      "alerts": "empty"
+    }
+  ],
+  "weather_reservations": 15,
+  "budget": 29900,
+  "cache_reuse_verified": true,
+  "other_public_endpoints": 5
+}

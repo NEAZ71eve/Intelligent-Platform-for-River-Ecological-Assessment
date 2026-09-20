@@ -1,0 +1,10 @@
+{
+  "accounted_tokens": 823,
+  "cleanup_status": "removed_private_user_sessions_and_token",
+  "completion_tokens": 8,
+  "ledger_status": "preserved",
+  "model": "deepseek-flash",
+  "prompt_tokens": 815,
+  "status": "succeeded",
+  "total_tokens": 823
+}
