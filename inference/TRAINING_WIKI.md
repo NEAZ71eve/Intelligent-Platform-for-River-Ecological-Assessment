@@ -66,7 +66,7 @@
 | YRDG | 10,202 | plastic/paper/glass/metal/fabric/water_plant/misc_debris | 自带划分，已并入随机划分 |
 | CANSURF | 7,062 | metal | 水面金属罐专项 |
 | IWHR | 3,000 | misc_debris | 内部交付（唯一不可重得，需备份）|
-| TACO | 399 | 8 细类补充 | Flickr 下载中（1500 目标），完成重跑纳入 |
+| TACO | 402 | 8 细类补充 | Flickr 下载中（404/1500，2 张损坏），完成重跑纳入 |
 
 **划分**：train 21,767 / val 4,664 / test 4,665（70/15/15，seed 42）
 
@@ -136,7 +136,7 @@ C:\Users\21516\anaconda3\python.exe training\export_onnx.py
 | 项 | 状态 |
 |---|---|
 | train_yolo.py 指向 unified-v1 | 待更新为 v2 |
-| TACO 下载 402/1500 | 独立进程续传中（PID 见下载日志），完成后重跑预处理 |
+| TACO 下载 404/1500（2 张损坏跳过）| 独立进程续传中（Flickr 限速极慢，需耐心或换时段），完成后重跑预处理 |
 | 5 硬缺口细类（algae_mass/sewage_color/foam_pollution/bank_garbage/bank_encroach）| 自采规范就绪未启动 |
 | water_plant 近似映射 | 需抽样人工复核 |
 | IWHR 备份 | 唯一不可重得，网盘/双盘备份方案未拍板 |

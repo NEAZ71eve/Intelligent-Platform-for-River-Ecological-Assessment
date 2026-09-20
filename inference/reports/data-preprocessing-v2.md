@@ -1,6 +1,6 @@
 # 多源数据预处理报告 v2（unified-v2）
 
-> 日期：2026-09-19 · 状态：✅ 完成 · 脚本：`inference/training/prepare_unified_v2.py`（本次新增）
+> 日期：2026-09-19（v2 重建至 2026-09-20，TACO 增量纳入）· 状态：✅ 完成 · 脚本：`inference/training/prepare_unified_v2.py`（本次新增）
 
 ## 1. 目的
 
@@ -13,7 +13,7 @@
 | IWHR | VOC XML | floater | → misc_debris | 3000 | 3000 |
 | CANSURF | YOLO 1 类 | debris（水面金属罐）| → metal | 7171 | 7062（109 重复）|
 | iSOOD | YOLO 1 类 | cid0（排污口）| → outfall | 10481 | 10433（48 重复）|
-| TACO | COCO 60 类 | 按语义映射表 | 8 细类 | 1500 目标 / 400 已下载 | 399（1 截断）|
+| TACO | COCO 60 类 | 按语义映射表 | 8 细类 | 1500 目标 / 404 已下载 | 402（2 张损坏跳过）|
 | YRDG | YOLO 7 类 | plastic/paper/glass/metal/fabricfiber/nature/others | plastic/paper/glass/metal/fabric/water_plant/misc_debris | 10233 | 10202（31 重复）|
 
 - TACO 映射表见脚本 `TACO_CAT_MAP`（60 类 → 8 细类），Flickr 下载完成 1500/1500 后重跑脚本即全量纳入。
@@ -28,17 +28,17 @@
 
 ## 4. 结果统计
 
-**划分**：train 21,767 / val 4,664 / test 4,665（31096 图，86,369 框）
+**划分**：train 21,769 / val 4,665 / test 4,665（31,099 图，86,372 框）
 
 **细类框分布**：
 
 | 细类 | 框数 | 来源 |
 |---|---:|---|
 | metal | 31,698 | CANSURF 主力 + YRDG + TACO |
-| misc_debris | 24,845 | IWHR 主力 + YRDG others |
+| misc_debris | 24,846 | IWHR 主力 + YRDG others |
 | outfall | 11,718 | iSOOD |
-| plastic | 8,498 | YRDG + TACO |
-| paper | 3,906 | YRDG + TACO |
+| plastic | 8,499 | YRDG + TACO |
+| paper | 3,907 | YRDG + TACO |
 | fabric | 2,783 | YRDG fabricfiber + TACO |
 | water_plant | 1,955 | YRDG nature（近似映射）|
 | glass | 838 | YRDG + TACO |
@@ -52,9 +52,9 @@
 
 ## 5. 关键结论
 
-1. **覆盖提升**：v1 仅 1 细类（misc_debris 23,692 框）→ v2 覆盖 10/15 细类（86,369 框），outfall 从 0 到 11,718 框（iSOOD 落地）。
+1. **覆盖提升**：v1 仅 1 细类（misc_debris 23,692 框）→ v2 覆盖 10/15 细类（86,372 框），outfall 从 0 到 11,718 框（iSOOD 落地）。
 2. **剩余 5 个零样本细类**：algae_mass / sewage_color / foam_pollution / bank_garbage / bank_encroach——全部属于方向 B 门禁的自采硬缺口，无公开数据，必须启动自采。
-3. **TACO 半量**：目前仅 399 图（Flickr 下载中），且 TACO 为陆地场景，存在 domain gap，仅作类别补充；下载完成后重跑脚本自动纳入。
+3. **TACO 半量**：目前仅 402 图可用（Flickr 下载中，404/1500，其中 2 张损坏被跳过），且 TACO 为陆地场景，存在 domain gap，仅作类别补充；下载完成后重跑脚本自动纳入。
 4. **water_plant 为近似映射**（YRDG nature 类含水草/树枝等自然漂浮物），验收时需抽样人工复核。
 
 ## 6. 环境/脚本说明
