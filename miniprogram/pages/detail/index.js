@@ -1,3 +1,4 @@
+const { entryUrl } = require('../../lib/llm');
 const { app, requireLogin, toast, detail } = require('../../lib/page');
 const { list, time, value, message } = require('../../lib/format');
 const { loadAll } = require('../../lib/region');
@@ -200,4 +201,10 @@ Page({
     wx.navigateTo({ url: '/pages/data-center/index?region=' + encodeURIComponent(item.region) + '&stationId=' + encodeURIComponent(station.id) + '&kind=' + encodeURIComponent(station.kind) });
   },
   openPlace(event) { if (this.current(this._generation)) detail('place', event.currentTarget.dataset.id); },
+  openAI() {
+    if (!this.current(this._generation) || this.data.loading || this.data.error || !this.data.item) return;
+    const kind = this.data.kind, scope = kind === 'place' ? 'explore' : 'learn';
+    const url = entryUrl(scope, kind, this.data.item.id);
+    if (url) wx.navigateTo({ url });
+  },
 });

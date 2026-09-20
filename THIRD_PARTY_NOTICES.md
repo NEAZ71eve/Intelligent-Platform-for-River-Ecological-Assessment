@@ -1,5 +1,18 @@
 # 第三方来源说明
 
+## 用户提供的品牌标志
+
+- 主 Logo 与图标参考图由项目用户于 2026-09-21 提供并要求用于小程序。
+- 原图保存在 `design/brand/`；绿色子图标使用内置 imagegen 编辑，运行资源经 JPEG 编码优化，具体映射与提示词见 [品牌素材说明](design/brand/README.md)。
+
+## Markdown 回复排版
+
+- 解析器：[markdown-it](https://github.com/markdown-it/markdown-it)，固定版本 `15.0.2`，MIT 许可。
+- 来源为 npm 官方发布包中的 `dist/browser/markdown-it.umd.min.js`，以原始字节保存在 `miniprogram/vendor/markdown-it/index.js`，无需用户运行 npm 构建。
+- npm 发布包 SHA-512：`q4IGxMv56jCqT4OCRCADBoDP3LO4MhmTXjFbphHPXs4g3j9Xg5RDnxqN8IF/3vIWEU+VCnUq+7JUg/cfy2E6Qw==`，下载时已校验。
+- 解析器原始许可及浏览器包所含依赖的许可见 `miniprogram/vendor/markdown-it/LICENSE` 和 `DEPENDENCY-LICENSES.md`。
+- HYHQ 只使用解析 token，自行映射为受限的小程序 rich-text 节点。关闭 HTML 解析，不加载 Markdown 远程图片或执行链接。
+
 ## 朋友仓库的河道图像观察功能
 
 - 来源：[NEAZ71eve/Intelligent-Platform-for-River-Ecological-Assessment](https://github.com/NEAZ71eve/Intelligent-Platform-for-River-Ecological-Assessment)

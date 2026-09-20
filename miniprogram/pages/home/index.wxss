@@ -1,4 +1,8 @@
 .brand { margin-bottom: 30rpx; }
+.brand-identity { display: flex; align-items: center; min-width: 0; }
+.brand-logo-card { flex-shrink: 0; width: 116rpx; height: 116rpx; padding: 6rpx; margin-right: 16rpx; border: 1rpx solid #d4e2cf; border-radius: 20rpx; background: #fff; }
+.brand-logo { display: block; width: 100%; height: 100%; }
+.brand .pill { flex-shrink: 0; margin-left: 12rpx; }
 .page-title { margin-top: 0; }
 .region-bar { padding: 0 2rpx; }
 .weather-card { background: #315e42; border-radius: 30rpx; padding: 28rpx 30rpx; color: #fafbef; overflow: hidden; }
@@ -11,7 +15,7 @@
 .sun { width: 78rpx; height: 78rpx; position: absolute; top: 5rpx; right: 55rpx; border-radius: 50%; background: #e4d392; }
 .hill { width: 240rpx; height: 160rpx; position: absolute; border-radius: 60% 60% 0 0; transform: rotate(-25deg); top: 95rpx; left: -25rpx; background: #86a16a; }
 .hill.front { background: #b1c089; transform: rotate(30deg); left: 90rpx; top: 102rpx; }
-.entry { display: flex; align-items: center; background: #fffefa; border-radius: 24rpx; padding: 24rpx 22rpx; margin-top: 14rpx; }
+.entry { display: flex; align-items: center; background: #fffefa; border: 1rpx solid #d4e2cf; border-radius: 24rpx; padding: 24rpx 22rpx; margin-top: 14rpx; }
 .entry-icon { font-size: 46rpx; width: 76rpx; height: 80rpx; line-height: 80rpx; border-radius: 19rpx; text-align: center; margin-right: 22rpx; }
 .water { background: #e1ede9; color: #608d84; }
 .leaf { background: #ebefdf; color: #749349; }

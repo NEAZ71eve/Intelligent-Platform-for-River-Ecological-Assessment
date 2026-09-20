@@ -1,0 +1,1 @@
+<view class="brand-icon" style="width:{{size}}rpx;height:{{size}}rpx;" aria-hidden="true"><image class="sprite" src="/assets/brand/icons-green.jpg" mode="scaleToFill" style="left:{{left}}%;top:{{top}}%;" /></view>

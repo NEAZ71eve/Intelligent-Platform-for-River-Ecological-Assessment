@@ -36,7 +36,7 @@ function fixtureAPI(jobs) {
   } };
 }
 function ready(instance) {
-  Object.assign(instance.data, { capabilityKnown: true, capability: capability(health), consent: true, imageOrigin: 'selected', imagePath: '/tmp/photo.png' });
+  Object.assign(instance.data, { capabilityKnown: true, capability: capability(health), imageOrigin: 'selected', imagePath: '/tmp/photo.png' });
 }
 
 test('assessment advertises only the trained floating-debris scope and respects disabled health', () => {
@@ -146,6 +146,29 @@ test('manual water association submits independently without requesting GPS', as
   instance.changeWater({ detail: { value: '1' } });
   await instance.submit();
   assert.deepEqual(payload, { asset_id: 'fresh', water_body_id: 'manual-water' });
+});
+
+test('river upload needs a selected photo and explicit submit but no repeated agreement checkbox', async () => {
+  const uploads = [], requests = [], selections = [];
+  const instance = page(application({
+    upload: async (file) => { uploads.push(file); return { id: 'river-asset' }; },
+    request: async (url, options) => { requests.push([url, options]); return { data: { id: 'river-job', status: 'queued' } }; },
+  }));
+  ready(instance);
+  instance.data.imagePath = ''; instance.data.imageOrigin = '';
+  global.wx.getLocation = () => { throw new Error('GPS must not be acquired automatically'); };
+  global.wx.chooseMedia = (options) => selections.push(options);
+  instance.poll = async () => {};
+  assert.equal(Object.hasOwn(instance.data, 'consent'), false);
+  await instance.submit();
+  assert.equal(uploads.length, 0);
+  instance.choose();
+  assert.equal(selections.length, 1);
+  selections[0].success({ tempFiles: [{ tempFilePath: '/tmp/selected-river.jpg', size: 2048 }] });
+  assert.equal(uploads.length, 0);
+  await instance.submit();
+  assert.deepEqual(uploads, ['/tmp/selected-river.jpg']);
+  assert.deepEqual(requests[0][1].data, { asset_id: 'river-asset' });
 });
 
 test('disabled assessment never uploads a new photo', async () => {

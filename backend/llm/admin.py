@@ -6,6 +6,7 @@ from django.utils import timezone
 from common.audit import audit
 from .models import GatewayConfig, UsageLedger
 from .services import ACTIVE, SHANGHAI
+from .sources import SCOPE_NAMES
 
 
 @admin.register(GatewayConfig)
@@ -34,7 +35,8 @@ class GatewayConfigAdmin(admin.ModelAdmin):
         totals = entries.aggregate(attempts=Count('id'), tokens=Sum('accounted_tokens'))
         reserved = entries.filter(status__in=ACTIVE).aggregate(tokens=Sum('reserved_tokens'))['tokens'] or 0
         success = entries.filter(status='succeeded').count()
-        return f"提交 {totals['attempts']} 次；成功 {success} 次；已结算 {totals['tokens'] or 0} token；待处理预留 {reserved} token"
+        buckets = "；".join(f"{name}成功 {entries.filter(scope=scope, status='succeeded').count()} 次" for scope, name in SCOPE_NAMES.items())
+        return f"{buckets}；提交 {totals['attempts']} 次；成功 {success} 次；已结算 {totals['tokens'] or 0} token；待处理预留 {reserved} token"
 
     def has_add_permission(self, request):
         return not GatewayConfig.objects.exists() and super().has_add_permission(request)
@@ -49,10 +51,10 @@ class GatewayConfigAdmin(admin.ModelAdmin):
 
 @admin.register(UsageLedger)
 class UsageLedgerAdmin(admin.ModelAdmin):
-    list_display = ('id', 'day', 'status', 'dispatched', 'used_image', 'accounted_tokens', 'usage_estimated', 'duration_ms', 'error_code')
-    list_filter = ('day', 'status', 'error_code', 'usage_estimated')
+    list_display = ('id', 'scope', 'day', 'status', 'dispatched', 'used_image', 'accounted_tokens', 'usage_estimated', 'duration_ms', 'error_code')
+    list_filter = ('scope', 'day', 'status', 'error_code', 'usage_estimated')
     # Private text, image and upstream id are deliberately absent from this model.
-    fields = ('id', 'day', 'status', 'dispatched', 'used_image', 'reserved_tokens', 'accounted_tokens',
+    fields = ('id', 'scope', 'day', 'status', 'dispatched', 'used_image', 'reserved_tokens', 'accounted_tokens',
               'usage', 'usage_estimated', 'max_output_tokens', 'timeout_seconds', 'duration_ms', 'error_code',
               'created_at', 'started_at', 'finished_at')
     readonly_fields = fields

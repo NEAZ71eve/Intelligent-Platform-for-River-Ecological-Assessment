@@ -97,7 +97,7 @@ test('avatar download failure preserves the account and offers a visible retry n
 test('old login API responses cannot overwrite another signed-in account', async () => {
   const pending = deferred(); let calls = 0;
   const { page, application } = fixture({ request: () => { calls += 1; return pending.promise; } }, false);
-  Object.assign(page.data, { agreed: true, devAvailable: true });
+  Object.assign(page.data, { devAvailable: true });
   const loggingIn = page.login(event('mode', 'dev'));
   application.session.save({ token: 'B-token', user: user('B') });
   pending.resolve({ data: { token: 'A-token', user: user() } }); await loggingIn;
@@ -108,7 +108,7 @@ test('a delayed native wx.login callback cannot start an API login after hide or
   for (const change of ['hide', 'unload']) {
     let calls = 0;
     const { page, logins } = fixture({ request: async () => { calls += 1; } }, false);
-    page.data.agreed = true; const loggingIn = page.login(event('mode', 'wechat'));
+    const loggingIn = page.login(event('mode', 'wechat'));
     if (change === 'hide') page.onHide(); else page.onUnload();
     logins[0].success({ code: 'only-used-if-active' }); await loggingIn; assert.equal(calls, 0);
   }
@@ -117,7 +117,7 @@ test('a delayed native wx.login callback cannot start an API login after hide or
 test('hidden login responses never save a session or issue a follow-up me request', async () => {
   const pending = deferred(); let calls = 0;
   const { page, application } = fixture({ request: () => { calls += 1; return pending.promise; } }, false);
-  Object.assign(page.data, { agreed: true, devAvailable: true });
+  Object.assign(page.data, { devAvailable: true });
   const loggingIn = page.login(event('mode', 'dev')); page.onHide();
   pending.resolve({ data: { token: 'A-token', user: user() } }); await loggingIn;
   assert.equal(application.session.token(), ''); assert.equal(calls, 1);
@@ -126,10 +126,29 @@ test('hidden login responses never save a session or issue a follow-up me reques
 test('successful development login validates me and duplicate taps do not send more login requests', async () => {
   const pending = deferred(); const calls = [];
   const { page, application } = fixture({ request: async (path) => { calls.push(path); return path === 'auth/dev/' ? pending.promise : { data: user() }; } }, false);
-  Object.assign(page.data, { agreed: true, devAvailable: true });
+  Object.assign(page.data, { devAvailable: true });
   const loggingIn = page.login(event('mode', 'dev')); await page.login(event('mode', 'dev'));
   pending.resolve({ data: { token: 'A-token', user: user() } }); await loggingIn;
   assert.deepEqual(calls, ['auth/dev/', 'me/']); assert.equal(page.data.user.id, 'A'); assert.equal(application.session.get().auth_mode, 'development');
+});
+
+test('login uses the native WeChat action without an extra agreement gate or modal', async () => {
+  const calls = [];
+  const { page, application, logins, modals, navigation } = fixture({ request: async (path) => {
+    calls.push(path);
+    return { data: path === 'auth/wechat/' ? { token: 'native-token', user: user() } : user() };
+  } }, false);
+  assert.equal(Object.hasOwn(page.data, 'agreed'), false);
+  page.legal(event('kind', 'terms')); page.legal(event('kind', 'privacy'));
+  assert.deepEqual(navigation, ['/pages/legal/index?kind=terms', '/pages/legal/index?kind=privacy']);
+  const loggingIn = page.login(event('mode', 'wechat'));
+  assert.equal(logins.length, 1);
+  assert.equal(calls.length, 0);
+  logins[0].success({ code: 'native-action-code' });
+  await loggingIn;
+  assert.deepEqual(calls, ['auth/wechat/', 'me/']);
+  assert.equal(application.session.token(), 'native-token');
+  assert.equal(modals.length, 0);
 });
 
 test('logout and deletion confirmations stay bound to their original account', async () => {
@@ -229,7 +248,7 @@ test('pull-to-refresh and repeated actions cannot bypass a privacy change still 
   } });
   const saving = page.privacyChange({ detail: { value: false } }); page.onHide(); const showing = page.onShow();
   await page.onPullDownRefresh(); await page.load(); await page.privacyChange({ detail: { value: true } });
-  Object.assign(page.data, { agreed: true, devAvailable: true }); await page.login(event('mode', 'dev'));
+  Object.assign(page.data, { devAvailable: true }); await page.login(event('mode', 'dev'));
   assert.deepEqual(calls, [['me/', 'PATCH']]); assert.equal(page.data.loading, true); assert.equal(page.data.user, null);
   pending.resolve(); await saving; await showing;
   assert.deepEqual(calls, [['me/', 'PATCH'], ['health/', undefined], ['me/', undefined]]);

@@ -33,9 +33,8 @@
       <view class="nearby gap" wx:if="{{nearby}}"><view class="title">候选：{{nearby.water_body_name}}</view><view class="small muted">仅供手动确认，不代表到访认证。</view><button class="secondary gap" disabled="{{busy}}" bindtap="acceptNearby">关联这个候选水体</button></view>
       <button class="text-button gap" wx:if="{{location || locating}}" disabled="{{busy}}" bindtap="clearLocation">本次不保存位置</button>
     </view>
-    <checkbox-group class="upload-consent" bindchange="consentChange" wx:if="{{imageOrigin !== 'history'}}"><label><checkbox value="agree" checked="{{consent}}" color="#427450" />我同意上传此图片及已选的可选位置</label></checkbox-group>
     <view class="small muted gap">图片与观察记录仅本人可见，可随时删除。请避免上传他人隐私。<text class="privacy-link" bindtap="privacy">隐私说明</text></view>
-    <button wx:if="{{imageOrigin !== 'history'}}" class="primary gap" disabled="{{busy || locating || !capabilityKnown || !capability.enabled || !imagePath || !consent || task.status === 'queued' || task.status === 'running'}}" loading="{{busy}}" bindtap="submit">{{busy ? '正在上传' : '上传并观察漂浮物'}}</button>
+    <button wx:if="{{imageOrigin !== 'history'}}" class="primary gap" disabled="{{busy || locating || !capabilityKnown || !capability.enabled || !imagePath || task.status === 'queued' || task.status === 'running'}}" loading="{{busy}}" bindtap="submit">{{busy ? '正在上传' : '上传并观察漂浮物'}}</button>
   </block>
   <view class="card section" wx:if="{{task && !task.result_view}}"><view class="row"><text class="title">{{task.status_label}}</text><text class="pill">任务状态</text></view><view class="copy">{{task.error_label || (task.status === 'queued' ? '照片正在排队，请稍候。' : task.status === 'running' ? '正在分析图片，请稍候。' : '本次未产生观察结论。')}}</view><view class="small muted gap">{{task.created_label}}</view><button class="secondary gap" bindtap="refreshTask">刷新任务状态</button></view>
   <block wx:if="{{task.result_view}}">
@@ -44,7 +43,7 @@
     <view class="card section"><view class="title">规则解释与观察建议</view><view class="copy" wx:for="{{task.result_view.causes}}" wx:key="*this">· {{item}}</view><view class="divider"></view><view class="copy" wx:for="{{task.result_view.suggestions}}" wx:key="*this">· {{item}}</view></view>
     <view class="card section"><view class="title">本次任务信息</view><view class="small muted gap">模型：{{task.result_view.model_name}} · {{task.result_view.model_version}}</view><view class="small muted">规则版本：{{task.result_view.rule_version}}</view><view class="small muted">提交时间：{{task.created_label}}</view><view class="small muted">关联水体：{{task.water_body.name || '未关联'}}</view><view class="small muted" wx:if="{{task.coordinate_system}}">本记录包含用户主动提供的位置 · {{task.coordinate_system}} · 仅本人可见</view></view>
     <view class="notice">{{task.result_view.disclaimer}}</view>
-    <view class="card section"><view class="title">继续理解这次观察</view><view class="copy">主动选择 DeepSeek 解读时会单独确认分享范围，图片默认不发送。它不会改变检测框和教学规则分，也不能据此判断真实水质。</view><button class="secondary gap" bindtap="openAI" disabled="{{busy}}">AI 解读本次河道观察</button></view>
+    <view class="card section"><view class="title">继续理解这次观察</view><view class="copy">与 DeepSeek Flash 讨论观察结果，图片由你主动选择是否附带。解读不会改变检测框和教学规则分，也不能据此判断真实水质。</view><button class="secondary gap" bindtap="openAI" disabled="{{busy}}">AI 解读本次河道观察</button></view>
   </block>
   <button class="danger gap" wx:if="{{task}}" data-id="{{task.id}}" disabled="{{busy}}" bindtap="remove">删除此记录和图片</button>
   <page-state loading="{{loading}}" error="{{error}}" bindretry="refreshTask" />

@@ -1,3 +1,5 @@
+const { selectTab } = require('../../lib/tab-bar');
+const { entryUrl } = require('../../lib/llm');
 const { app, detail } = require('../../lib/page');
 const { message } = require('../../lib/format');
 const { loadAll, selectRegion } = require('../../lib/region');
@@ -20,6 +22,7 @@ Page({
   },
   onShow() {
     if (this._alive === false) return;
+    selectTab(this, 3);
     const returning = this._hidden;
     this._hidden = false;
     const pending = this.consumePending();
@@ -157,5 +160,12 @@ Page({
     const { kind, id } = event.currentTarget.dataset;
     const items = kind === 'content' ? this.data.contents : kind === 'route' ? this.data.routes : [];
     if (items.some((item) => item.id === id)) detail(kind, id);
+  },
+  openAI() {
+    if (!this.visible() || this.data.regionError) return;
+    const regions = this.data.regions.filter((item) => item.id);
+    const shared = app().globalData.region;
+    const region = regions.find((item) => item.id === this.data.regionId || item.slug === this.data.regionId) || regions.find((item) => shared && item.id === shared.id) || regions[0];
+    if (region) wx.navigateTo({ url: entryUrl('learn', 'region', region.id) });
   },
 });

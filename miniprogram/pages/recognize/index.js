@@ -1,10 +1,12 @@
+const { selectTab } = require('../../lib/tab-bar');
 const { app, requireLogin, toast, finish, detail } = require('../../lib/page');
 const { list, task, message } = require('../../lib/format');
 const { capability } = require('../../lib/recognition');
 Page({
-  data: { loading: false, error: '', busy: false, imagePath: '', imageOrigin: '', imageUnavailable: '', task: null, jobs: [], loggedIn: false, consent: false, capability: capability(null), capabilityKnown: false, capabilityError: '' },
+  data: { loading: false, error: '', busy: false, imagePath: '', imageOrigin: '', imageUnavailable: '', task: null, jobs: [], loggedIn: false, capability: capability(null), capabilityKnown: false, capabilityError: '' },
   onShow() {
     this._destroyed = false;
+    selectTab(this, 2);
     this._visible = true;
     this._pollCount = 0;
     const current = app().session.get();
@@ -32,7 +34,7 @@ Page({
   clearPrivate() {
     this.stopPolling();
     this._selectionVersion = (this._selectionVersion || 0) + 1;
-    this.setData({ jobs: [], task: null, imagePath: '', imageOrigin: '', imageUnavailable: '', consent: false, busy: false });
+    this.setData({ jobs: [], task: null, imagePath: '', imageOrigin: '', imageUnavailable: '', busy: false });
   },
   async load() {
     if (this._destroyed) return;
@@ -87,7 +89,6 @@ Page({
     } catch (error) { if (!this._destroyed && generation === this._loadGeneration) this.authError(error); }
     finally { if (!this._destroyed && generation === this._loadGeneration) finish(this); }
   },
-  consentChange(event) { this.setData({ consent: event.detail.value.includes('agree') }); },
   choose() {
     if (this._destroyed || this.data.busy || !requireLogin()) return;
     const sentToken = app().session.token();
@@ -102,7 +103,7 @@ Page({
     }, fail: (error) => { if (!this._destroyed && !/cancel/i.test(error.errMsg || '')) toast(new Error('未能选择图片，请检查相机与相册权限')); } });
   },
   async submit() {
-    if (this._destroyed || this.data.busy || this.data.imageOrigin === 'history' || (this.data.task && ['queued', 'running'].includes(this.data.task.status)) || !this.data.imagePath || !this.data.consent || !requireLogin()) return;
+    if (this._destroyed || this.data.busy || this.data.imageOrigin === 'history' || (this.data.task && ['queued', 'running'].includes(this.data.task.status)) || !this.data.imagePath || !requireLogin()) return;
     const sentToken = app().session.token();
     this.setData({ busy: true, error: '' });
     try {

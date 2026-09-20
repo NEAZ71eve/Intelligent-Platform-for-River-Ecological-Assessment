@@ -1,13 +1,13 @@
 <view class="page">
-  <text class="eyebrow">MY GREEN LIFE / 我的</text>
+  <view class="profile-brand"><text class="eyebrow">MY GREEN LIFE / 我的</text><view wx:if="{{user}}" class="profile-brand-mark"><image class="brand-logo" src="/assets/brand/hyhq-logo.jpg" mode="aspectFit" aria-label="海晏河清智慧平台标志" /></view></view>
   <view class="page-title">留住每一份绿意。</view>
   <view class="subtitle">你的收藏、发现与校园足迹。</view>
   <page-state loading="{{loading}}" error="{{error && !busy ? error : ''}}" bindretry="load" />
-  <view wx:if="{{!loading && !user}}" class="card section">
-    <view class="guest-mark">清</view><view class="guest-title">欢迎来到海晏河清</view><view class="copy center"><view>游客可以自由浏览。登录后，</view><view>保存收藏与记录，上传识别图片。</view></view>
-    <checkbox-group bindchange="consent" class="consent"><label><checkbox value="agree" checked="{{agreed}}" color="#326b49" />我已阅读并同意</label><text data-kind="terms" bindtap="legal">用户协议</text><text>和</text><text data-kind="privacy" bindtap="legal">隐私说明</text></checkbox-group>
-    <button class="primary gap" loading="{{busy}}" disabled="{{busy || !agreed}}" data-mode="wechat" bindtap="login">微信登录</button>
-    <button wx:if="{{devAvailable}}" class="secondary gap" loading="{{busy}}" disabled="{{busy || !agreed}}" data-mode="dev" bindtap="login">开发模拟登录</button>
+  <view wx:if="{{!loading && !user}}" class="card section login-card">
+    <view class="guest-mark"><image class="brand-logo" src="/assets/brand/hyhq-logo.jpg" mode="aspectFit" aria-label="海晏河清智慧平台标志" /></view><view class="guest-title">欢迎来到海晏河清</view><view class="copy center"><view>游客可以自由浏览。登录后，</view><view>保存收藏与记录，上传识别图片。</view></view>
+    <view class="login-notice">继续注册或登录，即表示你已阅读并同意<text class="legal-link" data-kind="terms" bindtap="legal">《用户协议》</text>与<text class="legal-link" data-kind="privacy" bindtap="legal">《隐私说明》</text>。</view>
+    <button class="primary gap" loading="{{busy}}" disabled="{{busy}}" data-mode="wechat" bindtap="login">微信登录</button>
+    <button wx:if="{{devAvailable}}" class="secondary gap" loading="{{busy}}" disabled="{{busy}}" data-mode="dev" bindtap="login">开发模拟登录</button>
     <view class="small muted gap center" wx:if="{{devAvailable}}">开发账号仅供联调，不建立微信身份。</view>
   </view>
   <block wx:if="{{!loading && user}}">
@@ -17,6 +17,6 @@
     <view class="actions"><button class="secondary" disabled="{{busy}}" bindtap="logout">退出登录</button><button class="danger" disabled="{{busy}}" bindtap="deleteAccount">注销账号</button></view>
   </block>
   <view wx:if="{{!loading}}" class="card section"><view class="row setting-link" bindtap="feedback"><view class="grow"><view class="title">我的反馈</view><view class="copy">提交问题并查看处理进度</view></view><text class="chevron">›</text></view></view>
-  <view wx:if="{{!loading}}" class="card section"><view class="row setting-link" bindtap="aiHistory"><view class="grow"><view class="title">我的 AI 解读</view><view class="copy">查看绑定识别结果的会话与每日剩余额度</view></view><text class="chevron">›</text></view></view>
+  <view wx:if="{{!loading}}" class="card section"><view class="row setting-link" bindtap="aiHistory"><view class="grow"><view class="title">我的 AI 对话</view><view class="copy">查看与 DeepSeek Flash 的生态问答与识别解读</view></view><text class="chevron">›</text></view></view>
   <view class="footer-note">每一条记录，都由你掌握</view>
 </view>

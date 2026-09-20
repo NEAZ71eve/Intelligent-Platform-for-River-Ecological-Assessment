@@ -1,8 +1,8 @@
 const { app } = require('../../lib/page');
 const { message } = require('../../lib/format');
-const { sessionView, quotaView, readPage } = require('../../lib/llm');
+const { sessionView, readPage } = require('../../lib/llm');
 Page({
-  data: { loggedIn: false, loading: true, loadingMore: false, busy: false, error: '', moreError: '', statusError: '', sessions: [], next: '', status: null, quota: null },
+  data: { loggedIn: false, loading: true, loadingMore: false, busy: false, error: '', moreError: '', statusError: '', sessions: [], next: '', status: null },
   onLoad() { this._alive = true; },
   async onShow() {
     this._visible = true;
@@ -14,7 +14,7 @@ Page({
   onUnload() { this._alive = false; this.invalidate(); },
   active() { return this._alive !== false && this._visible !== false; },
   invalidate() { this._generation = (this._generation || 0) + 1; this._action = (this._action || 0) + 1; this._showVersion = (this._showVersion || 0) + 1; this._confirming = false; },
-  clearView() { this.setData({ sessions: [], next: '', quota: null, loading: false, loadingMore: false, busy: false }); },
+  clearView() { this.setData({ sessions: [], next: '', loading: false, loadingMore: false, busy: false }); },
   hasMutation() { return !!(this._mutation && !this._mutation.settled && this._mutation.token === app().session.token()); },
   current(generation, token) {
     if (!this.active() || generation !== this._generation) return false;
@@ -40,8 +40,8 @@ Page({
     const path = more ? this.data.next : 'llm/sessions/', seen = more ? new Set(this._seen || []) : new Set();
     this.setData({ loggedIn: true, loading: !more, loadingMore: more, error: '', moreError: '' });
     const status = !more ? app().api.request('llm/status/').then((response) => {
-      if (this.current(generation, token)) this.setData({ status: response.data, quota: quotaView(response.data.quota), statusError: '' });
-    }).catch((error) => { if (this.current(generation, token)) this.setData({ statusError: message(error), quota: null }); }) : Promise.resolve();
+      if (this.current(generation, token)) this.setData({ status: response.data, statusError: '' });
+    }).catch((error) => { if (this.current(generation, token)) this.setData({ statusError: message(error) }); }) : Promise.resolve();
     try {
       const response = await app().api.request(path, more ? undefined : { data: { page_size: 20 } });
       if (!this.current(generation, token)) return;
@@ -67,7 +67,7 @@ Page({
       this.invalidate(); this.clearView(); this.setData({ loggedIn: Boolean(app().session.token()), error: '登录状态已变化，请刷新会话列表。' }); return false;
     };
     this._confirming = true; let handled = false;
-    wx.showModal({ title: '删除 AI 解读会话', content: '删除平台保存的会话与问答记录，不影响原识别任务。已提交给 DeepSeek 的请求不会因此撤回，已使用的额度也不会恢复。', confirmText: '删除', confirmColor: '#a25e4a', success: async (result) => {
+    wx.showModal({ title: '删除 AI 对话', content: '删除平台保存的这段对话，不影响原始资料或识别任务。已提交给 DeepSeek 的请求不会因此撤回。', confirmText: '删除', confirmColor: '#a25e4a', success: async (result) => {
       if (handled) return; handled = true;
       if (!current()) { if (this.active() && this._token !== app().session.token()) { this.invalidate(); this.clearView(); } return; }
       this._confirming = false; if (!result.confirm) return;

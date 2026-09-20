@@ -6,7 +6,7 @@ const pending = (job) => job && ['queued', 'running'].includes(job.status);
 
 Page({
   data: {
-    loading: false, error: '', busy: false, loggedIn: false, consent: false,
+    loading: false, error: '', busy: false, loggedIn: false,
     capability: capability(null), capabilityKnown: false, capabilityError: '',
     imagePath: '', imageOrigin: '', imageReady: false, imageUnavailable: '', task: null, jobs: [],
     waterBodies: [NONE], waterIndex: 0, waterNotice: '', location: null, locating: false, locationNotice: '', nearby: null,
@@ -44,7 +44,7 @@ Page({
   clearPrivate() {
     this.clearSelection();
     this._locationVersion = (this._locationVersion || 0) + 1;
-    this.setData({ jobs: [], consent: false, location: null, nearby: null, locating: false, locationNotice: '', waterIndex: 0 });
+    this.setData({ jobs: [], location: null, nearby: null, locating: false, locationNotice: '', waterIndex: 0 });
   },
   current(token) {
     if (this._destroyed) return false;
@@ -104,7 +104,6 @@ Page({
       }
     } finally { if (!this._destroyed && generation === this._loadGeneration) finish(this); }
   },
-  consentChange(event) { this.setData({ consent: event.detail.value.includes('agree') }); },
   choose() {
     if (this._destroyed || this.data.busy || !requireLogin()) return;
     const token = app().session.token();
@@ -118,7 +117,7 @@ Page({
     }, fail: (error) => { if (!this._destroyed && !/cancel/i.test(error.errMsg || '')) toast(new Error('未能选择图片，请检查相机与相册权限')); } });
   },
   async submit() {
-    if (this._destroyed || this.data.busy || this.data.locating || this.data.imageOrigin !== 'selected' || !this.data.imagePath || !this.data.consent || pending(this.data.task) || !requireLogin()) return;
+    if (this._destroyed || this.data.busy || this.data.locating || this.data.imageOrigin !== 'selected' || !this.data.imagePath || pending(this.data.task) || !requireLogin()) return;
     if (!this.data.capabilityKnown || !this.data.capability.enabled) { this.setData({ error: '河道观察模型未启用或状态未知，请稍后刷新。' }); return; }
     const token = app().session.token();
     const version = this._selectionVersion;

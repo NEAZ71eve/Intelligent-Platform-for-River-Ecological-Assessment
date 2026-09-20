@@ -121,10 +121,15 @@ class LLMLocalHTTPTests(LiveServerTestCase):
     def test_real_http_image_chat_five_turns_idempotency_ownership_and_deletion(self):
         login = self.login('llm-http-primary-device-0001')
         job = self.upload_recognition_fixture(login)
-        # Merely selecting a source/image is insufficient: explicit consent is required.
-        code, _ = self.http('POST', '/api/v1/llm/sessions/', token=login['token'],
-                            data={'recognition_job_id': str(job.pk), 'include_image': True})
-        self.assertEqual(code, 400)
+        # Registration explains external AI; starting a session needs no repeat
+        # consent field and never implicitly includes an image or invokes AI.
+        code, created = self.http('POST', '/api/v1/llm/sessions/', token=login['token'],
+                                  data={'recognition_job_id': str(job.pk)})
+        self.assertEqual(code, 201)
+        self.assertFalse(created['data']['include_image'])
+        self.generate.assert_not_called()
+        code, _ = self.http('DELETE', f"/api/v1/llm/sessions/{created['data']['id']}/", token=login['token'])
+        self.assertEqual(code, 204)
         session = self.session(login, job)
         other = self.login('llm-http-other-device-0002')
         for method, path in [('GET', f"/api/v1/llm/sessions/{session['id']}/"),

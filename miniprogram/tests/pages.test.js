@@ -159,7 +159,7 @@ test('unloading during upload prevents creating a new recognition job', async ()
   const upload = deferred();
   let requests = 0;
   const instance = page('recognize', loggedApp({ upload: () => upload.promise, request: async () => { requests += 1; return { data: {} }; } }));
-  Object.assign(instance.data, { imagePath: '/tmp/chosen.jpg', imageOrigin: 'selected', consent: true });
+  Object.assign(instance.data, { imagePath: '/tmp/chosen.jpg', imageOrigin: 'selected' });
   const submitting = instance.submit();
   instance.onUnload();
   instance.setData = () => { throw new Error('setData after unload'); };
@@ -178,6 +178,27 @@ test('canceling image selection preserves the current photo and result without e
   options.fail({ errMsg: 'chooseMedia:fail cancel' });
   assert.equal(instance.data.imagePath, '/tmp/current.jpg');
   assert.equal(instance.data.task.id, 'current');
+});
+
+test('flower selection stays a native user action and uploads only on submit without an agreement gate', async () => {
+  const uploads = [], jobs = [], selections = [];
+  const instance = page('recognize', loggedApp({
+    upload: async (image, purpose) => { uploads.push([image, purpose]); return { id: 'chosen-asset' }; },
+    request: async (path, options) => { jobs.push([path, options]); return { data: { id: 'new-job', status: 'queued' } }; },
+  }));
+  global.wx.chooseMedia = (options) => selections.push(options);
+  assert.equal(Object.hasOwn(instance.data, 'consent'), false);
+  assert.equal(uploads.length, 0);
+  instance.choose();
+  assert.equal(selections.length, 1);
+  assert.deepEqual(selections[0].sourceType, ['album', 'camera']);
+  selections[0].success({ tempFiles: [{ tempFilePath: '/tmp/selected-flower.jpg', size: 2048 }] });
+  assert.equal(uploads.length, 0);
+  instance.poll = async () => {};
+  await instance.submit();
+  assert.deepEqual(uploads, [['/tmp/selected-flower.jpg', 'recognition']]);
+  assert.equal(jobs.length, 1);
+  assert.deepEqual(jobs[0][1].data, { asset_id: 'chosen-asset' });
 });
 
 test('expired historical thumbnail keeps the original model version and provides an image notice', async () => {
@@ -210,7 +231,7 @@ test('401 during submission clears private data and releases the busy state', as
   const app = loggedApp({});
   app.api.upload = async () => { app.session.clear(); throw Object.assign(new Error('Session expired'), { status: 401 }); };
   const instance = page('recognize', app);
-  Object.assign(instance.data, { imagePath: '/tmp/chosen.jpg', consent: true });
+  Object.assign(instance.data, { imagePath: '/tmp/chosen.jpg' });
   await instance.submit();
   assert.equal(instance.data.imagePath, '');
   assert.equal(instance.data.loggedIn, false);
@@ -230,7 +251,7 @@ test('renewing the same account session during upload releases stale busy state 
   });
   const instance = page('recognize', app);
   await instance.onShow();
-  Object.assign(instance.data, { imagePath: '/tmp/chosen.jpg', imageOrigin: 'selected', consent: true });
+  Object.assign(instance.data, { imagePath: '/tmp/chosen.jpg', imageOrigin: 'selected' });
   const submitting = instance.submit();
   assert.equal(instance.data.busy, true);
   instance.onHide();

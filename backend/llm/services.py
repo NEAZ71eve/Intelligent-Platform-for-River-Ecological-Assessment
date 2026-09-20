@@ -6,7 +6,7 @@ from zoneinfo import ZoneInfo
 
 from django.conf import settings
 from django.db import transaction
-from django.db.models import Q, Sum
+from django.db.models import F, Q, Sum
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 
@@ -16,12 +16,13 @@ from common.audit import audit
 from common.exceptions import ServiceError
 from recognition.models import RecognitionJob
 from .models import GatewayConfig, LLMSession, LLMTurn, UsageLedger
+from .sources import ALLOWED_SOURCES, SCOPE_NAMES, SOURCE_FIELDS, public_queryset, public_source, visible_sources_filter
 
 CONSENT_VERSION = 'deepseek-v1'
 SHANGHAI = ZoneInfo('Asia/Shanghai')
 ACTIVE = ('queued', 'running')
 INPUT_TOKEN_RESERVATION = 32768
-NOTICE = 'AI 解读会将问题、识别结果、相关科普及你选择附带的图片发送给 DeepSeek。图片不会附带定位信息。AI 可能出错，不能替代植物鉴定或水质检测。每人每天最多 5 回合，首次解读也计入；失败不扣成功回合，但有提交次数限制。'
+NOTICE = 'AI 助手将问题、当前页面公开资料、相关识别结果及你主动选择附带的图片发送给 DeepSeek。不会附带用户精确定位。AI 可能出错，请结合资料来源核实，不能替代植物鉴定、水质检测或实际导航。'
 
 
 def lock_owner(owner):
@@ -44,24 +45,24 @@ def effective_limit(config):
     return min(config.daily_turn_limit, getattr(settings, 'LLM_DAILY_TURN_LIMIT', 5), 5)
 
 
-def quota(owner, config=None, now=None):
+def quota(owner, config=None, now=None, scope='recognition'):
     now = now or timezone.now()
     config = config or get_config()
     day = now.astimezone(SHANGHAI).date()
-    entries = UsageLedger.objects.filter(owner=owner, day=day)
+    entries = UsageLedger.objects.filter(owner=owner, scope=scope, day=day)
     used = entries.filter(status='succeeded').count()
     reserved = entries.filter(status__in=ACTIVE).count()
     limit = effective_limit(config)
-    return {'date': day.isoformat(), 'limit': limit, 'used': used, 'reserved': reserved,
+    return {'scope': scope, 'date': day.isoformat(), 'limit': limit, 'used': used, 'reserved': reserved,
             'remaining': max(0, limit - used - reserved),
             'reset_at': datetime.combine(day + timedelta(days=1), time(), tzinfo=SHANGHAI).isoformat()}
 
 
-def status(owner=None):
+def status(owner=None, scope='recognition'):
     config = get_config()
-    return {'enabled': enabled(config), 'notice': NOTICE, 'consent_version': CONSENT_VERSION,
+    return {'enabled': enabled(config), 'scope': scope, 'model': 'deepseek-flash', 'notice': NOTICE, 'consent_version': CONSENT_VERSION,
             'daily_limit': effective_limit(config),
-            'quota': quota(owner, config) if owner is not None and owner.is_authenticated else None}
+            'quota': quota(owner, config, scope=scope) if owner is not None and owner.is_authenticated else None}
 
 
 def require_enabled(config):
@@ -77,14 +78,22 @@ def source_job(session):
 
 def validate_source(session, now=None):
     now = now or timezone.now()
-    job = source_job(session)
-    if (session.expires_at <= now or not job or job.status != 'succeeded' or job.expires_at <= now
-            or not User.objects.filter(pk=session.owner_id, is_active=True).exists()):
-        raise ServiceError('原识别记录已过期、删除或不可用，请重新识别。', 'SOURCE_UNAVAILABLE', 409)
-    return job
+    if session.expires_at <= now or not User.objects.filter(pk=session.owner_id, is_active=True).exists():
+        raise ServiceError('会话已过期或账号不可用，请重新开始。', 'SOURCE_UNAVAILABLE', 409)
+    if session.scope == 'recognition':
+        source = source_job(session)
+        if not source or source.status != 'succeeded' or source.expires_at <= now:
+            raise ServiceError('原识别记录已过期、删除或不可用，请重新识别。', 'SOURCE_UNAVAILABLE', 409)
+    else:
+        source = public_source(session)
+        if not source:
+            raise ServiceError('关联资料已下架、删除或不可用，请选择当前公开页面。', 'SOURCE_UNAVAILABLE', 409)
+    return source
 
 
 def image_available(session, job=None, now=None):
+    if session.scope != 'recognition':
+        return False
     now = now or timezone.now()
     job = job or source_job(session)
     asset = job.asset if job and job.asset_id else None
@@ -99,9 +108,11 @@ def image_available(session, job=None, now=None):
 
 def visible_sessions(owner):
     now = timezone.now()
-    return LLMSession.objects.filter(owner=owner, expires_at__gt=now).filter(
-        Q(recognition_job__status='succeeded', recognition_job__expires_at__gt=now) |
-        Q(assessment_job__status='succeeded', assessment_job__expires_at__gt=now))
+    private = Q(scope='recognition') & (
+        Q(recognition_job__status='succeeded', recognition_job__expires_at__gt=now, recognition_job__owner_id=F('owner_id')) |
+        Q(assessment_job__status='succeeded', assessment_job__expires_at__gt=now, assessment_job__owner_id=F('owner_id')))
+    public = Q(scope__in=['explore', 'learn']) & visible_sources_filter()
+    return LLMSession.objects.filter(owner=owner, expires_at__gt=now).filter(private | public)
 
 
 @transaction.atomic
@@ -112,20 +123,31 @@ def create_session(owner, data):
     now = timezone.now()
     if visible_sessions(owner).count() >= 50:
         raise ServiceError('会话数量已达到上限，请先删除不再需要的会话。', 'SESSION_LIMIT', 429)
-    if data.get('recognition_job_id'):
-        kind, model, field = 'recognition', RecognitionJob, 'recognition_job'
+    scope = data.get('scope', 'recognition')
+    expires = now + timedelta(days=getattr(settings, 'LLM_RETENTION_DAYS', 30))
+    if scope == 'recognition':
+        kind, model, field = (('recognition', RecognitionJob, 'recognition_job') if data.get('recognition_job_id')
+                              else ('assessment', AssessmentJob, 'assessment_job'))
+        source = get_object_or_404(model, pk=data[f'{field}_id'], owner=owner)
+        if source.status != 'succeeded' or source.expires_at <= now:
+            raise ServiceError('请先完成识别，并选择仍在有效期内的记录。', 'SOURCE_UNAVAILABLE', 409)
+        expires = min(expires, source.expires_at)
+        title = '花卉识别解读' if kind == 'recognition' else '河道图像解读'
+        summary = ('基于五类花卉模型的候选与不确定性进行解读，不能代替专业植物鉴定。' if kind == 'recognition'
+                   else '基于实验漂浮物检测和教学规则分进行解读，不能据此判定真实水质或污染程度。')
     else:
-        kind, model, field = 'assessment', AssessmentJob, 'assessment_job'
-    job = get_object_or_404(model, pk=data[f'{field}_id'], owner=owner)
-    if job.status != 'succeeded' or job.expires_at <= now:
-        raise ServiceError('请先完成识别，并选择仍在有效期内的记录。', 'SOURCE_UNAVAILABLE', 409)
-    title = '花卉识别解读' if kind == 'recognition' else '河道图像解读'
-    summary = ('基于五类花卉模型的候选与不确定性进行解读，不能代替专业植物鉴定。' if kind == 'recognition'
-               else '基于实验漂浮物检测和教学规则分进行解读，不能据此判定真实水质或污染程度。')
-    session = LLMSession(owner=owner, **{field: job}, kind=kind, title=title, context_summary=summary,
-                         consent_version=data['consent_version'], include_image=data['include_image'],
-                         expires_at=min(job.expires_at, now + timedelta(days=getattr(settings, 'LLM_RETENTION_DAYS', 30))))
-    if session.include_image and not image_available(session, job, now):
+        source_type = data.get('source_type')
+        if source_type not in ALLOWED_SOURCES.get(scope, set()):
+            raise ServiceError('此板块不支持所选资料类型。', 'LLM_SOURCE_INVALID', 400)
+        kind, field = scope, SOURCE_FIELDS[source_type]
+        source = get_object_or_404(public_queryset(source_type), pk=data['source_id'])
+        title = SCOPE_NAMES[scope] + '助手'
+        summary = ('结合当前公开地点、水体与标明来源的环境资料，帮助理解生态导览。' if scope == 'explore'
+                   else '结合当前已发布的科普文章和预设路线，帮助理解知识与安排学习顺序。')
+    session = LLMSession(owner=owner, **{field: source}, scope=scope, kind=kind, title=title, context_summary=summary,
+                         consent_version=data.get('consent_version', ''), include_image=data.get('include_image', False),
+                         expires_at=expires)
+    if session.include_image and not image_available(session, source, now):
         raise ServiceError('原图已过期或无法读取；请取消附带图片，仅解读识别结果，或重新上传。', 'IMAGE_UNAVAILABLE', 409)
     session.save()
     audit('llm.session_created', owner, session.pk)
@@ -184,18 +206,16 @@ def enqueue_turn(owner, session_id, data):
         return turn, False
     require_enabled(config)
     validate_source(session)
-    if session.consent_version != CONSENT_VERSION:
-        raise ServiceError('请重新阅读外部 AI 服务说明并创建会话。', 'CONSENT_REQUIRED', 409)
     now = timezone.now()
     day = now.astimezone(SHANGHAI).date()
     if UsageLedger.objects.filter(owner=owner, status__in=ACTIVE).exists():
         raise ServiceError('你已有一条解读正在处理，请等待完成后再提问。', 'LLM_USER_BUSY', 409)
     today = UsageLedger.objects.filter(day=day)
-    user_today = today.filter(owner=owner)
+    user_today = today.filter(owner=owner, scope=session.scope)
     if user_today.filter(status__in=(*ACTIVE, 'succeeded')).count() >= effective_limit(config):
-        raise ServiceError('今日可用回合已用完，请明天再来。', 'LLM_DAILY_LIMIT', 429)
+        raise ServiceError(f'{SCOPE_NAMES[session.scope]}今日对话次数已用完，请明天再来。', 'LLM_DAILY_LIMIT', 429)
     if user_today.count() >= config.per_user_attempt_limit:
-        raise ServiceError('今日提交次数已达到上限，请明天再试。', 'LLM_ATTEMPT_LIMIT', 429)
+        raise ServiceError(f'{SCOPE_NAMES[session.scope]}今日提交次数已达到上限，请明天再试。', 'LLM_ATTEMPT_LIMIT', 429)
     if UsageLedger.objects.filter(status__in=ACTIVE).count() >= config.queue_limit:
         raise ServiceError('等待解读的请求较多，请稍后再试。', 'LLM_QUEUE_FULL', 429)
     if today.count() >= config.global_daily_attempt_limit:
@@ -205,7 +225,7 @@ def enqueue_turn(owner, session_id, data):
     reserved = today.filter(status__in=ACTIVE).aggregate(total=Sum('reserved_tokens'))['total'] or 0
     if settled + reserved + reservation > config.global_daily_token_limit:
         raise ServiceError('今日全站 AI 用量预算已达上限，请明天再试。', 'LLM_BUDGET_LIMIT', 429)
-    entry = UsageLedger.objects.create(owner=owner, session=session, request_id=data['request_id'], fingerprint=digest,
+    entry = UsageLedger.objects.create(owner=owner, session=session, scope=session.scope, request_id=data['request_id'], fingerprint=digest,
         day=day, reserved_tokens=reservation, max_output_tokens=config.max_output_tokens, timeout_seconds=config.timeout_seconds)
     turn = LLMTurn.objects.create(session=session, ledger=entry, question=data['question'])
     audit('llm.queued', owner, turn.pk)
@@ -226,7 +246,7 @@ def cleanup_expired(now=None, dry_run=False):
     now = now or timezone.now()
     if not dry_run:
         get_config(locked=True)
-    sessions = LLMSession.objects.filter(Q(expires_at__lte=now) | Q(recognition_job__expires_at__lte=now) | Q(assessment_job__expires_at__lte=now))
+    sessions = LLMSession.objects.filter(Q(expires_at__lte=now) | Q(recognition_job__expires_at__lte=now) | Q(assessment_job__expires_at__lte=now) | ~visible_sources_filter())
     # Keep a minimum of thirty full calendar days, including today's accounting.
     cutoff = now.astimezone(SHANGHAI).date() - timedelta(days=max(30, getattr(settings, 'LLM_RETENTION_DAYS', 30)))
     entries = UsageLedger.objects.exclude(status__in=ACTIVE).filter(day__lt=cutoff, turn__isnull=True)

@@ -9,6 +9,7 @@ from common.exceptions import ServiceError
 from common.models import TaskLog
 from . import provider
 from .context import build_messages
+from .public_context import build_public_context, revision_for
 from .models import LLMSession, LLMTurn, UsageLedger
 from .services import (ACTIVE, _settle_locked, enabled, get_config, recover_locked,
                        validate_source, image_available)
@@ -49,7 +50,7 @@ def _claim():
 
 
 @transaction.atomic
-def _before_dispatch(turn_id, used_image):
+def _before_dispatch(turn_id, used_image, context_revision=''):
     config = get_config(locked=True)
     turn = LLMTurn.objects.select_related('session', 'ledger').filter(pk=turn_id, status='running').first()
     if not turn or turn.ledger.status != 'running':
@@ -59,6 +60,10 @@ def _before_dispatch(turn_id, used_image):
     job = validate_source(turn.session)
     if used_image and not image_available(turn.session, job):
         raise ServiceError('原图已过期或被删除，请稍后仅解读识别结果。', 'IMAGE_UNAVAILABLE', 409)
+    if turn.session.scope != 'recognition':
+        if not context_revision or revision_for(build_public_context(turn.session, job)) != context_revision:
+            raise ServiceError('页面资料已更新，请重新提问以使用最新公开内容。', 'LLM_CONTEXT_CHANGED', 409)
+        LLMTurn.objects.filter(pk=turn.pk, status='running').update(context_revision=context_revision)
     if turn.ledger.lease_until <= timezone.now():
         raise ServiceError('解读准备超时，请稍后重试。', 'LLM_WORKER_TIMEOUT', 409)
     UsageLedger.objects.filter(pk=turn.ledger_id, status='running').update(dispatched=True, used_image=used_image,
@@ -73,16 +78,21 @@ def _finish(entry_id, *, response=None, code='', message='', ambiguous=False, us
         return
     turn = LLMTurn.objects.select_related('session').filter(ledger=entry).first()
     source_valid = False
+    context_changed = False
     if turn and entry.owner_id:
         try:
-            validate_source(turn.session)
+            source = validate_source(turn.session)
             source_valid = True
+            if turn.session.scope != 'recognition' and turn.context_revision:
+                context_changed = revision_for(build_public_context(turn.session, source)) != turn.context_revision
         except ServiceError:
             pass
     if response:
         usage = response['usage']
     if not source_valid:
-        code, message = 'SOURCE_UNAVAILABLE', '原识别记录或会话已删除、过期，解读结果不再保存。'
+        code, message = 'SOURCE_UNAVAILABLE', '关联资料或会话已删除、下架或过期，解读结果不再保存。'
+    elif context_changed:
+        code, message = 'LLM_CONTEXT_CHANGED', '页面资料已更新，本次结果不再保存，请重新提问。'
     success = bool(response and not code and source_valid)
     if not _settle_locked(entry, success=success, code=code, usage=usage, ambiguous=ambiguous, duration_ms=duration_ms):
         return
@@ -102,7 +112,7 @@ def process_one():
     entry = turn.ledger
     try:
         messages, used_image = build_messages(turn)
-        _before_dispatch(turn.pk, used_image)
+        _before_dispatch(turn.pk, used_image, turn.context_revision)
         response = provider.generate(messages, max_tokens=entry.max_output_tokens,
                                      timeout=entry.timeout_seconds, user_id=str(entry.pk))
     except provider.ProviderError as exc:

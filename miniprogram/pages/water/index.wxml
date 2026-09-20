@@ -40,4 +40,5 @@
     <view class="notice">{{view.notice}}</view>
   </block>
   <view class="footer-note">HYHQ / 让数据有迹可循</view>
+  <floating-ai visible="{{!loading && !error && waterBodies.length}}" bindopen="openAI" />
 </view>

@@ -39,5 +39,6 @@
       <view wx:if="{{routes.length}}" class="list-footer"><view wx:if="{{routesMoreError}}" class="error-inline">{{routesMoreError}}</view><button wx:if="{{routesNext}}" class="secondary" loading="{{routesLoadingMore}}" disabled="{{routesLoadingMore}}" bindtap="moreRoutes">{{routesMoreError ? '重试加载更多' : '加载更多路线'}}</button><text wx:else class="small muted">已展示 {{routes.length}} 条公开路线</text></view>
     </block>
   </block>
-  <view class="notice">内容来自管理员发布的资料，示范内容已标注。预设路线仅作游览参考，暂不提供实时导航或到访核验；AI 解读从已有识别结果主动开启，是否可用以服务状态为准。</view>
+  <view class="notice">内容来自管理员发布的资料，示范内容已标注。预设路线仅作游览参考，暂不提供实时导航或到访核验；点击右下角 AI，可围绕所选区域的公开资料继续了解。</view>
+  <floating-ai visible="{{!regionError && regions.length > 1}}" tab-page="{{true}}" bindopen="openAI" />
 </view>

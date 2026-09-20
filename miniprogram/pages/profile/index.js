@@ -1,8 +1,10 @@
+const { selectTab } = require('../../lib/tab-bar');
 const { app, toast } = require('../../lib/page');
 const { message } = require('../../lib/format');
 Page({
-  data: { loading: true, error: '', busy: false, user: null, nickname: '', avatar: '', avatarNotice: '', devAvailable: false, agreed: false, authMode: '' },
+  data: { loading: true, error: '', busy: false, user: null, nickname: '', avatar: '', avatarNotice: '', devAvailable: false, authMode: '' },
   async onShow() {
+    selectTab(this, 4);
     this._visible = true;
     const shown = this._showVersion = (this._showVersion || 0) + 1;
     if (this._pendingMutation && this._pendingMutation.token === app().session.token()) {
@@ -111,9 +113,8 @@ Page({
       }
     }
   },
-  consent(event) { if (this._active()) this.setData({ agreed: event.detail.value.includes('agree') }); },
   async login(event) {
-    if (!this._active() || this.data.busy || this._confirming || this._hasPendingMutation() || !this.data.agreed) return;
+    if (!this._active() || this.data.busy || this._confirming || this._hasPendingMutation()) return;
     const dev = event.currentTarget.dataset.mode === 'dev';
     if (dev && !this.data.devAvailable) return;
     const operation = this._start(true);
@@ -208,7 +209,6 @@ Page({
         if (app().session.token() === operation.token) { app().session.clear(); operation.token = ''; }
         if (!this._current(operation)) return;
         this._clearPrivate();
-        if (removeAccount) this.setData({ agreed: false });
         wx.showToast({ title: removeAccount ? '账号已注销' : '已退出登录', icon: 'success' });
       } catch (error) { if (this._current(operation)) { this.setData({ error: message(error) }); toast(error); } }
       finally { this._finish(operation); }

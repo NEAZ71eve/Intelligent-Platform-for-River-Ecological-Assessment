@@ -2,7 +2,7 @@
 
 ## 运行与范围
 
-本机使用 Python 3.12；北京服务器既有基线已在 Python 3.13 上完成依赖安装、数据库及服务测试。M2 本轮仅在本机验证，未部署服务器。锁定依赖见 `requirements.txt`。数据库默认 PostgreSQL；`HYHQ_USE_SQLITE=1` 仅用于显式本地开发。设置与私有文件位于后端目录，真实 `.env`、数据库、用户文件、模型和本地运行时均不提交。
+本机使用 Python 3.12；北京服务器既有基线已在 Python 3.13 上完成依赖安装、数据库及服务测试。2026-09-20 已部署 M2 + LLM 基线；2026-09-21 的 AI 分区互动修改仅在本机验证，尚未部署。锁定依赖见 `requirements.txt`。数据库默认 PostgreSQL；`HYHQ_USE_SQLITE=1` 仅用于显式本地开发。设置与私有文件位于后端目录，真实 `.env`、数据库、用户文件、模型和本地运行时均不提交。
 
 从仓库根目录使用 `scripts/manage.sh` 执行命令，该脚本会切换到 backend 工作目录，确保 Django 能正确发现测试。
 
@@ -85,11 +85,29 @@ scripts/manage.sh run_recognition_worker
 
 LLM 网关使用独立的私人会话、问答任务与无正文用量账目。新增接口为 `llm/status/`、`llm/sessions/`、`llm/sessions/{id}/`、`llm/sessions/{id}/turns/` 和 `llm/turns/{id}/`，均使用现有响应封装与分页；除能力状态外需 Bearer 登录，且仅能访问本人数据。
 
-首次解读与后续追问共用每人北京时间每日最多五个成功回合；并发入队预占额度，失败释放用户回合。删除会话不重置日额度，账目继续约束全站预算。请求包含 UUID `request_id`，重复请求重用同一回合；同一个 ID 用于不同内容会返回冲突。外部调用不自动重试，特别是已经发送但超时的请求。
+三个板块分别按账号与北京时间日期计数：`recognition`（花卉和河道共享）、`explore`（生态导览）、`learn`（科普智游）。每板块每天最多 5 个成功回合；每板块提交次数另受 `per_user_attempt_limit` 约束。并发入队预占额度，失败释放成功回合，删除会话不重置账本；跨板块每用户同时最多 1 个进行中任务，全站预算继续共享。请求 UUID `request_id` 幂等，复用不同内容返回冲突。外部调用不自动重试。
 
-创建会话只接受本人已完成、未过期的识别任务，显式传 `consent_version: "deepseek-v1"` 和 `include_image`。选择附图时必须仍有有效原图，发送前重新压缩并去除元数据；24 小时原图过期后，新会话只能选择不附图，已有会话的后续问题仅解释文字结果并显示本轮未用图片。准备图片之后、发起请求之前发现图片失效则中止该轮。模型结果、模拟属性和不确定性仍单独保留。
+`GET llm/status/?scope=explore` 返回该板块能力、真实模型名与后台额度结构；小程序不显示额度，仅在发送收到 `LLM_DAILY_LIMIT` 后显示该板块今日使用上限提示。非法 scope 拒绝，不静默退回其他板块。
 
-环境读取和运行步骤见 [部署说明](../deploy/README.md)，完整实施及验收拆分见 [L01–L06](../docs/LLM实施计划.md)。
+创建识别会话保留旧入口：
+
+```json
+{"scope":"recognition","recognition_job_id":"<本人已完成任务 UUID>","include_image":false}
+```
+
+河道使用 `assessment_job_id`，两种 ID 只选一个。公开资料会话只传来源 ID：
+
+```json
+{"scope":"learn","source_type":"content","source_id":"<已发布文章 UUID>"}
+```
+
+`explore` 允许 `region/place/water`，`learn` 允许 `region/content/route`。不接受客户端正文或 system prompt，非识别会话不允许附图。返回值增加 `scope/source_type/source_id/source_region_id`，保留旧 `kind` 和识别任务 ID；公开资料当前正文及关联信息由服务端每轮重新读取，正文节选、模拟来源与缺测状态显式标记。来源下架、过期、删除以及等待回复时资料变化都重新校验；旧上下文的回答不会覆盖新资料。
+
+注册/登录处统一说明协议，创建会话不再要求重复传递 `consent_version`，也不因旧会话说明版本变化弹确认。创建会话本身不请求 DeepSeek，用户仍需主动发送。识别附图默认关闭；主动开启后必须有有效原图，发送前缩小并去除元数据，过期不改用缩略图。
+
+升级需执行 `llm` 的新增 scope 迁移；旧花卉/河道会话及已删除会话的账目全部归入 `recognition`，保留历史成功计数。公开来源会话最长保留 30 天；删除或下架主源后不能继续访问，账本继续保留当天使用量。
+
+环境读取和运行步骤见 [部署说明](../deploy/README.md)，最新拆分见 [AI 分区互动计划](../docs/AI分区互动实施计划.md)，原始 L01–L06 记录保留为历史证据。
 
 ### 原有图片与识别记录
 

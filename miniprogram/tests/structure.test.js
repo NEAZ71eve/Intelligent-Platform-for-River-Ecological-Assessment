@@ -26,9 +26,12 @@ test('JavaScript parses without any transpiler and fresh checkout configuration 
 });
 
 test('WXML uses known native/custom tags with balanced nesting and bound handlers', () => {
-  const native = new Set(['view', 'text', 'button', 'input', 'textarea', 'image', 'block', 'picker', 'scroll-view', 'checkbox', 'checkbox-group', 'label', 'switch', 'page-state', 'source-label', 'recognition-result', 'movable-area', 'movable-view', 'canvas', 'trend-chart']);
+  const native = new Set(['view', 'text', 'button', 'input', 'textarea', 'image', 'block', 'picker', 'scroll-view', 'checkbox', 'checkbox-group', 'label', 'switch', 'movable-area', 'movable-view', 'canvas', 'rich-text']);
+  const globals = Object.keys(require('../app.json').usingComponents || {});
   for (const file of files(root).filter((file) => file.endsWith('.wxml'))) {
     const content = fs.readFileSync(file, 'utf8');
+    const local = Object.keys(JSON.parse(fs.readFileSync(file.replace(/\.wxml$/, '.json'), 'utf8')).usingComponents || {});
+    const allowed = new Set([...native, ...globals, ...local]);
     const javascript = file.replace(/\.wxml$/, '.js');
     let definition;
     const previousPage = global.Page, previousComponent = global.Component;
@@ -45,7 +48,7 @@ test('WXML uses known native/custom tags with balanced nesting and bound handler
     for (const tag of tags) {
       const match = tag.match(/^<(\/?)([\w-]+)/);
       if (!match) continue;
-      assert.ok(native.has(match[2]), `${file}: ${match[2]} is a native or registered component`);
+      assert.ok(allowed.has(match[2]), `${file}: ${match[2]} is a native or registered component`);
       if (match[1]) assert.equal(stack.pop(), match[2], `${file}: nesting matches`);
       else if (!tag.endsWith('/>')) stack.push(match[2]);
     }

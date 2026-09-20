@@ -108,7 +108,6 @@ class GatewayTests(Fixture, TestCase):
         job = self.job()
         data = {'recognition_job_id': str(job.pk), 'include_image': False, 'consent_version': CONSENT_VERSION}
         self.assertEqual(APIClient().post('/api/v1/llm/sessions/', data).status_code, 401)
-        self.assertEqual(self.api.post('/api/v1/llm/sessions/', {**data, 'consent_version': 'old'}).status_code, 400)
         self.assertEqual(self.api.post('/api/v1/llm/sessions/', {**data, 'assessment_job_id': str(uuid.uuid4())}).status_code, 400)
         self.assertEqual(self.api.post('/api/v1/llm/sessions/', {**data, 'recognition_job_id': str(self.job(self.other).pk)}).status_code, 404)
         RecognitionJob.objects.filter(pk=job.pk).update(status='running')

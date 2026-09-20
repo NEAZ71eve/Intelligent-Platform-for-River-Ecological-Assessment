@@ -1,1 +1,7 @@
-{ "navigationBarTitleText": "智慧河湖", "usingComponents": { "trend-chart": "/components/trend-chart/index" } }
+{
+  "navigationBarTitleText": "智慧河湖",
+  "usingComponents": {
+    "trend-chart": "/components/trend-chart/index",
+    "floating-ai": "/components/floating-ai/index"
+  }
+}

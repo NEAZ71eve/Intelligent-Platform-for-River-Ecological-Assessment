@@ -1,3 +1,4 @@
+const { selectTab } = require('../../lib/tab-bar');
 const { app } = require('../../lib/page');
 const { time, value, message } = require('../../lib/format');
 const { loadRegions, selectRegion } = require('../../lib/region');
@@ -6,6 +7,7 @@ Page({
   onLoad() { this._alive = true; return this.load(); },
   onShow() {
     if (this._alive === false) return;
+    selectTab(this, 0);
     const selected = app().globalData.region;
     if (this._hidden || (this._loaded && selected && (!this.data.region || selected.id !== this.data.region.id))) { this._hidden = false; return this.load(); }
   },

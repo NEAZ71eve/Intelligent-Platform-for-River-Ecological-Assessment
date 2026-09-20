@@ -29,4 +29,5 @@
   <page-state loading="{{loading}}" error="{{error}}" empty="{{!loading && !error && !placesError && !filtered.length}}" empty-text="当前分类暂无地点，可切换分类或在管理端添加。" bindretry="load" />
   <view wx:if="{{!loading && placesError}}" class="error-inline">地点列表暂不可用：{{placesError}}<button class="text-button gap" bindtap="load">重新加载</button></view>
   <block wx:if="{{!loading && !error}}"><view class="card location-card" wx:for="{{filtered}}" wx:key="id" data-id="{{item.id}}" bindtap="open"><view class="row"><text class="location-number">{{item.order}}</text><view class="grow"><view class="title">{{item.name}}</view><view class="copy">{{item.summary || item.description || '查看地点资料与关联监测站'}}</view></view><text class="chevron">›</text></view><view class="location-meta"><text class="pill">{{item.is_demo ? '虚构示范' : '地点资料'}}</text><text class="small muted">{{item.map_layout === activeMap.id ? '当前底图关联地点' : '地点目录'}}</text></view></view></block>
+  <floating-ai visible="{{!loading && !error && region}}" tab-page="{{true}}" bindopen="openAI" />
 </view>

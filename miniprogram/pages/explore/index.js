@@ -1,3 +1,5 @@
+const { selectTab } = require('../../lib/tab-bar');
+const { entryUrl } = require('../../lib/llm');
 const { app, detail } = require('../../lib/page');
 const { message } = require('../../lib/format');
 const { loadAll, loadRegions, selectRegion } = require('../../lib/region');
@@ -11,7 +13,7 @@ Page({
     zoom: 1, zoomLabel: '100%', panX: 0, panY: 0, activeType: '',
     types: [{ value: '', label: '全部地点' }, { value: 'water', label: '河湖' }, { value: 'park', label: '公园' }, { value: 'campus', label: '校园' }],
   },
-  onShow() { if (this._destroyed) return; this._visible = true; return this.load(); },
+  onShow() { if (this._destroyed) return; selectTab(this, 1); this._visible = true; return this.load(); },
   onHide() { this._visible = false; this._generation = (this._generation || 0) + 1; },
   onUnload() { this._destroyed = true; this.onHide(); },
   onPullDownRefresh() { return this.load(); },
@@ -135,5 +137,11 @@ Page({
     if (!this.alive()) return;
     const id = event.currentTarget.dataset.id;
     if (this.data.places.some((point) => point.id === id) || this.data.markers.some((point) => point.id === id)) detail('place', id);
+  },
+  openAI() {
+    if (!this.alive() || this.data.loading || this.data.error || !this.data.region) return;
+    const point = this.data.selectedPoint;
+    const id = point && point.id || this.data.region.id;
+    wx.navigateTo({ url: entryUrl('explore', point ? 'place' : 'region', id) });
   },
 });

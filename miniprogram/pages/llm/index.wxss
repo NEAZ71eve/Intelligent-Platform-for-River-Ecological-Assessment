@@ -1,8 +1,19 @@
-.quota { margin-top: 24rpx; color: #326b49; }
-.quota-number { font-size: 48rpx; font-weight: 700; }
-.consent { color: #596d59; font-size: 25rpx; line-height: 1.8; }
-.question { width: 100%; min-height: 180rpx; box-sizing: border-box; margin-top: 22rpx; background: #f6f8f0; padding: 18rpx; font-size: 28rpx; line-height: 1.6; border-radius: 14rpx; }
-.question-count { text-align: right; margin-top: 8rpx; }
-.answer, .question-text { display: block; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 28rpx; line-height: 1.85; }
-.answer { color: #334c36; }
+.ai-heading { display: flex; align-items: center; justify-content: space-between; gap: 20rpx; }
+.model-badge { flex-shrink: 0; display: flex; align-items: center; gap: 10rpx; border: 1rpx solid #cfdfd6; background: #eff5f1; border-radius: 20rpx; padding: 14rpx 17rpx; }
+.model-spark { font-size: 32rpx; color: #3c725d; }
+.model-name { display: block; color: #294f40; font-size: 21rpx; font-weight: 600; letter-spacing: .4rpx; }
+.model-caption { display: block; font-size: 18rpx; color: #7b8f84; margin-top: 4rpx; }
+.source-card { border-left: 5rpx solid #a6c4af; }
+.source-summary, .context-preview { max-height: 230rpx; overflow-y: auto; }
+.context-preview { display: block; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 25rpx; line-height: 1.8; color: #627467; }
+.image-choice { display: flex; align-items: center; gap: 20rpx; margin-top: 28rpx; padding-top: 24rpx; border-top: 1rpx solid #e5ece6; }
+.question { width: 100%; min-height: 180rpx; box-sizing: border-box; margin-top: 18rpx; background: #f6f8f4; padding: 20rpx; font-size: 28rpx; line-height: 1.6; border-radius: 14rpx; }
+.composer-footer { display: flex; align-items: center; justify-content: space-between; margin-top: 18rpx; }
+.send-button { margin: 0; min-width: 156rpx; }
+.question-text { display: block; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 28rpx; line-height: 1.85; }
+.answer-heading { display: flex; align-items: center; flex-wrap: wrap; gap: 12rpx; }
+.answer-mark { color: #3c725d; font-size: 29rpx; }
+.answer-model { color: #294f40; font-size: 25rpx; font-weight: 600; }
 .turn { margin-top: 24rpx; }
+.ai-footnote { color: #8a938b; font-size: 22rpx; line-height: 1.7; margin-top: 30rpx; }
+.privacy-link { text-align: left; margin-top: 8rpx; }
