@@ -44,7 +44,7 @@ else:
 INSTALLED_APPS = [
     'django.contrib.admin', 'django.contrib.auth', 'django.contrib.contenttypes',
     'django.contrib.sessions', 'django.contrib.messages', 'django.contrib.staticfiles',
-    'rest_framework', 'common', 'accounts', 'ecology', 'knowledge', 'assets', 'recognition', 'activity', 'assessments',
+    'rest_framework', 'common', 'accounts', 'ecology', 'knowledge', 'assets', 'recognition', 'activity', 'assessments', 'llm',
 ]
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware', 'common.middleware.RequestLogMiddleware',
@@ -94,6 +94,18 @@ REST_FRAMEWORK = {
 AUTH_SESSION_DAYS = 7
 WECHAT_APP_ID = os.getenv('WECHAT_APP_ID', '')
 WECHAT_APP_SECRET = os.getenv('WECHAT_APP_SECRET', '')
+# External LLM access requires this gate, a credential, and an enabled admin config.
+# Only backend processes read these values; never return the key through an API.
+LLM_ENABLED = os.getenv('LLM_ENABLED', '0') == '1'
+DEEPSEEK_API_KEY = os.getenv('DEEPSEEK_API_KEY', '').strip()
+DEEPSEEK_MODEL = os.getenv('DEEPSEEK_MODEL', 'deepseek-flash').strip()
+if DEEPSEEK_MODEL != 'deepseek-flash':
+    raise ImproperlyConfigured('DEEPSEEK_MODEL must be deepseek-flash for this gateway')
+LLM_DAILY_TURN_LIMIT = int(os.getenv('LLM_DAILY_TURN_LIMIT', '5'))
+if not 1 <= LLM_DAILY_TURN_LIMIT <= 5:
+    raise ImproperlyConfigured('LLM_DAILY_TURN_LIMIT must be between 1 and 5')
+LLM_QUEUE_TIMEOUT_SECONDS = 300
+LLM_RETENTION_DAYS = 30
 DATA_MODE = 'simulation'
 MAX_UPLOAD_BYTES = 5 * 1024 * 1024
 MAX_IMAGE_PIXELS = 20_000_000

@@ -141,7 +141,7 @@ Page({
     const current = () => this._active() && action === this._actionVersion && app().session.token() === sentToken;
     let handled = false;
     this._confirming = true;
-    wx.showModal({ title: '删除这条记录', content: ['recognition-jobs', 'assessment-jobs'].includes(this.data.kind) ? '删除任务、关联图片及可选位置，无法恢复。' : '删除后，这条个人记录将不再显示。', confirmText: '删除', confirmColor: '#a25e4a', success: async (result) => {
+    wx.showModal({ title: '删除这条记录', content: ['recognition-jobs', 'assessment-jobs'].includes(this.data.kind) ? '删除任务、关联图片、可选位置及关联的 AI 解读会话，无法恢复。' : '删除后，这条个人记录将不再显示。', confirmText: '删除', confirmColor: '#a25e4a', success: async (result) => {
       if (handled) return;
       handled = true;
       if (!current()) { if (this._active() && app().session.token() !== sentToken) this._clearPrivate(); return; }

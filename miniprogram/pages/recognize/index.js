@@ -170,6 +170,10 @@ Page({
     finally { if (!this._destroyed && version === this._selectionVersion) this.setData({ busy: false }); }
   },
   openContent(event) { if (event.detail.id) detail('content', event.detail.id); },
+  openAI() {
+    if (this._destroyed || !this._visible || this.data.busy || !this.data.task || this.data.task.status !== 'succeeded' || this._sessionToken !== app().session.token() || !requireLogin()) return;
+    wx.navigateTo({ url: '/pages/llm/index?kind=recognition&jobId=' + encodeURIComponent(this.data.task.id) });
+  },
   refreshTask() { if (this.data.task) { this._pollCount = 0; this.poll(this.data.task.id); } else this.load(); },
   login() { wx.switchTab({ url: '/pages/profile/index' }); },
   assessment() { wx.navigateTo({ url: '/pages/assessment/index' }); },

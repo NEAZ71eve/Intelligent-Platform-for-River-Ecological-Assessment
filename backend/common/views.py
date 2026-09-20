@@ -13,10 +13,11 @@ def health(request):
         cursor.execute('SELECT 1')
     from recognition.registry import public_status
     from assessments.registry import public_status as assessment_status
+    from llm.services import enabled as llm_enabled
     recognition = public_status()
     assessment = assessment_status()
     return Response({'status': 'ok', 'mode': settings.DATA_MODE, 'dev_auth_enabled': settings.ALLOW_DEV_AUTH,
-                     'features': {'recognition': recognition['enabled'], 'assessment': assessment['enabled'], 'llm': False},
+                     'features': {'recognition': recognition['enabled'], 'assessment': assessment['enabled'], 'llm': llm_enabled()},
                      'recognition': recognition, 'assessment': assessment, 'version': 'm3'})
 
 

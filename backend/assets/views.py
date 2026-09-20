@@ -1,4 +1,5 @@
 from django.http import FileResponse
+from django.db import transaction
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from rest_framework.parsers import FormParser, MultiPartParser
@@ -7,6 +8,7 @@ from rest_framework.throttling import ScopedRateThrottle
 from rest_framework.views import APIView
 from common.audit import audit
 from common.exceptions import ServiceError
+from accounts.models import User
 from .models import Asset
 from .serializers import AssetSerializer, UploadInput
 from .services import create_asset
@@ -26,7 +28,12 @@ class UploadView(APIView):
 
 
 class AssetDetail(APIView):
+    @transaction.atomic
     def delete(self, request, pk):
+        try:
+            User.objects.select_for_update().get(pk=request.user.pk, is_active=True)
+        except User.DoesNotExist:
+            raise ServiceError('登录已过期，请重新登录', 'AUTH_REQUIRED', 401) from None
         asset = get_object_or_404(Asset, pk=pk, owner=request.user)
         audit('file.deleted', request.user, asset.pk)
         asset.delete()
@@ -54,4 +61,3 @@ class AssetContent(APIView):
         response['Cache-Control'] = 'private, no-store'
         response['X-Content-Type-Options'] = 'nosniff'
         return response
-

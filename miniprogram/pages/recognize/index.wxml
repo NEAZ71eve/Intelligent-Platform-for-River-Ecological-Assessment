@@ -15,7 +15,8 @@
     <button class="primary gap" disabled="{{busy || !imagePath || imageOrigin === 'history' || !consent || task.status === 'queued' || task.status === 'running'}}" loading="{{busy}}" bindtap="submit">{{busy ? '正在处理' : capability.enabled ? '上传并识别' : '上传并验证任务流程'}}</button>
   </block>
   <view class="card section" wx:if="{{task && !task.result_view}}"><view class="row"><text class="title">{{task.status_label}}</text><text class="pill">任务状态</text></view><view class="copy">{{task.error_label || (task.status === 'queued' ? '图片正在排队，请稍候。' : task.status === 'running' ? '正在分析图片，请稍候。' : '本次未提供可展示的识别结果。')}}</view><view class="small muted gap">{{task.created_label}}</view><button class="secondary gap" bindtap="refreshTask">刷新任务状态</button></view>
-  <recognition-result result="{{task.result_view}}" bindcontent="openContent" bindretake="choose" />
+  <recognition-result wx:if="{{task && task.result_view}}" result="{{task.result_view}}" bindcontent="openContent" bindretake="choose" />
+  <view wx:if="{{task.result_view}}" class="card section"><view class="title">想进一步核对这次结果？</view><view class="copy">可以主动使用 DeepSeek 解读。进入后先确认分享范围，图片默认不发送；首次问题也计入每天 5 轮额度。</view><button class="secondary gap" bindtap="openAI" disabled="{{busy}}">AI 解读本次识别结果</button></view>
   <page-state loading="{{loading}}" error="{{error}}" bindretry="refreshTask" />
   <view class="section" wx:if="{{jobs.length}}"><view class="section-head"><text class="section-title">最近的任务</text><text class="small muted">仅自己可见 · 点击查看</text></view><view class="card" wx:for="{{jobs}}" wx:key="id" data-id="{{item.id}}" bindtap="openJob"><view class="row"><text>{{item.result_view ? item.result_view.heading : item.status_label}}</text><text class="chevron">›</text></view><view class="copy" wx:if="{{item.error_label}}">{{item.error_label}}</view><view class="small muted gap">{{item.created_label}}</view></view></view>
   <view class="footer-note">观察，是认识自然的第一步</view>

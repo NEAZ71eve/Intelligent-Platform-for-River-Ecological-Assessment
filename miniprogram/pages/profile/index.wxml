@@ -17,5 +17,6 @@
     <view class="actions"><button class="secondary" disabled="{{busy}}" bindtap="logout">退出登录</button><button class="danger" disabled="{{busy}}" bindtap="deleteAccount">注销账号</button></view>
   </block>
   <view wx:if="{{!loading}}" class="card section"><view class="row setting-link" bindtap="feedback"><view class="grow"><view class="title">我的反馈</view><view class="copy">提交问题并查看处理进度</view></view><text class="chevron">›</text></view></view>
+  <view wx:if="{{!loading}}" class="card section"><view class="row setting-link" bindtap="aiHistory"><view class="grow"><view class="title">我的 AI 解读</view><view class="copy">查看绑定识别结果的会话与每日剩余额度</view></view><text class="chevron">›</text></view></view>
   <view class="footer-note">每一条记录，都由你掌握</view>
 </view>

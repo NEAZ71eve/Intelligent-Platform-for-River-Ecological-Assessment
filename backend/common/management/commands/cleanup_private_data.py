@@ -16,12 +16,15 @@ class Command(BaseCommand):
         parser.add_argument('--dry-run', action='store_true')
 
     def handle(self, *args, **options):
+        from llm.services import cleanup_expired
         now = timezone.now()
         expired_assets = Asset.objects.filter(expires_at__lte=now)
         originals = Asset.objects.filter(original_expires_at__lte=now).exclude(original='')
         expired_jobs = RecognitionJob.objects.filter(expires_at__lte=now)
         expired_assessments = AssessmentJob.objects.filter(expires_at__lte=now)
         self.stdout.write(f'assets={expired_assets.count()} originals={originals.count()} jobs={expired_jobs.count()} assessments={expired_assessments.count()} dry_run={options["dry_run"]}')
+        llm_counts = cleanup_expired(now=now, dry_run=options['dry_run'])
+        self.stdout.write(f'llm_sessions={llm_counts["sessions"]} llm_ledger_rows={llm_counts["ledger_rows"]}')
         if options['dry_run']:
             return
         with transaction.atomic():

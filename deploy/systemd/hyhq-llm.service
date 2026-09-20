@@ -1,0 +1,31 @@
+[Unit]
+Description=HYHQ DeepSeek conversation worker
+After=network.target postgresql.service
+
+[Service]
+Type=simple
+User=hyhq
+Group=hyhq
+WorkingDirectory=/srv/hyhq/backend
+EnvironmentFile=/etc/hyhq/backend.env
+Environment=PYTHONDONTWRITEBYTECODE=1
+ExecStart=/srv/hyhq/.venv/bin/python manage.py run_llm_worker
+Restart=on-failure
+RestartSec=3
+TimeoutStopSec=135
+KillMode=control-group
+MemoryHigh=256M
+MemoryMax=512M
+MemorySwapMax=0
+CPUQuota=50%
+TasksMax=32
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectHome=true
+ProtectSystem=strict
+# Database-backed queue; does not share the image inference execution lock.
+ReadWritePaths=/srv/hyhq/backend/var
+
+[Install]
+WantedBy=multi-user.target

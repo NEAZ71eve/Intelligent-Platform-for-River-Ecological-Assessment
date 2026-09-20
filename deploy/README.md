@@ -92,6 +92,31 @@ scripts/manage.sh import_observations /absolute/path/observations.csv
 
 ## 4. 工作进程与验证
 
+### 可选 DeepSeek 图像解读
+
+L01–L06 增加独立的 `llm` 应用和数据库迁移，不需要额外 Python 依赖或 Redis。先运行 `scripts/manage.sh migrate`，保持密钥只在后端环境中：
+
+```dotenv
+LLM_ENABLED=1
+DEEPSEEK_API_KEY=在本机或服务器环境文件中填写
+DEEPSEEK_MODEL=deepseek-flash
+LLM_DAILY_TURN_LIMIT=5
+```
+
+修改环境后重启 API 和 LLM 工作进程，在 Django Admin 的「AI 解读网关 → 网关配置」中启用。环境总开关、凭据和后台开关缺一不可；未启用时原有生态与图像识别功能照常可用。密钥不从小程序或后台表单收集，不返回给客户端。
+
+```bash
+scripts/manage.sh run_llm_worker
+```
+
+该进程负责外部网络调用，使用独立队列，不占用识别模型的 CPU 执行锁。一个进程逐个处理，数据库同时限制多消费者并发。用户每日成功回合最多五次，后台还提供全站提交次数、token 预算、输出长度和超时限制。输入预算采用保守预留，实际用量与未知用量分别记录；它不代表 DeepSeek 账号中其他应用的总费用。
+
+`systemd/hyhq-llm.service` 是可选模板；本次未安装到服务器。其内存/CPU 配额尚需目标机器验证，模板不等于已完成实机部署。停用功能时先关闭后台网关和环境开关，再重启相应进程；已发出的第三方请求无法撤回。
+
+会话删除不返还已消耗额度；账号注销清除会话内容，用量账目保留不含正文/图片且解除用户关联的记录，用于当日预算。过期清理由现有 `cleanup_private_data` 命令处理。详细范围见 [LLM 实施计划](../docs/LLM实施计划.md)。
+
+### 图像识别与通用检查
+
 ```bash
 scripts/manage.sh run_recognition_worker --once
 scripts/manage.sh run_assessment_worker --once

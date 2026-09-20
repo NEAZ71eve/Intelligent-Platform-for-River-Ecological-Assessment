@@ -1,0 +1,8 @@
+.quota { margin-top: 24rpx; color: #326b49; }
+.quota-number { font-size: 48rpx; font-weight: 700; }
+.consent { color: #596d59; font-size: 25rpx; line-height: 1.8; }
+.question { width: 100%; min-height: 180rpx; box-sizing: border-box; margin-top: 22rpx; background: #f6f8f0; padding: 18rpx; font-size: 28rpx; line-height: 1.6; border-radius: 14rpx; }
+.question-count { text-align: right; margin-top: 8rpx; }
+.answer, .question-text { display: block; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 28rpx; line-height: 1.85; }
+.answer { color: #334c36; }
+.turn { margin-top: 24rpx; }

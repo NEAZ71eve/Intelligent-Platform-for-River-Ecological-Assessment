@@ -49,8 +49,16 @@ class JobDetail(generics.RetrieveDestroyAPIView):
         return RecognitionJob.objects.filter(owner=self.request.user, expires_at__gt=timezone.now())
 
     def perform_destroy(self, instance):
-        asset = instance.asset
         with transaction.atomic():
-            instance.delete()
+            # Serialize deletion with creation of an attached AI conversation.
+            try:
+                User.objects.select_for_update().get(pk=self.request.user.pk, is_active=True)
+            except User.DoesNotExist:
+                raise ServiceError('登录已过期，请重新登录', 'AUTH_REQUIRED', 401) from None
+            current = RecognitionJob.objects.select_related('asset').filter(pk=instance.pk, owner=self.request.user).first()
+            if current is None:
+                return
+            asset = current.asset
+            current.delete()
             if asset:
                 asset.delete()

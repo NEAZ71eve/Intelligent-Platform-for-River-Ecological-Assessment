@@ -44,6 +44,7 @@
     <view class="card section"><view class="title">规则解释与观察建议</view><view class="copy" wx:for="{{task.result_view.causes}}" wx:key="*this">· {{item}}</view><view class="divider"></view><view class="copy" wx:for="{{task.result_view.suggestions}}" wx:key="*this">· {{item}}</view></view>
     <view class="card section"><view class="title">本次任务信息</view><view class="small muted gap">模型：{{task.result_view.model_name}} · {{task.result_view.model_version}}</view><view class="small muted">规则版本：{{task.result_view.rule_version}}</view><view class="small muted">提交时间：{{task.created_label}}</view><view class="small muted">关联水体：{{task.water_body.name || '未关联'}}</view><view class="small muted" wx:if="{{task.coordinate_system}}">本记录包含用户主动提供的位置 · {{task.coordinate_system}} · 仅本人可见</view></view>
     <view class="notice">{{task.result_view.disclaimer}}</view>
+    <view class="card section"><view class="title">继续理解这次观察</view><view class="copy">主动选择 DeepSeek 解读时会单独确认分享范围，图片默认不发送。它不会改变检测框和教学规则分，也不能据此判断真实水质。</view><button class="secondary gap" bindtap="openAI" disabled="{{busy}}">AI 解读本次河道观察</button></view>
   </block>
   <button class="danger gap" wx:if="{{task}}" data-id="{{task.id}}" disabled="{{busy}}" bindtap="remove">删除此记录和图片</button>
   <page-state loading="{{loading}}" error="{{error}}" bindretry="refreshTask" />

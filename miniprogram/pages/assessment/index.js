@@ -195,7 +195,7 @@ Page({
     if (this._destroyed || this.data.busy || !requireLogin()) return;
     const id = event.currentTarget.dataset.id;
     const token = app().session.token();
-    wx.showModal({ title: '删除河道观察记录', content: '删除这条个人记录、关联图片和可选位置，无法恢复。', confirmText: '删除', confirmColor: '#a25e4a', success: async (result) => {
+    wx.showModal({ title: '删除河道观察记录', content: '删除这条个人记录、关联图片、可选位置和关联的 AI 解读会话，无法恢复。', confirmText: '删除', confirmColor: '#a25e4a', success: async (result) => {
       if (!result.confirm || !this.current(token)) return;
       this.setData({ busy: true });
       this.stopPolling();
@@ -253,6 +253,10 @@ Page({
   imageError() { if (!this._destroyed) this.setData({ imageReady: false, imageUnavailable: '图片暂时无法显示，观察记录仍可查看。' }); },
   refreshTask() { this._pollCount = 0; return this.data.task ? this.poll(this.data.task.id) : this.load(); },
   allRecords() { wx.navigateTo({ url: '/pages/records/index?kind=assessment-jobs' }); },
+  openAI() {
+    if (this._destroyed || !this._visible || this.data.busy || !this.data.task || this.data.task.status !== 'succeeded' || this._sessionToken !== app().session.token() || !requireLogin()) return;
+    wx.navigateTo({ url: '/pages/llm/index?kind=assessment&jobId=' + encodeURIComponent(this.data.task.id) });
+  },
   login() { wx.switchTab({ url: '/pages/profile/index' }); },
   privacy() { wx.navigateTo({ url: '/pages/legal/index?kind=privacy' }); },
 });

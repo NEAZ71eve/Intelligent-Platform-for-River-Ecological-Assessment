@@ -72,9 +72,15 @@ class JobDetail(generics.RetrieveDestroyAPIView):
 
     def perform_destroy(self, instance):
         with transaction.atomic():
-            User.objects.select_for_update().get(pk=self.request.user.pk)
-            asset = instance.asset
-            instance.delete()
+            try:
+                User.objects.select_for_update().get(pk=self.request.user.pk, is_active=True)
+            except User.DoesNotExist:
+                raise ServiceError('登录已过期，请重新登录', 'AUTH_REQUIRED', 401) from None
+            current = AssessmentJob.objects.select_related('asset').filter(pk=instance.pk, owner=self.request.user).first()
+            if current is None:
+                return
+            asset = current.asset
+            current.delete()
             if asset and not RecognitionJob.objects.filter(asset=asset).exists() and not AssessmentJob.objects.filter(asset=asset).exists():
                 asset.delete()
 

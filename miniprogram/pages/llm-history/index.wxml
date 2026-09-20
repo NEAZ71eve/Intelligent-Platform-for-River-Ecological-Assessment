@@ -1,0 +1,9 @@
+<view class="page">
+  <text class="eyebrow">AI JOURNAL / 我的解读</text><view class="page-title">把问题，接着问。</view><view class="subtitle">只展示当前账号绑定识别结果的 AI 会话。</view>
+  <view class="notice">请从花卉识别或河道观察结果中主动开启解读；这里不提供无识别结果的通用聊天。</view>
+  <view wx:if="{{quota}}" class="card section"><view class="title">今日剩余额度 {{quota.remaining}} / {{quota.limit}} 轮</view><view class="copy">所有会话共用额度 · 已用 {{quota.used}} · 处理中 {{quota.reserved}}</view><view class="small muted gap">{{quota.date}} · 重置 {{quota.reset_label}}</view></view>
+  <view wx:if="{{status && !status.enabled}}" class="notice"><view class="title">AI 解读暂未开放</view><view class="copy">当前不能发送新问题，已有会话仍可查看。</view></view><view wx:if="{{statusError}}" class="error-inline">额度暂不可用：{{statusError}}</view>
+  <view wx:if="{{!loggedIn && !loading}}" class="card section"><view class="title">登录后查看本人会话</view><button class="primary gap" bindtap="login">去登录</button></view>
+  <page-state loading="{{loading}}" error="{{error}}" empty="{{loggedIn && !loading && !error && !sessions.length}}" empty-text="还没有 AI 解读会话，可先查看自己的识别结果。" bindretry="load" />
+  <block wx:if="{{loggedIn && !loading}}"><view wx:for="{{sessions}}" wx:key="id" class="card session-card"><view data-id="{{item.id}}" bindtap="open"><text class="pill">{{item.kind_label}}</text><view class="title gap">{{item.title}}</view><view class="small muted gap">创建于 {{item.created_label}}</view><view class="small muted">保留至 {{item.expires_label}}</view><view class="small muted gap">{{item.include_image ? (item.image_available ? '已选择附图解读' : '原图已不可用，后续仅解读文字结果') : '仅文字结果解读'}}</view></view><button class="text-button delete-link" data-id="{{item.id}}" disabled="{{busy}}" bindtap="remove">删除会话</button></view><view wx:if="{{moreError}}" class="error-inline">{{moreError}}</view><button wx:if="{{next}}" class="secondary gap" loading="{{loadingMore}}" disabled="{{loadingMore || busy}}" bindtap="more">加载更多会话</button></block>
+</view>

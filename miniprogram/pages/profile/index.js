@@ -181,6 +181,7 @@ Page({
   },
   legal(event) { if (this._active()) wx.navigateTo({ url: '/pages/legal/index?kind=' + (event.currentTarget.dataset.kind === 'terms' ? 'terms' : 'privacy') }); },
   feedback() { if (this._active()) wx.navigateTo({ url: '/pages/feedback/index' }); },
+  aiHistory() { if (this._active()) wx.navigateTo({ url: '/pages/llm-history/index' }); },
   logout() { return this._confirmRemoval(false); },
   deleteAccount() { return this._confirmRemoval(true); },
   _confirmRemoval(removeAccount) {
@@ -190,7 +191,7 @@ Page({
     const valid = () => this._active() && version === (this._version || 0) && app().session.token() === token;
     let handled = false;
     this._confirming = true;
-    wx.showModal({ title: removeAccount ? '注销账号' : '退出登录', content: removeAccount ? '注销会使现有会话失效，并删除账号、个人记录和上传图片。此操作无法恢复。' : '退出后仍可浏览公开的生态与科普资料。', confirmText: removeAccount ? '确认注销' : '退出登录', confirmColor: removeAccount ? '#a25e4a' : '#326b49', success: async (result) => {
+    wx.showModal({ title: removeAccount ? '注销账号' : '退出登录', content: removeAccount ? '注销会使现有会话失效，并删除账号、个人记录、AI 解读会话和上传图片。此操作无法恢复，已发送给外部服务的请求不能因此撤回。' : '退出后仍可浏览公开的生态与科普资料。', confirmText: removeAccount ? '确认注销' : '退出登录', confirmColor: removeAccount ? '#a25e4a' : '#326b49', success: async (result) => {
       if (handled) return;
       handled = true;
       if (!valid()) {

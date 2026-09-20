@@ -1,0 +1,2 @@
+.session-card { margin-top: 24rpx; }
+.delete-link { margin-top: 20rpx; color: #a25e4a; }
