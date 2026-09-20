@@ -143,7 +143,11 @@ C:\Users\21516\anaconda3\python.exe training\export_onnx.py
 | 数据集申请邮件（WATER-DET/Space-hehu/FloW-Img）| 模板就绪，待发送 |
 | inference/README.md 花卉遗留 | 待替换为本 wiki 摘要 |
 
-## 10. 速查命令
+## 10. 训练流水线（总览）
+
+数据获取（5 公开源 + 5 硬缺口自采）→ 多源预处理 unified-v2 → 15 细类 YOLO 训练 → 验证集选型 → test 一次性评估 → ONNX 导出/后端登记 → 生态等级多任务（方向 B）。每阶段有门禁关卡（§8）。
+
+## 11. 速查命令
 
 ```powershell
 # 环境
