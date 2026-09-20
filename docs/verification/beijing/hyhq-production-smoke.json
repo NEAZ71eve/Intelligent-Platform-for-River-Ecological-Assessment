@@ -1,0 +1,34 @@
+{
+  "checks": [
+    "production_health_and_dev_login_disabled",
+    "real_flower_recognized_and_river_class_9_detected",
+    "private_images_owner_only_and_cross_account_job_isolation",
+    "shared_asset_conflict_409_both_directions",
+    "job_delete_removes_records_and_both_image_variants",
+    "one_pixel_rejected_as_uncertain_by_both_workers",
+    "logout_and_account_delete_revoke_sessions"
+  ],
+  "cleanup": "verified",
+  "elapsed_ms": 5266,
+  "http_max_ms": 75,
+  "http_requests": 70,
+  "http_total_ms": 470,
+  "public_https_verified": false,
+  "stage": "completed",
+  "status": "passed",
+  "transport": "trusted_server_loopback_http",
+  "worker_duration_ms": [
+    {
+      "flower": 317,
+      "river": 466,
+      "river_detection_count": 16,
+      "scenario": "real_images"
+    },
+    {
+      "flower": 266,
+      "river": 265,
+      "river_detection_count": 0,
+      "scenario": "low_quality"
+    }
+  ]
+}

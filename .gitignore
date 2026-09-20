@@ -27,3 +27,7 @@ inference/**/*.joblib
 inference/**/*.pkl
 inference/**/*.log
 .DS_Store
+
+# Local SSH and private keys must never be committed.
+*.pem
+*.key

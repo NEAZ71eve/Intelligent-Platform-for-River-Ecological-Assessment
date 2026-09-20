@@ -28,21 +28,24 @@ def create_asset(owner, uploaded, purpose):
                     raise ValueError('image dimensions too large')
                 source.verify()
             with Image.open(io.BytesIO(raw)) as source:
-                oriented = ImageOps.exif_transpose(source)
+                # Bound pixel copies before orientation and alpha compositing. A valid
+                # 20 MP RGBA upload otherwise creates several full-size allocations.
+                source.thumbnail((2048, 2048))
+                ImageOps.exif_transpose(source, in_place=True)
                 # Rebuild pixel data: strips EXIF, GPS, comments and other metadata.
-                clean = Image.new('RGB', oriented.size, 'white')
-                if oriented.mode in ('RGBA', 'LA') or 'transparency' in oriented.info:
-                    rgba = oriented.convert('RGBA')
-                    clean.paste(rgba, mask=rgba.getchannel('A'))
-                else:
-                    clean.paste(oriented.convert('RGB'))
-                clean.thumbnail((2048, 2048))
-                width, height = clean.size
-                original = io.BytesIO()
-                clean.save(original, format='JPEG', quality=88)
-                clean.thumbnail((480, 480))
-                thumbnail = io.BytesIO()
-                clean.save(thumbnail, format='JPEG', quality=82)
+                with Image.new('RGB', source.size, 'white') as clean:
+                    if source.mode in ('RGBA', 'LA') or 'transparency' in source.info:
+                        with source.convert('RGBA') as rgba, rgba.getchannel('A') as alpha:
+                            clean.paste(rgba, mask=alpha)
+                    else:
+                        with source.convert('RGB') as rgb:
+                            clean.paste(rgb)
+                    width, height = clean.size
+                    original = io.BytesIO()
+                    clean.save(original, format='JPEG', quality=88)
+                    clean.thumbnail((480, 480))
+                    thumbnail = io.BytesIO()
+                    clean.save(thumbnail, format='JPEG', quality=82)
     except (UnidentifiedImageError, OSError, ValueError, Image.DecompressionBombError, Image.DecompressionBombWarning):
         raise ServiceError('请上传有效的 JPG、PNG 或静态 WebP 图片（不超过 2000 万像素）', 'INVALID_IMAGE', 400) from None
     now = timezone.now()
@@ -52,7 +55,10 @@ def create_asset(owner, uploaded, purpose):
     try:
         with transaction.atomic():
             # Serialize per-user quota checks so concurrent uploads cannot bypass the cap.
-            type(owner).objects.select_for_update().get(pk=owner.pk)
+            try:
+                type(owner).objects.select_for_update().get(pk=owner.pk, is_active=True)
+            except type(owner).DoesNotExist:
+                raise ServiceError('登录已过期，请重新登录', 'AUTH_REQUIRED', 401) from None
             if Asset.objects.filter(owner=owner).count() >= 100:
                 raise ServiceError('图片存储数量已达上限，请先删除旧记录', 'STORAGE_QUOTA', 429)
             name = f'{uuid.uuid4().hex}.jpg'
@@ -65,4 +71,3 @@ def create_asset(owner, uploaded, purpose):
                 field.storage.delete(field.name)
         raise
     return asset
-

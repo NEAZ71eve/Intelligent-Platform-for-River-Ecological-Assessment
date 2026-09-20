@@ -70,6 +70,7 @@ class FoundationTests(TestCase):
         self.assertEqual(payload['meta']['count'], 12)
         self.assertTrue(payload['request_id'])
         self.assertEqual(response['X-Request-ID'], payload['request_id'])
+        self.assertEqual(response['Cache-Control'], 'no-store')
         self.assertEqual(anonymous.get('/api/v1/me/').status_code, 401)
 
     def test_dev_login_is_gated_and_non_privileged(self):
@@ -149,18 +150,24 @@ class FoundationTests(TestCase):
         with asset.original.open('rb') as file, Image.open(file) as image:
             self.assertEqual(image.format, 'JPEG')
             self.assertEqual(len(image.getexif()), 0)
-        response = self.api.get(data['thumbnail_url'])
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response['Content-Type'], 'image/jpeg')
-        # Consume via Django's test streaming wrapper, which handles request-finished
-        # signals without closing the enclosing TestCase transaction connection.
-        self.assertTrue(b''.join(response.streaming_content).startswith(b'\xff\xd8'))
+        for variant in ('thumbnail', 'original'):
+            response = self.api.get(f'/api/v1/uploads/{asset.pk}/content/?variant={variant}')
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response['Content-Type'], 'image/jpeg')
+            self.assertEqual(set(response['Cache-Control'].split(', ')), {'private', 'no-store'})
+            # Consume via Django's test streaming wrapper, which handles request-finished
+            # signals without closing the enclosing TestCase transaction connection.
+            self.assertTrue(b''.join(response.streaming_content).startswith(b'\xff\xd8'))
         another = APIClient()
         other_token, _ = issue_session(self.other)
         another.credentials(HTTP_AUTHORIZATION=f'Bearer {other_token}')
-        self.assertEqual(another.get(data['thumbnail_url']).status_code, 404)
+        denied = another.get(data['thumbnail_url'])
+        self.assertEqual(denied.status_code, 404)
+        self.assertEqual(denied['Cache-Control'], 'no-store')
         self.assertEqual(another.delete(f'/api/v1/uploads/{asset.pk}/').status_code, 404)
-        self.assertEqual(APIClient().get(data['thumbnail_url']).status_code, 401)
+        anonymous = APIClient().get(data['thumbnail_url'])
+        self.assertEqual(anonymous.status_code, 401)
+        self.assertEqual(anonymous['Cache-Control'], 'no-store')
         self.assertEqual(APIClient().get(f'/media/{asset.original.name}').status_code, 404)
 
     def test_invalid_and_oversized_upload_do_not_leave_files(self):

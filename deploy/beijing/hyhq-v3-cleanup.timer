@@ -1,0 +1,11 @@
+[Unit]
+Description=HYHQ daily private-data retention cleanup
+
+[Timer]
+OnCalendar=*-*-* 03:15:00 UTC
+RandomizedDelaySec=300
+Persistent=true
+Unit=hyhq-v3-cleanup.service
+
+[Install]
+WantedBy=timers.target

@@ -1,0 +1,20 @@
+[Unit]
+Description=HYHQ remove expired private images, records and sessions
+After=postgresql.service
+
+[Service]
+Type=oneshot
+User=hyhq
+Group=hyhq
+WorkingDirectory=/srv/hyhq-releases/f31c55f/backend
+EnvironmentFile=/etc/hyhq/f31c55f.env
+Environment=PYTHONDONTWRITEBYTECODE=1
+ExecStart=/srv/hyhq-releases/f31c55f/.venv/bin/python manage.py cleanup_private_data
+TimeoutStartSec=120
+MemoryMax=256M
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectHome=true
+ProtectSystem=strict
+ReadWritePaths=/srv/hyhq-releases/f31c55f/backend/var

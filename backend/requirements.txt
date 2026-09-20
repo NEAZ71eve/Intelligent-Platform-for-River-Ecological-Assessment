@@ -1,4 +1,5 @@
-# Locked on Python 3.12; PostgreSQL driver includes its binary runtime.
+# Locked on Python 3.12; also verified on Debian 13 / Python 3.13.5.
+# PostgreSQL driver includes its binary runtime.
 asgiref==3.12.1
 Django==5.2.17
 djangorestframework==3.17.2

@@ -1,0 +1,32 @@
+[Unit]
+Description=HYHQ isolated ONNX CPU recognition worker
+After=network.target postgresql.service
+
+[Service]
+Type=simple
+User=hyhq
+Group=hyhq
+WorkingDirectory=/srv/hyhq-releases/f31c55f/backend
+EnvironmentFile=/etc/hyhq/f31c55f.env
+Environment=OMP_NUM_THREADS=1
+Environment=OPENBLAS_NUM_THREADS=1
+Environment=PYTHONDONTWRITEBYTECODE=1
+ExecStart=/srv/hyhq-releases/f31c55f/.venv/bin/python manage.py run_recognition_worker
+Restart=on-failure
+RestartSec=3
+TimeoutStopSec=30
+KillMode=control-group
+MemoryHigh=512M
+MemoryMax=768M
+MemorySwapMax=0
+CPUQuota=100%
+TasksMax=64
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectHome=true
+ProtectSystem=strict
+ReadWritePaths=/srv/hyhq-releases/f31c55f/backend/var
+
+[Install]
+WantedBy=multi-user.target

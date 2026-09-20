@@ -1,0 +1,80 @@
+{
+  "ai": {
+    "attempts": 6,
+    "error_count": 0,
+    "errors": {},
+    "samples": [
+      {
+        "end_to_end_ms": 861.9,
+        "iteration_ms": 868.1,
+        "kind": "flower",
+        "status": "passed",
+        "worker_duration_ms": 316
+      },
+      {
+        "end_to_end_ms": 1638.8,
+        "iteration_ms": 1648.2,
+        "kind": "river",
+        "status": "passed",
+        "worker_duration_ms": 468
+      },
+      {
+        "end_to_end_ms": 1601.0,
+        "iteration_ms": 1608.8,
+        "kind": "flower",
+        "status": "passed",
+        "worker_duration_ms": 367
+      },
+      {
+        "end_to_end_ms": 889.0,
+        "iteration_ms": 898.4,
+        "kind": "river",
+        "status": "passed",
+        "worker_duration_ms": 466
+      },
+      {
+        "end_to_end_ms": 844.3,
+        "iteration_ms": 851.5,
+        "kind": "flower",
+        "status": "passed",
+        "worker_duration_ms": 316
+      },
+      {
+        "end_to_end_ms": 1646.9,
+        "iteration_ms": 1655.9,
+        "kind": "river",
+        "status": "passed",
+        "worker_duration_ms": 467
+      }
+    ],
+    "serial": true,
+    "target_interval_seconds": 10
+  },
+  "browse": {
+    "accounts": 5,
+    "attempts": 300,
+    "error_count": 0,
+    "errors": {},
+    "max_ms": 112.0,
+    "p50_ms": 36.2,
+    "p95_ms": 67.2,
+    "succeeded": 300,
+    "target_requests_per_account_per_second": 1
+  },
+  "cleanup": "verified",
+  "elapsed_ms": 60350,
+  "host_memory": {
+    "errors": 0,
+    "mem_available_min_kib": 885692,
+    "samples": 120,
+    "swap_used_max_kib": 12104
+  },
+  "m4_05_30_minute_acceptance": false,
+  "public_https_verified": false,
+  "requested_duration_seconds": 60,
+  "sampling_elapsed_ms": 60000,
+  "status": "passed",
+  "threads_drained": true,
+  "transport": "trusted_server_loopback_http",
+  "wechat_verified": false
+}

@@ -2,6 +2,8 @@ import logging
 import time
 import uuid
 
+from django.utils.cache import patch_cache_control
+
 logger = logging.getLogger('hyhq.request')
 
 
@@ -18,6 +20,5 @@ class RequestLogMiddleware:
             # No query, request body, cookies or auth headers in logs.
             logger.info('request_id=%s method=%s path=%s status=%s duration_ms=%d', request.request_id,
                         request.method, request.path, response.status_code, (time.monotonic() - started) * 1000)
-            response['Cache-Control'] = 'no-store'
+            patch_cache_control(response, no_store=True)
         return response
-

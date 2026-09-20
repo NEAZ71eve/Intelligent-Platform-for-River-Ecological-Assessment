@@ -1,0 +1,20 @@
+{
+  "base_commit": "f31c55f749cfc8ef101df24a8ac37422329b2389",
+  "files_sha256": {
+    "backend/assets/services.py": "080551e2a2945feb307462a40348aba77ec89b44563416fe39e6ab155de7c855",
+    "backend/assets/tests.py": "6c163d8d88bb6df8bafa276729a1c5db6d76a2987a8053f0951a80ea4c68fd1a",
+    "backend/common/middleware.py": "7c4fdd5ad6b0083a2ea21a710d6420c49b2b88600d322ae7c22c60a821d882f4",
+    "backend/common/tests.py": "9c3c256dda45ed5139ca762f35e84a2a110930b1b1e377985d0ba3ef5de6d4f1",
+    "deploy/beijing/hyhq-v3-api.service": "2086fb455efef19c46b42600fdfa78d38da0c38dfc0bf52bbe6c8e3094dbacb3",
+    "deploy/beijing/hyhq-v3-assessment.service": "855eeb171ffcff46a19c5df37a216810a5dab69bc1940b58ac42fb34ac05b91d",
+    "deploy/beijing/hyhq-v3-cleanup.service": "3962167b40d3c50a7032afe25bc145bbc8cabd9917dd125965fc5221d3a50c67",
+    "deploy/beijing/hyhq-v3-cleanup.timer": "912cf93bec9732e4e9196f9b11adb6b08ad9282badc9d8e31b621f0ea83fe1ee",
+    "deploy/beijing/hyhq-v3-recognition.service": "63cbc9b0a483ea6681a560cbc300b301f74bb2553aa06271063ca3e23325bbce",
+    "deploy/beijing/nginx-http-bootstrap.conf": "73bef789c995613b3bcb145ad1cc21ca7b5b8e89b19611ba276b66fbe76c46a2",
+    "deploy/run-production-command.py": "b79f7748c74e5a7327b99de22ef7d0b9d316cd5e181dede64adcba5b7a38a4d0",
+    "scripts/production-smoke.py": "0bc37a7e55b4600b0faee88d0c040abbe592b965d406242d40e792db53c23856",
+    "scripts/server-load-smoke.py": "c9f3c711d2b4073b8b6aa0a2fbd212fbf1b2a37e425b36fedb3f271831861e8d"
+  },
+  "runtime_files_match": true,
+  "verified_date": "2026-09-20"
+}
