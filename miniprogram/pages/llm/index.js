@@ -94,7 +94,7 @@ Page({
     if (!this.canAct() || !this.data.consent || !this.data.source || !this.data.status || !this.data.status.enabled || this.data.status.consent_version !== CONSENT_VERSION || this._sessionId) return;
     const generation = this._generation, token = this._token, includeImage = this.data.includeImage;
     this._confirming = true; let handled = false;
-    wx.showModal({ title: '确认使用 DeepSeek 解读', content: '你同意把本次识别结果、相关公开科普资料、之后主动发送的问题和本会话的对话上下文交给 DeepSeek 处理。' + (includeImage ? '你另外选择附送本次原图经处理后的图片；过期原图不会改用缩略图。' : '本会话不附送图片。') + '建立会话不会自动提问，首次发送也占每日额度。', confirmText: '同意并继续', success: async (result) => {
+    wx.showModal({ title: '确认使用 DeepSeek 解读', content: '你同意把本次识别结果、相关公开科普资料、之后主动发送的问题和本会话的对话上下文交给 DeepSeek 处理。' + (includeImage ? '你另外选择附送本次原图经处理后的图片；过期原图不会改用缩略图。' : '本会话不附送图片。') + '建立会话不会自动提问，首次发送也占每日额度。', confirmText: '同意继续', success: async (result) => {
       if (handled) return; handled = true;
       if (!this.current(generation, token)) return;
       this._confirming = false; if (!result.confirm) return;
@@ -110,7 +110,13 @@ Page({
           this.setData({ session, source: null, turns: [], next: '', consent: false, actionError: '' });
         } catch (error) { if (this.current(generation, token)) this.setData({ actionError: message(error) + (error.code === 'IMAGE_UNAVAILABLE' ? ' 可关闭附图，重新同意后建立仅文字结果的会话。' : ' 若结果未确认，可先去会话记录查看。') }); }
       });
-    }, fail: () => { if (this.current(generation, token)) this._confirming = false; } });
+    }, fail: () => {
+      if (handled) return; handled = true;
+      if (this.current(generation, token)) {
+        this._confirming = false;
+        this.setData({ actionError: '确认窗口未能打开，尚未建立会话。请重新点击确认；若仍失败，请刷新页面后重试。' });
+      }
+    } });
   },
   async send() {
     if (!this.canAct() || !this.data.session || !this.data.status || !this.data.status.enabled || this.data.hasPending) return;

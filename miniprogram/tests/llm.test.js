@@ -62,6 +62,22 @@ test('source entry defaults to no image and cancellation never sends data to cre
   page.consentChange(change(['agree'])); page.createSession(); await modals[0].success({ confirm: false });
   assert.equal(calls.some((item) => item.options && item.options.method === 'POST'), false);
 });
+test('native consent modal respects the four-character button limit and failed opening safely permits retry', async () => {
+  const { page, calls, modals } = fixture(undefined, { kind: 'recognition', jobId: 'j1' }); await page.onShow();
+  global.wx.showModal = (modal) => {
+    assert.ok(Array.from(modal.confirmText).length >= 1 && Array.from(modal.confirmText).length <= 4, 'native confirmText accepts at most four characters');
+    modals.push(modal);
+    if (modals.length === 1) modal.fail({ errMsg: 'platform-internal-diagnostic' });
+  };
+  page.consentChange(change(['agree'])); page.createSession();
+  assert.match(page.data.actionError, /确认窗口未能打开/); assert.equal(page.data.actionError.includes('platform-internal-diagnostic'), false);
+  assert.equal(page._confirming, false); assert.equal(page.data.session, null);
+  await modals[0].success({ confirm: true });
+  assert.equal(calls.some((item) => item.options && item.options.method === 'POST'), false);
+  page.createSession(); assert.equal(modals.length, 2); await modals[1].success({ confirm: true });
+  assert.equal(page.data.session.id, 's1'); assert.equal(page.data.actionError, '');
+  assert.equal(calls.filter((item) => item.options && item.options.method === 'POST').length, 1);
+});
 test('confirmed image preference is explicit and creating a session never automatically spends a turn', async () => {
   const { page, calls, modals } = fixture(undefined, { kind: 'recognition', jobId: 'j1' }); await page.onShow();
   page.consentChange(change(['agree'])); page.imageChange(change(true)); assert.equal(page.data.consent, false);

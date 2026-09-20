@@ -1,6 +1,8 @@
 # 本地启动与部署模板
 
-本阶段使用示范校园与模拟环境数据，无需天气服务密钥或 LLM。M3 图像识别需要单独训练/复制并启用 ONNX 制品；没有模型时仍能运行其他业务。默认数据库为 PostgreSQL；SQLite 仅作为显式选择的本机开发方式。首尔服务器、域名、证书和微信真机链路尚未部署或验收。
+本阶段使用示范校园与模拟环境数据，基础业务无需天气服务密钥或 LLM。M3 图像识别需要单独训练/复制并启用 ONNX 制品；没有模型时仍能运行其他业务。默认数据库为 PostgreSQL；SQLite 仅作为显式选择的本机开发方式。
+
+2026-09-20 已将源码 `26fe544` 部署到北京 Debian 13.2 实例，通过 283 项后端回归、71 次核心 HTTP 和 14 次 M2/LLM 关闭检查；数据库、依赖、API、花卉和河道服务及清理 timer 已配置。服务器 Key 为空、LLM 关闭，详见 [北京版本更新记录](../docs/verification/北京LLM版本更新记录.md)。后续微信弹窗补丁未引入后端变更。最初首尔部署设想已改为按北京实测 2 核、约 2GB 内存配置；公网 HTTPS、真实微信登录、手机与完整 M4 维护验收仍未完成。
 
 ## 1. 开发依赖
 
@@ -111,7 +113,9 @@ scripts/manage.sh run_llm_worker
 
 该进程负责外部网络调用，使用独立队列，不占用识别模型的 CPU 执行锁。一个进程逐个处理，数据库同时限制多消费者并发。用户每日成功回合最多五次，后台还提供全站提交次数、token 预算、输出长度和超时限制。输入预算采用保守预留，实际用量与未知用量分别记录；它不代表 DeepSeek 账号中其他应用的总费用。
 
-`systemd/hyhq-llm.service` 是可选模板；本次未安装到服务器。其内存/CPU 配额尚需目标机器验证，模板不等于已完成实机部署。停用功能时先关闭后台网关和环境开关，再重启相应进程；已发出的第三方请求无法撤回。
+`systemd/hyhq-llm.service` 是可选模板；北京此次已适配为 `hyhq-v3-llm.service`，保持 disabled、inactive，服务器环境与后台开关均关闭且 Key 为空。服务器真实 LLM 工作负载及其资源配额尚未验收。停用功能时先关闭后台网关和环境开关，再重启相应进程；已发出的第三方请求无法撤回。
+
+本机已通过原生微信开发者工具 Stable 2.02.2608070、基础库 3.7.12 的小程序模拟器完成真实文字/附图请求。Key 仅存于被 Git 忽略的 `backend/.env`，权限 `0600`，未复制到服务器。当前本机手测配置：每账号每日 5 个成功回合，全站每日 10 次提交、100000 token、单次输出 600 token、并发 1。两次验证合计 3131 token，验收时剩余 3/5；详情与继续测试方式见 [真实联通记录](../docs/verification/DeepSeek真实联通验证记录.md)。这不包含手机或真实微信登录验收。
 
 会话删除不返还已消耗额度；账号注销清除会话内容，用量账目保留不含正文/图片且解除用户关联的记录，用于当日预算。过期清理由现有 `cleanup_private_data` 命令处理。详细范围见 [LLM 实施计划](../docs/LLM实施计划.md)。
 
@@ -133,21 +137,22 @@ scripts/check.sh --sqlite
 
 `scripts/check.sh` 执行 Django 检查、迁移漂移检查和自动测试。使用 PostgreSQL 时测试账号需要创建测试数据库的权限；仅开发数据库用户可配置此权限，生产业务账号不要照搬。文件清理命令和接口完整说明见后端文档。
 
-## 5. Debian / 首尔服务器部署模板
+## 5. Debian 服务器部署模板与北京实例
 
-本目录包含可供 M4 使用的模板，尚未在 Debian 13 / 首尔实例执行：
+本目录包含可供 M4 使用的通用模板。北京实例已按实际目录、资源及生产环境适配，已执行步骤、备份与回退以 [北京版本更新记录](../docs/verification/北京LLM版本更新记录.md) 为准；以下模板路径不等于当前服务器路径。
 
 - `Dockerfile`：可选的 API 镜像；从仓库根目录构建。
 - `backend.production.env.example`：生产配置样例。
 - `systemd/hyhq-api.service`：2 个 Gunicorn Web 进程，不加载模型。
 - `systemd/hyhq-recognition.service`：单独队列消费进程。
 - `systemd/hyhq-assessment.service`：河道检测消费进程，与花卉消费者共享 `backend/var/recognition.lock`。
+- `systemd/hyhq-llm.service`：可选外部问答消费进程；北京安装后保持停用。
 - `systemd/hyhq-simulation.*`：可选小时模拟任务。
 - `nginx.conf.example`：HTTPS、反向代理与公开静态文件。
 
 模板假定源码放在 `/srv/hyhq`、运行账号为 `hyhq`、环境文件为 `/etc/hyhq/backend.env`、数据库在本机。安装前替换域名、路径、随机密钥和数据库密码，配置真实证书，并根据自己的系统创建服务账号与目录权限。不要将开发密码用于外部服务。
 
-河道权重的固定版本获取和登记见 [河道推理说明](../inference/river/README.md)。它通过 `DetectionModel` 独立启停，不替换花卉 `ModelVersion`。迁移后运行 `seed_assessment_rules --activate`，登记模型再启动 assessment 服务；只启用 API 不会执行后台评估。初始化命令保留已有的活动规则，后续切换在管理后台进行。两个推理服务串行争用同一个锁，不会同时加载两份任务模型进行前向。河道超时配置 `HYHQ_ASSESSMENT_TIMEOUT_SECONDS` 默认为 10 秒，仍须在目标 2 核 / 4GB 服务器验证端到端耗时和整机资源。
+河道权重的固定版本获取和登记见 [河道推理说明](../inference/river/README.md)。它通过 `DetectionModel` 独立启停，不替换花卉 `ModelVersion`。迁移后运行 `seed_assessment_rules --activate`，登记模型再启动 assessment 服务；只启用 API 不会执行后台评估。初始化命令保留已有的活动规则，后续切换在管理后台进行。两个推理服务串行争用同一个锁，不会同时加载两份任务模型进行前向。河道超时配置 `HYHQ_ASSESSMENT_TIMEOUT_SECONDS` 默认为 10 秒。北京实际为 2 核 / 约 2GB，API 使用 1 个 worker；两类真实推理与内部 HTTP 已通过，正式 30 分钟负载和整机重启恢复仍待验收。
 
 部署顺序：准备 PostgreSQL 与独立应用账号 → 安装锁定依赖 → 配置生产环境变量 → 迁移数据库 → `collectstatic --noinput` → 创建管理员 → 配置 Nginx/证书 → 启用 API 服务 → 验证真实微信链路。
 
@@ -157,7 +162,7 @@ scripts/check.sh --sqlite
 
 ## 6. 当前 macOS 验证运行时
 
-当前工作机未安装 Docker 或 PostgreSQL。为实际验证 PostgreSQL 迁移，已从 [PostgreSQL 官方源码目录](https://ftp.postgresql.org/pub/source/v17.9/) 下载 17.9 源码并校验随包 SHA-256，按 [官方编译说明](https://www.postgresql.org/docs/17/install-make.html) 编译到项目 `.runtime/postgresql`；关闭 ICU/readline 仅用于本机测试，不影响数据库业务字段。
+当前工作机最初未预装 Docker 或 PostgreSQL。为实际验证 PostgreSQL 迁移，已从 [PostgreSQL 官方源码目录](https://ftp.postgresql.org/pub/source/v17.9/) 下载 17.9 源码并校验随包 SHA-256，按 [官方编译说明](https://www.postgresql.org/docs/17/install-make.html) 编译到项目 `.runtime/postgresql`，目前本机验证使用该实例；关闭 ICU/readline 仅用于本机测试，不影响数据库业务字段。
 
 验证实例数据位于 `.runtime/postgres-data`，仅监听 `127.0.0.1:55432`；本机示例连接为：
 
@@ -178,4 +183,4 @@ DATABASE_URL=postgresql://hyhq:hyhq-dev-only@127.0.0.1:55432/hyhq scripts/dev.sh
 .runtime/postgresql/bin/pg_ctl -D .runtime/postgres-data -m fast -w stop
 ```
 
-这里的 socket 路径是当前工作机路径，移动项目后要替换。本机数据库验证不等于远程服务器已部署。
+这里的 socket 路径是当前工作机路径，移动项目后要替换。这些命令只操作本机数据库；北京部署状态独立见 [版本更新记录](../docs/verification/北京LLM版本更新记录.md)。
