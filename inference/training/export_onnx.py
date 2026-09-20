@@ -33,13 +33,13 @@ DISPLAY = {
 
 
 def find_best_run():
-    """找最新的 river-eco-v1* run 目录（训练重跑会带 -N 后缀）。"""
-    candidates = sorted(RUNS.glob("river-eco-v1*"), key=lambda p: p.stat().st_mtime)
+    """找最新的 river-eco-v2* run 目录（训练重跑会带 -N 后缀）。"""
+    candidates = sorted(RUNS.glob("river-eco-v2*"), key=lambda p: p.stat().st_mtime)
     for run in reversed(candidates):
         best = run / "weights" / "best.pt"
         if best.exists():
             return run, best
-    raise SystemExit("未找到 runs/river-eco-v1*/weights/best.pt —— 请先运行 train_yolo.py")
+    raise SystemExit("未找到 runs/river-eco-v2*/weights/best.pt —— 请先运行 train_yolo.py")
 
 
 def main():
@@ -52,7 +52,7 @@ def main():
     print(f"[export] ONNX: {onnx_src}")
 
     ARTIFACTS.mkdir(parents=True, exist_ok=True)
-    artifact_name = "river-eco-yolov8n-v1.onnx"
+    artifact_name = "river-eco-yolov8n-v2.onnx"
     dest = ARTIFACTS / artifact_name
     shutil.copy2(onnx_src, dest)
     sha = hashlib.sha256(dest.read_bytes()).hexdigest()
@@ -79,7 +79,7 @@ def main():
 
     manifest = {
         "model_name": "river-eco-yolov8n",
-        "model_version": "v1",
+        "model_version": "v2",
         "task": "detection",
         "artifact": artifact_name,
         "sha256": sha,
@@ -91,13 +91,13 @@ def main():
         },
         "imgsz": 640,
         "threshold": 0.5,
-        "scope": "内河水面漂浮物检测原型（公开数据集训练）；仅 IWHR floater 单类有真实样本，"
-                 "其余细类为预留头，不代表真实河道巡查识别准确率；非官方水质评价。",
-        "license": "IWHR CC BY 4.0; Ultralytics YOLOv8n AGPL-3.0",
-        "source_url": "https://doi.org/10.1038/s41597-025-04594-9",
+        "scope": "河道生态评估检测 v2（unified-v2 多类训练）：覆盖 10/15 细类，"
+                 "水华黑臭/岸带 5 细类零样本未训练；仅作识别参考，非官方水质评价。",
+        "license": "IWHR CC BY 4.0; iSOOD CC BY 4.0; Ultralytics YOLOv8n AGPL-3.0",
+        "source_url": "https://github.com/NEAZ71eve/Intelligent-Platform-for-River-Ecological-Assessment",
         "evaluation": evaluation,
     }
-    manifest_path = ARTIFACTS / "river-eco-yolov8n-v1.manifest.json"
+    manifest_path = ARTIFACTS / "river-eco-yolov8n-v2.manifest.json"
     manifest_path.write_text(json.dumps(manifest, ensure_ascii=False, indent=2),
                              encoding="utf-8")
     print(f"[ok] {dest.name} ({dest.stat().st_size} bytes)")

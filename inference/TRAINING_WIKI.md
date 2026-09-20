@@ -11,10 +11,10 @@
 
 | 环节 | 状态 |
 |---|---|
-| 数据 | unified-v2 就绪：31,096 图 / 86,369 框 / **10/15 细类**（18.43 GB，D 盘）|
+| 数据 | unified-v2 就绪：31,099 图 / 86,372 框 / **10/15 细类**（18.43 GB，D 盘）|
 | 5 个零样本细类 | 硬缺口，自采规范已就绪（docs/硬缺口自采规范.md），未启动 |
-| 多类模型训练 | **未开始**（unified-v2 尚未用于训练；下述命令为就绪入口）|
-| 基线（v1 单类）| test mAP50=0.884 / mAP50-95=0.630 / P=0.878 / R=0.790（仅 misc_debris）|
+| 多类模型训练 | ✅ **完成**（river-eco-v2-2，80/100 epochs 早停；test mAP50=0.767 / mAP50-95=0.491，详见 reports/training-v2-report.md）|
+| 基线（v1 单类）| test mAP50=0.884 / mAP50-95=0.630 / P=0.878 / R=0.790（仅 misc_debris；v2 为 10 类平均，不可直接对比）|
 
 > 判定结论（training-direction-v1.md）：v1 的问题不是模型结构/epoch，而是监督信号缺失（14 类零样本 + 无生态等级标签）。**unified-v2 落地后才有资格谈多类训练。**
 
@@ -90,18 +90,14 @@ C:\Users\21516\anaconda3\python.exe training\prepare_unified_v2.py
 
 **环境**：anaconda base（`C:\Users\21516\anaconda3\python.exe`，Python 3.12.7，ultralytics 8.4.154，numpy 1.26.4）
 
-**入口**：`training/train_yolo.py` ⚠️ **当前仍指向 unified-v1，需更新为 unified-v2 后再用**；或直接命令行训练：
+**入口**：`training/train_yolo.py`（已指向 unified-v2，重跑生成 river-eco-v2-N）
 
 ```powershell
 cd D:\WeChatProjects\HYHQ\inference
-C:\Users\21516\anaconda3\python.exe -m ultralytics.engine.train YOLO(
-    data='D:/WeChatProjects/HYHQ/inference/data/splits/unified-v2/dataset.yaml',
-    model='yolov8n.pt', epochs=100, imgsz=640, batch=16,
-    project='D:/WeChatProjects/HYHQ/inference/runs', name='river-eco-v2',
-    seed=42, deterministic=True, patience=20, cache='disk', workers=0)
+C:\Users\21516\anaconda3\python.exe training\train_yolo.py
 ```
 
-**超参基线（沿 v1 经验）**：epochs=100（v1 约 70 轮平台化）、imgsz=640、batch=16、patience=20、seed=42 deterministic（可重放）、workers=0（Windows DataLoader 易崩，主进程加载）。
+**超参基线（沿 v1+v2 经验）**：epochs=100（v1/v2 均约 70-80 轮平台化）、imgsz=640、batch=16、patience=20、seed=42 deterministic（可重放）、workers=4（Windows DataLoader：0 过慢 9.5min/epoch，8 验证阶段崩溃，4 稳定 ~2.4min/epoch）。
 
 **多类注意**：15 细类样本极不均衡（78 ~ 31,698 框），需关注 per-class AP，必要时按细类加权采样或分阶段训练；5 个零样本类在补数据前**不得计入指标**（缺类即缺监督信号）。
 
@@ -119,8 +115,7 @@ cd D:\WeChatProjects\HYHQ\inference
 C:\Users\21516\anaconda3\python.exe training\export_onnx.py
 ```
 
-- 产出：`artifacts/river-eco-yolov8n-v1.onnx` + `manifest.json`（imgsz 640 / letterbox / pad 114 / threshold 0.5，labels=15 细类含 eval_category 聚合）。
-- ⚠️ 脚本 `find_best_run()` 匹配 `river-eco-v1*`，多类 v2 训练后需同步更新匹配前缀与 artifact 版本号。
+- 产出：`artifacts/river-eco-yolov8n-v2.onnx` + `-v2.manifest.json`（imgsz 640 / letterbox / pad 114 / threshold 0.5，labels=15 细类含 eval_category 聚合）。
 - 后端登记流程见 HYHQ `scripts/manage.sh register_model`（校验 SHA-256/标签/图结构，拒绝外部权重）。
 
 ## 8. 实验门禁（方向 B 验收，来自 training-direction-v1.md）
@@ -135,9 +130,8 @@ C:\Users\21516\anaconda3\python.exe training\export_onnx.py
 
 | 项 | 状态 |
 |---|---|
-| train_yolo.py 指向 unified-v1 | 待更新为 v2 |
 | TACO 下载 404/1500（2 张损坏跳过）| 独立进程续传中（Flickr 限速极慢，需耐心或换时段），完成后重跑预处理 |
-| 5 硬缺口细类（algae_mass/sewage_color/foam_pollution/bank_garbage/bank_encroach）| 自采规范就绪未启动 |
+| 5 硬缺口细类（algae_mass/sewage_color/foam_pollution/bank_garbage/bank_encroach）| 自采规范就绪未启动（数据门禁的关键阻塞）|
 | water_plant 近似映射 | 需抽样人工复核 |
 | IWHR 备份 | 唯一不可重得，网盘/双盘备份方案未拍板 |
 | 数据集申请邮件（WATER-DET/Space-hehu/FloW-Img）| 模板就绪，待发送 |
