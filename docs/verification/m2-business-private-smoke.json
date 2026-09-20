@@ -1,0 +1,16 @@
+{
+  "status": "passed",
+  "checks": [
+    "B03_favorites_histories_visits_pagination_idempotence_navigation_owner_delete",
+    "B04_profile_nickname_private_avatar_and_history_switch",
+    "B04_real_admin_reply_read_back_by_owning_user",
+    "B04_feedback_submit_paginate_readonly_moderation_and_owner_delete",
+    "B04_logout_relogin_account_deletion_and_old_session_rejection"
+  ],
+  "admin_reply_verified": true,
+  "page_size_override": 2,
+  "transport": "real_local_http_with_wx_mock",
+  "wechat_device_verified": false,
+  "server_deployed": false,
+  "test_accounts_cleaned": true
+}

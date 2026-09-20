@@ -1,0 +1,7 @@
+textarea { width: 100%; min-height: 240rpx; padding: 20rpx; background: #f2f5eb; border-radius: 16rpx; font-size: 26rpx; box-sizing: border-box; line-height: 1.7; }
+.count { text-align: right; margin-top: 12rpx; }
+.feedback-record { margin-top: 18rpx; }
+.feedback-body { white-space: pre-wrap; overflow-wrap: break-word; font-size: 27rpx; }
+.reply { margin-top: 24rpx; padding: 22rpx; border-radius: 18rpx; background: #f0f4e9; }
+.reply-title { color: #326549; font-weight: 600; }
+.resolved { background: #e0edda; color: #33634b; }

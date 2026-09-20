@@ -48,7 +48,7 @@ scripts/manage.sh run_recognition_worker
 | `simulation-runs/` | GET | 公开成功批次目录；按 `region,station,source,scenario` 筛选，标准分页 |
 | `weather/`、`air-quality/`、`weather-alerts/` | GET | 公开；均为模拟模式，官方预警未接入会明确说明 |
 | `dashboard/` | GET | 公开；按单一来源/批次读取指标 |
-| `contents/`、`routes/` | GET | 公开；只展示已发布内容 |
+| `contents/`、`content-tags/`、`routes/` | GET | 公开；科普组合筛选/标签目录，路线只展示公开节点，详见 [知识模块](knowledge/README.md) |
 | `places/{id}/`、`contents/{id}/`、`routes/{id}/` | GET | 公开详情 |
 | `uploads/` | POST | 登录；multipart `file`，`purpose=avatar/recognition` |
 | `uploads/{id}/content/?variant=thumbnail` | GET | 仅所有者；variant 也可为 original |
@@ -61,7 +61,9 @@ scripts/manage.sh run_recognition_worker
 | `favorites/`、`histories/` | GET/POST | 仅本人；参数 `place_id` 或 `content_id` 二选一 |
 | `favorites/{id}/`、`histories/{id}/` | DELETE | 仅本人 |
 | `visits/`、`visits/{id}/` | GET/POST、DELETE | 自记游览；同一用户/地点/日期去重，无定位核验 |
-| `feedback/` | GET/POST | 仅本人；最多 1000 字，管理员在后台处理 |
+| `feedback/`、`feedback/{id}/` | GET/POST、DELETE | 仅本人；最多 1000 字，答复/状态/处理时间只读，详见 [个人记录与反馈](activity/README.md) |
+
+科普、路线与个人业务的最新本地验证见 [M2-B01～B04 记录](../docs/verification/M2业务闭环验证记录.md)：完整 PostgreSQL 214 项、前端 191 项，以及用户侧和后台答复实际 HTTP 均通过。反馈字段新增迁移 `activity/0002_feedback_resolution.py`；本轮没有部署到北京服务器。
 
 公开读取不等于管理权限。内容管理员需显式授予 Django 模型权限；上传图片不通过公开 media 路由暴露。生产单层可信 Nginx 代理开启 `TRUST_PROXY_HTTPS=1` 后按其覆盖的 X-Forwarded-For 区分限流来源；不能直接暴露绕过代理的应用端口。
 

@@ -1,0 +1,13 @@
+{
+  "status": "passed",
+  "temporary_records_remaining": {
+    "User": 0,
+    "AuthSession": 0,
+    "Favorite": 0,
+    "History": 0,
+    "Visit": 0,
+    "Feedback": 0,
+    "Asset": 0,
+    "Session": 0
+  }
+}

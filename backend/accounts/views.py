@@ -61,19 +61,27 @@ class MeView(APIView):
     def get(self, request):
         return Response(UserSerializer(request.user, context={'request': request}).data)
 
+    @transaction.atomic
     def patch(self, request):
         serializer = UserSerializer(request.user, data=request.data, partial=True, context={'request': request})
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        audit('user.profile_updated', request.user)
+        # Keep the refreshed owner locked through the audit insert as well.
+        audit('user.profile_updated', serializer.instance)
         return Response(serializer.data)
 
     def delete(self, request):
-        if request.user.is_staff or request.user.is_superuser:
-            raise ServiceError('管理账号请在管理端处理', 'ACCOUNT_PROTECTED', 403)
         with transaction.atomic():
-            audit('user.deleted', request.user)
-            request.user.delete()
+            # Serialize with private-record/profile writes before Django collects
+            # cascading children; otherwise a newly committed child can be missed.
+            try:
+                user = User.objects.select_for_update().get(pk=request.user.pk, is_active=True)
+            except User.DoesNotExist:
+                raise ServiceError('登录已过期，请重新登录', 'AUTH_REQUIRED', 401) from None
+            if user.is_staff or user.is_superuser:
+                raise ServiceError('管理账号请在管理端处理', 'ACCOUNT_PROTECTED', 403)
+            audit('user.deleted', user)
+            user.delete()
         return Response(status=204)
 
 

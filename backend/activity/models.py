@@ -1,5 +1,6 @@
 import uuid
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils import timezone
 
@@ -46,8 +47,16 @@ class Feedback(models.Model):
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     body = models.CharField(max_length=1000)
     status = models.CharField(max_length=20, default='pending', choices=[('pending', '待处理'), ('resolved', '已处理')])
+    reply = models.CharField(max_length=1000, blank=True, default='')
+    resolved_at = models.DateTimeField(null=True, blank=True, editable=False)
+    handled_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, editable=False, on_delete=models.SET_NULL, related_name='handled_feedback')
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         ordering = ['-created_at']
 
+    def clean(self):
+        super().clean()
+        self.reply = self.reply.strip()
+        if self.status == 'resolved' and not self.reply:
+            raise ValidationError({'reply': '处理完成前请填写答复。'})

@@ -54,8 +54,19 @@ class VisitSerializer(serializers.ModelSerializer):
 
 
 class FeedbackSerializer(serializers.ModelSerializer):
+    body = serializers.CharField(min_length=1, max_length=1000, trim_whitespace=True)
+    reply = serializers.SerializerMethodField()
+    resolved_at = serializers.SerializerMethodField()
+
     class Meta:
         model = Feedback
-        fields = ('id', 'body', 'status', 'created_at')
-        read_only_fields = ('id', 'status', 'created_at')
+        fields = ('id', 'body', 'status', 'created_at', 'reply', 'resolved_at')
+        read_only_fields = ('id', 'status', 'created_at', 'reply', 'resolved_at')
 
+    def get_reply(self, obj):
+        return obj.reply if obj.status == 'resolved' else ''
+
+    def get_resolved_at(self, obj):
+        if obj.status == 'resolved' and obj.resolved_at is not None:
+            return serializers.DateTimeField().to_representation(obj.resolved_at)
+        return None

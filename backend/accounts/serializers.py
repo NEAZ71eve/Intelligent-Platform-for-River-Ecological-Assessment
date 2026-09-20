@@ -2,6 +2,7 @@ from django.utils import timezone
 from django.db import transaction
 from django.db.models import Q
 from rest_framework import serializers
+from common.exceptions import ServiceError
 from .models import User
 
 
@@ -32,7 +33,10 @@ class UserSerializer(serializers.ModelSerializer):
         with transaction.atomic():
             # Authentication may have loaded an older snapshot before another PATCH.
             # Lock and refresh before changing privacy/profile/avatar fields.
-            instance = User.objects.select_for_update().get(pk=instance.pk)
+            try:
+                instance = User.objects.select_for_update().get(pk=instance.pk, is_active=True)
+            except User.DoesNotExist:
+                raise ServiceError('登录已过期，请重新登录', 'AUTH_REQUIRED', 401) from None
             old_avatar = instance.avatar
             changing_avatar = 'avatar_asset_id' in validated_data
             if changing_avatar:

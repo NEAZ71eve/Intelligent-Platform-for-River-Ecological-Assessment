@@ -3,7 +3,7 @@
     "pages/home/index", "pages/explore/index", "pages/recognize/index",
     "pages/learn/index", "pages/profile/index", "pages/detail/index",
     "pages/records/index", "pages/legal/index", "pages/assessment/index",
-    "pages/water/index", "pages/data-center/index"
+    "pages/water/index", "pages/data-center/index", "pages/feedback/index"
   ],
   "window": {
     "navigationBarTitleText": "HYHQ 海晏河清",
