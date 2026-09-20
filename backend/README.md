@@ -2,7 +2,7 @@
 
 ## 运行与范围
 
-Python 3.12，锁定依赖见 `requirements.txt`。数据库默认 PostgreSQL；`HYHQ_USE_SQLITE=1` 仅用于显式本地开发。设置与私有文件位于后端目录，真实 `.env`、数据库、用户文件、模型和本地运行时均不提交。
+本机使用 Python 3.12；北京服务器既有基线已在 Python 3.13 上完成依赖安装、数据库及服务测试。M2 本轮仅在本机验证，未部署服务器。锁定依赖见 `requirements.txt`。数据库默认 PostgreSQL；`HYHQ_USE_SQLITE=1` 仅用于显式本地开发。设置与私有文件位于后端目录，真实 `.env`、数据库、用户文件、模型和本地运行时均不提交。
 
 从仓库根目录使用 `scripts/manage.sh` 执行命令，该脚本会切换到 backend 工作目录，确保 Django 能正确发现测试。
 
@@ -42,8 +42,10 @@ scripts/manage.sh run_recognition_worker
 | `auth/wechat/` | POST | 接收临时 `code`，后端固定调用微信 code2Session |
 | `auth/logout/` | POST | 登录用户，撤销当前会话 |
 | `me/` | GET/PATCH/DELETE | 当前用户；可修改 `nickname`、`record_history`、`avatar_asset_id` |
-| `regions/`、`places/`、`maps/`、`stations/` | GET | 公开；示范地区、地点、底图登记和监测站 |
-| `metrics/`、`data-sources/`、`observations/` | GET | 公开；指标和带来源的数据 |
+| `regions/`、`places/`、`maps/`、`stations/` | GET | 公开；区域、地点、静态底图与版本绑定点位；站点可按 `region,kind,place,water_body` 筛选 |
+| `metrics/`、`data-sources/`、`observations/` | GET | 公开；指标、已启用来源及有界原始观测样例 |
+| `observation-series/` | GET | 公开；单站多指标、单来源/成功单批次的完整窗口聚合，最长 31 天、最多 50000 条原始记录及每指标 240 个桶 |
+| `simulation-runs/` | GET | 公开成功批次目录；按 `region,station,source,scenario` 筛选，标准分页 |
 | `weather/`、`air-quality/`、`weather-alerts/` | GET | 公开；均为模拟模式，官方预警未接入会明确说明 |
 | `dashboard/` | GET | 公开；按单一来源/批次读取指标 |
 | `contents/`、`routes/` | GET | 公开；只展示已发布内容 |
@@ -54,7 +56,7 @@ scripts/manage.sh run_recognition_worker
 | `recognition-jobs/` | GET/POST | 仅本人；创建参数 `asset_id`，同一图片幂等 |
 | `recognition-jobs/{id}/` | GET/DELETE | 仅本人；删除任务同时删除其图片 |
 | `assessment-jobs/`、`assessment-jobs/{id}/` | GET/POST、GET/DELETE | 仅本人；河道图像观察任务和私有历史 |
-| `water-bodies/` | GET | 公开；已发布的河流/湖泊列表 |
+| `water-bodies/` | GET | 公开；已发布河流/湖泊，可按 `region` slug 或 UUID 筛选 |
 | `nearby-water-bodies/` | GET | 公开；同坐标系的 2km 内水体建议，无匹配返回 null |
 | `favorites/`、`histories/` | GET/POST | 仅本人；参数 `place_id` 或 `content_id` 二选一 |
 | `favorites/{id}/`、`histories/{id}/` | DELETE | 仅本人 |
@@ -62,6 +64,18 @@ scripts/manage.sh run_recognition_worker
 | `feedback/` | GET/POST | 仅本人；最多 1000 字，管理员在后台处理 |
 
 公开读取不等于管理权限。内容管理员需显式授予 Django 模型权限；上传图片不通过公开 media 路由暴露。生产单层可信 Nginx 代理开启 `TRUST_PROXY_HTTPS=1` 后按其覆盖的 X-Forwarded-For 区分限流来源；不能直接暴露绕过代理的应用端口。
+
+## M2 生态展示数据契约
+
+`observation-series/` 必填 `station`（代码或 UUID），`region` 默认 `demo-campus`；可选 `metrics` 为 1～9 个不重复的适用指标代码。`source_type` 默认 `simulation`，`source` 必须与来源类型匹配；存在多个候选来源时必须显式选择。模拟查询固定一个成功批次，支持 `scenario` 与 `simulation_run`，不会拼接多个批次；非模拟来源不接受模拟批次/场景参数。
+
+时间使用 `hours=1..744`（默认 48），或成对的带时区 `start/end`，两种方式互斥。区间为 `[start,end)`，最长 31 天。`max_points=1..240`（默认 120）限制每指标的时间桶数量，聚合覆盖整个窗口；原始记录总数超过 50000 时拒绝查询，不截断冒充全量。小时模拟页面采用整点批次窗口和每小时一个桶。
+
+响应包含 `source,source_type,is_simulated,simulation_run_id,window,bucket_seconds,series`。`latest` 保留最后一条原始记录的实际时间与质量状态；`summary` 只对有效原始值统计最小、最大与均值，计数按原始记录而非桶数计算。空桶、缺失或存疑桶的曲线值为 `null`；零值为有效数值。混合桶保留有效样本计数与极值，但有缺失/存疑即形成断线。`simulation-runs/` 的 `counts` 仅统计本次区域/站点筛选中可公开的记录。
+
+`water-bodies/?region=...` 与 `stations/?region=...&water_body=<uuid>` 支持详情页进入相应水体和监测站；隐藏地点、水体和停用站点不会通过观测与批次目录泄露。来源目录路径为 `data-sources/`。
+
+示范静态图 `/assets/maps/demo-campus-v1.png` 为 HYHQ 原创虚构布局，固定为 `demo-campus`、v1、1000×700。已有点位的底图不能原地改尺寸、所属区域、版本或替换图片 URL，需新版本重新布点；初始化保留管理员编辑。完整参数表、批次目录及统计语义见 [生态模块说明](ecology/README.md)。
 
 ## 图片与记录生命周期
 
@@ -118,4 +132,4 @@ npm test
 node tests/live-smoke.js
 ```
 
-真实 HTTP 联调脚本需要开发服务器、显式模拟登录及工作进程运行；只创建并删除自己的测试账号。它使用 wx mock，不证明微信开发者工具或真机可用。PostgreSQL 验证与结果见 [M1 验证记录](../docs/verification/M1验证记录.md)。
+真实 HTTP 联调脚本需要开发服务器、显式模拟登录及工作进程运行；只创建并删除自己的测试账号。它使用 wx mock，不证明微信开发者工具或真机可用。既有 PostgreSQL 结果见 [M1 验证记录](../docs/verification/M1验证记录.md)；M2 本轮完整后端 158 项通过，聚合边界及真实 HTTP 三场景结果见 [M2 核心展示验证记录](../docs/verification/M2核心展示验证记录.md)。服务器基线验证不代表 M2 已上线，微信开发者工具和真机验收仍需另行执行。

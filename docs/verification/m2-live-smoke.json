@@ -1,0 +1,35 @@
+{
+  "status": "passed",
+  "checks": [
+    "home_and_twelve_version_bound_map_points",
+    "water_selection_and_three_isolated_simulation_scenarios",
+    "detail_navigation_and_air_station_deep_link",
+    "all_screens_browse_without_login_or_location"
+  ],
+  "scenarios": [
+    {
+      "scenario": "normal",
+      "metrics": 4,
+      "points_per_metric": 48,
+      "missing_points": 0,
+      "line_segments": 1
+    },
+    {
+      "scenario": "turbidity",
+      "metrics": 4,
+      "points_per_metric": 48,
+      "missing_points": 0,
+      "line_segments": 1
+    },
+    {
+      "scenario": "missing",
+      "metrics": 4,
+      "points_per_metric": 48,
+      "missing_points": 28,
+      "line_segments": 7
+    }
+  ],
+  "transport": "real_local_http_with_wx_mock",
+  "wechat_device_verified": false,
+  "server_deployed": false
+}

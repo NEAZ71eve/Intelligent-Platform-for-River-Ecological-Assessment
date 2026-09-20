@@ -1,0 +1,1 @@
+{ "navigationBarTitleText": "数据中心", "usingComponents": { "trend-chart": "/components/trend-chart/index" } }

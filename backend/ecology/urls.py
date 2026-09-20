@@ -1,6 +1,7 @@
 from django.urls import path
 
 from . import views
+from .series import ObservationSeries, SimulationRunList
 
 urlpatterns = [
     path("regions/", views.RegionList.as_view(), name="region-list"),
@@ -10,6 +11,8 @@ urlpatterns = [
     path("stations/", views.StationList.as_view(), name="station-list"),
     path("metrics/", views.MetricList.as_view(), name="metric-list"),
     path("data-sources/", views.SourceList.as_view(), name="data-source-list"),
+    path("observation-series/", ObservationSeries.as_view(), name="observation-series"),
+    path("simulation-runs/", SimulationRunList.as_view(), name="simulation-run-list"),
     path("observations/", views.ObservationList.as_view(), name="observation-list"),
     path("weather/", views.EnvironmentalSummary.as_view(), name="weather"),
     path("air-quality/", views.AirQuality.as_view(), name="air-quality"),

@@ -1,0 +1,43 @@
+<view class="page">
+  <text class="eyebrow">OBSERVATIONS / 数据中心</text>
+  <view class="page-title">把生态变化展开。</view>
+  <view class="subtitle">选择站点与来源，在一段时间里读懂观测。</view>
+  <view class="notice">数据仅作课程演示；统计与图表按单个站点、来源和批次分别展示。缺测与存疑点保持断线，不能据此认定水质等级或官方 AQI。</view>
+  <view class="card section filters">
+    <view class="section-title">选择观测范围</view>
+    <view class="filter-grid">
+      <view class="filter"><text class="field-label">区域</text><picker range="{{regions}}" range-key="name" value="{{regionIndex}}" disabled="{{loading || !regions.length}}" bindchange="changeRegion"><view class="picker-value">{{region.name || '暂无区域'}}<text>⌄</text></view></picker></view>
+      <view wx:if="{{!waterMode}}" class="filter"><text class="field-label">指标类别</text><picker range="{{kinds}}" range-key="name" value="{{kindIndex}}" disabled="{{loading}}" bindchange="changeKind"><view class="picker-value">{{kinds[kindIndex].name}}<text>⌄</text></view></picker></view>
+      <view wx:if="{{waterMode}}" class="filter"><text class="field-label">河流 / 湖泊</text><picker range="{{waterBodies}}" range-key="name" value="{{waterIndex}}" disabled="{{loading || !waterBodies.length}}" bindchange="changeWater"><view class="picker-value">{{waterBodies[waterIndex].name || '暂无公开水体'}}<text>⌄</text></view></picker></view>
+      <view class="filter wide"><text class="field-label">监测站</text><picker range="{{stations}}" range-key="name" value="{{stationIndex}}" disabled="{{loading || !stations.length}}" bindchange="changeStation"><view class="picker-value">{{stations[stationIndex].name || '暂无监测站'}}<text>⌄</text></view></picker></view>
+      <view class="filter wide"><text class="field-label">数据来源</text><picker range="{{sources}}" range-key="label" value="{{sourceIndex}}" disabled="{{loading || !sources.length}}" bindchange="changeSource"><view class="picker-value">{{sources[sourceIndex].label || '暂无来源'}}<text>⌄</text></view></picker></view>
+      <view wx:if="{{sources[sourceIndex].kind === 'simulation'}}" class="filter"><text class="field-label">模拟场景</text><picker range="{{scenarios}}" range-key="name" value="{{scenarioIndex}}" disabled="{{loading || !scenarios.length}}" bindchange="changeScenario"><view class="picker-value">{{scenarios[scenarioIndex].name || '暂无场景'}}<text>⌄</text></view></picker></view>
+      <view class="filter"><text class="field-label">时间范围</text><picker range="{{ranges}}" range-key="name" value="{{rangeIndex}}" disabled="{{loading}}" bindchange="changeRange"><view class="picker-value">{{ranges[rangeIndex].name}}<text>⌄</text></view></picker></view>
+      <view wx:if="{{sources[sourceIndex].kind === 'simulation'}}" class="filter wide"><text class="field-label">成功批次（生成时间 · 编号）</text><picker range="{{runs}}" range-key="label" value="{{runIndex}}" disabled="{{loading || !runs.length}}" bindchange="changeRun"><view class="picker-value compact">{{runs[runIndex].label || '暂无成功批次'}}<text>⌄</text></view></picker></view>
+    </view>
+    <view class="copy small">场景列表随数据来源变化；查看其他模拟场景时，请选择对应数据源。模拟时间范围以批次结束时间为基准，其他来源以当前时间为基准。起始时间计入，结束时间不计入。</view>
+  </view>
+  <view class="section"><page-state loading="{{loading}}" error="{{error}}" empty="{{!loading && !error && !view}}" empty-text="{{selectionNotice || '当前选择暂无数据'}}" bindretry="load" /></view>
+  <block wx:if="{{!loading && !error && view}}">
+    <view class="card provenance">
+      <view class="row"><text class="section-title">本次观测</text><source-label source="{{view.source_type}}" /></view>
+      <view class="copy">来源：{{view.source_name}}</view>
+      <view class="copy">窗口：{{view.window_label}}</view>
+      <view class="copy">粒度：{{view.bucket_label}}</view>
+      <block wx:if="{{selectedRun}}"><view class="copy">场景：{{selectedRun.scenario.name}}</view><view class="copy break-word">批次：{{view.simulation_run_id}}</view><view class="copy">生成：{{selectedRun.created_label}}</view><view class="copy">批次范围：{{selectedRun.window_label}}</view></block>
+    </view>
+    <view wx:if="{{view.status === 'unavailable'}}" class="notice">当前站点、来源、批次与时间范围内没有观测记录。可调整筛选后重试；空缺不会填成 0。</view>
+    <view class="metric-grid section">
+      <view class="metric" wx:for="{{view.series}}" wx:key="metric_name"><text class="metric-label">{{item.metric.name}}</text><text class="metric-value">{{item.latest_label}} <text class="unit">{{item.metric.unit}}</text></text><view class="small muted">最新观测 · {{item.latest_quality}}</view><view class="timestamp">{{item.latest_time}}</view></view>
+    </view>
+    <view wx:if="{{activeMetric}}" class="card section">
+      <text class="field-label">查看一个指标的趋势与明细</text>
+      <picker range="{{view.series}}" range-key="metric_name" value="{{metricIndex}}" bindchange="changeMetric"><view class="picker-value">{{activeMetric.metric.name}}<text>⌄</text></view></picker>
+      <view class="stats"><view><text>最低</text><view>{{activeMetric.minimum_label}}</view></view><view><text>最高</text><view>{{activeMetric.maximum_label}}</view></view><view><text>均值</text><view>{{activeMetric.mean_label}}</view></view></view>
+      <view class="small muted">单位：{{activeMetric.metric.unit || '无量纲'}} · 有效 {{activeMetric.valid_count}} / 缺测 {{activeMetric.missing_count}} / 存疑 {{activeMetric.suspect_count}} 条</view>
+      <trend-chart entry="{{activeMetric}}" start="{{view.start}}" end="{{view.end}}" />
+    </view>
+    <view class="notice">{{view.notice}}</view>
+  </block>
+  <view class="footer-note">HYHQ / 让数据有迹可循</view>
+</view>

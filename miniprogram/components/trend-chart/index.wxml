@@ -1,0 +1,13 @@
+<view class="trend">
+  <canvas class="trend-canvas" canvas-id="trend-canvas" style="height: {{canvasHeight}}px;" binderror="canvasFailure" aria-label="所选指标时间趋势；数据表提供等价文字明细" />
+  <view class="chart-note">横轴：观测时间；纵轴：{{entry.metric.name}}（{{entry.metric.unit || '无量纲'}}）。每个点代表一个时间桶的有效均值；缺测、存疑及无记录时间桶均断线，数值 0 正常绘制。</view>
+  <view wx:if="{{chartError}}" class="chart-error">{{chartError}}</view>
+  <button class="table-toggle" size="mini" bindtap="toggleTable">{{showTable ? '收起数据表' : '展开数据表（文字明细）'}}</button>
+  <view wx:if="{{showTable}}" class="table">
+    <view class="table-row table-heading"><text class="time-cell">时间桶起点</text><text class="value-cell">数值</text><text class="quality-cell">状态</text></view>
+    <scroll-view scroll-y="{{true}}" class="table-scroll">
+      <view wx:for="{{entry.points}}" wx:key="at" class="table-row"><text class="time-cell">{{item.time_label}}</text><text class="value-cell">{{item.value_label}}</text><view class="quality-cell"><text>{{item.quality_label}}</text><view class="counts">有效 {{item.valid_count}} / 缺测 {{item.missing_count}} / 存疑 {{item.suspect_count}}</view></view></view>
+      <view wx:if="{{!entry.points.length}}" class="chart-note">暂无时间桶明细。</view>
+    </scroll-view>
+  </view>
+</view>

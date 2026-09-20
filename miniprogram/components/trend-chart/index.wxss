@@ -1,0 +1,14 @@
+.trend { margin-top: 24rpx; }
+.trend-canvas { width: 100%; display: block; }
+.chart-note { font-size: 22rpx; color: #7a8572; line-height: 1.8; margin: 16rpx 0; }
+.chart-error { font-size: 23rpx; color: #986045; margin-bottom: 18rpx; }
+.table-toggle { background: #eaf0e3; color: #326549; font-size: 23rpx; border-radius: 14rpx; }
+.table-toggle::after { border: 0; }
+.table { margin-top: 20rpx; border: 1rpx solid #e4e9dc; border-radius: 14rpx; overflow: hidden; }
+.table-scroll { max-height: 600rpx; height: 480rpx; }
+.table-row { display: flex; padding: 14rpx 12rpx; border-bottom: 1rpx solid #edf0e7; font-size: 21rpx; line-height: 1.7; }
+.table-heading { background: #f1f5e9; color: #657659; }
+.time-cell { width: 38%; padding-right: 10rpx; }
+.value-cell { width: 18%; word-break: break-all; padding-right: 8rpx; }
+.quality-cell { width: 44%; color: #6d7968; }
+.counts { font-size: 19rpx; color: #8a9480; }

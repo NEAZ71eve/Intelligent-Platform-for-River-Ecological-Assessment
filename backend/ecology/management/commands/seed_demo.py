@@ -41,7 +41,11 @@ class Command(BaseCommand):
             region, _ = Region.objects.get_or_create(slug="demo-campus", defaults={"name": "海晏河清示范校园", "description": "课程/毕设虚构示范区域，地点和环境数据均非真实实测。", "is_demo": True})
             if not region.is_demo:
                 raise CommandError("demo-campus 已被设为真实区域，停止写入模拟资料。")
-            layout, _ = MapLayout.objects.get_or_create(region=region, version=1, defaults={"name": "示范校园导览布局", "attribution": "HYHQ 原创示意布局，非实际地理地图。"})
+            layout, created = MapLayout.objects.get_or_create(region=region, version=1, defaults={"name": "示范校园导览布局", "image_url": "/assets/maps/demo-campus-v1.png", "attribution": "HYHQ 原创示意布局，非实际地理地图。"})
+            # Upgrade only the untouched M1 placeholder; keep administrator artwork and dimensions.
+            if not created and not layout.image_url and (layout.image_width, layout.image_height) == (1000, 700) and layout.name == "示范校园导览布局" and layout.attribution == "HYHQ 原创示意布局，非实际地理地图。":
+                layout.image_url = "/assets/maps/demo-campus-v1.png"
+                layout.save(update_fields=["image_url", "updated_at"])
             places = {}
             for slug, name, kind, x_ratio, y_ratio, description in PLACES:
                 places[slug], _ = Place.objects.get_or_create(slug=slug, defaults={"region": region, "name": name, "kind": kind, "description": description, "map_layout": layout, "x_ratio": x_ratio, "y_ratio": y_ratio, "source_note": "项目自建虚构示范资料。"})

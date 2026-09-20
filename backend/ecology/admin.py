@@ -14,6 +14,12 @@ class MapLayoutAdmin(admin.ModelAdmin):
     list_display = ["name", "region", "version", "is_active"]
     list_filter = ["region", "is_active"]
 
+    def get_readonly_fields(self, request, obj=None):
+        if obj and obj.places.exists():
+            fields = ("region", "version", "image_width", "image_height")
+            return fields + (("image_url",) if obj.image_url else ())
+        return ()
+
 
 @admin.register(Place)
 class PlaceAdmin(admin.ModelAdmin):

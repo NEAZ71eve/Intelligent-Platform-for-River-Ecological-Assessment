@@ -4,13 +4,13 @@
   <view class="subtitle">从身边的一片叶、一条河开始。</view>
   <view class="notice">演示环境 · 天气、空气与河湖指标均为模拟数据，不代表任何地区实况。</view>
   <view class="region-bar row section" wx:if="{{regions.length}}">
-    <view><text class="small muted">当前示范区域</text><view class="title">{{region.name}}</view></view>
+    <view><text class="small muted">浏览区域</text><view class="title">{{region.name}}</view></view>
     <picker range="{{regions}}" range-key="name" value="{{regionIndex}}" bindchange="changeRegion"><view class="pill">切换区域⌄</view></picker>
   </view>
   <page-state loading="{{loading}}" error="{{error}}" empty="{{!loading && !error && !regions.length}}" empty-text="请先在服务端初始化示范区域。" bindretry="load" />
   <block wx:if="{{!loading && !error && region}}">
     <view class="weather-card section" wx:if="{{weather}}">
-      <view class="row"><text class="weather-kicker">今日校园 · {{weather.description || weather.condition || '模拟天气'}}</text><source-label source="{{weather.source_type}}" /></view>
+      <view class="row"><text class="weather-kicker">示范观测 · {{weather.description || weather.condition || '模拟天气'}}</text><source-label source="{{weather.source_type}}" /></view>
       <view class="weather-main"><view><text class="temperature">{{weather.temp_label}}</text><view class="weather-detail">相对湿度 {{weather.humidity_label}}</view></view><view class="sun-art"><view class="sun"></view><view class="hill"></view><view class="hill front"></view></view></view>
       <view class="weather-foot">{{weather.updated_label}} · 仅供教学演示</view>
     </view>
@@ -27,6 +27,8 @@
   </block>
   <view class="section"><view class="section-head"><text class="section-title">开启绿色探索</text><text class="small muted">校园 · 河湖 · 生活</text></view>
     <view class="entry" data-page="explore" bindtap="navigate"><view class="entry-icon water">≈</view><view class="grow"><view class="title">去看看身边的山水</view><view class="copy">生态点位 / 河湖指标 / 校园步道</view></view><text class="chevron">›</text></view>
+    <view class="entry" data-page="water" bindtap="measurements"><view class="entry-icon water">≈</view><view class="grow"><view class="title">智慧河湖</view><view class="copy">四项模拟指标 / 监测站 / 历史趋势</view></view><text class="chevron">›</text></view>
+    <view class="entry" data-page="data-center" bindtap="measurements"><view class="entry-icon book">▥</view><view class="grow"><view class="title">生态数据中心</view><view class="copy">按来源与批次浏览 / 缺失提示 / 统计</view></view><text class="chevron">›</text></view>
     <view class="entry" data-page="recognize" bindtap="navigate"><view class="entry-icon leaf">⌁</view><view class="grow"><view class="title">认识一片校园绿意</view><view class="copy">有限类别识别 / 模型说明 / 个人记录</view></view><text class="chevron">›</text></view>
     <view class="entry" bindtap="assessment"><view class="entry-icon water">≈</view><view class="grow"><view class="title">观察一张河道照片</view><view class="copy">漂浮物候选 / 图像教学规则 / 私有记录</view></view><text class="chevron">›</text></view>
     <view class="entry" data-page="learn" bindtap="navigate"><view class="entry-icon book">▤</view><view class="grow"><view class="title">收集一点生态知识</view><view class="copy">科普阅读 / 预设路线 / 个人收藏</view></view><text class="chevron">›</text></view>

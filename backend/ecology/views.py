@@ -1,7 +1,6 @@
 from datetime import timedelta
 from uuid import UUID
 
-from django.db.models import Q
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime
 from rest_framework import generics
@@ -12,7 +11,8 @@ from rest_framework.views import APIView
 
 from common.pagination import StandardPagination
 
-from .models import DataSource, MapLayout, Metric, Observation, Place, Region, SimulationRun, Station
+from .models import DataSource, MapLayout, Metric, Observation, Place, Region, Station, WaterBody
+from .series import public_stations, select_provenance, single_params
 from .serializers import DataSourceSerializer, MapSerializer, MetricSerializer, ObservationSerializer, PlaceSerializer, RegionSerializer, StationSerializer
 
 
@@ -73,7 +73,8 @@ class StationList(PublicList):
     serializer_class = StationSerializer
 
     def get_queryset(self):
-        queryset = Station.objects.filter(is_active=True).filter(Q(place__isnull=True) | Q(place__is_published=True)).select_related("region")
+        single_params(self.request.query_params, ("region", "kind", "place", "water_body"))
+        queryset = public_stations().select_related("region")
         if self.request.query_params.get("region"):
             queryset = queryset.filter(region=resolve_region(self.request))
         if kind := self.request.query_params.get("kind"):
@@ -85,6 +86,14 @@ class StationList(PublicList):
             if not found:
                 raise ValidationError({"place": "无效的地点。"})
             queryset = queryset.filter(place=found)
+        if water_body := self.request.query_params.get("water_body"):
+            try:
+                found = WaterBody.objects.filter(pk=UUID(water_body), place__is_published=True).first()
+            except (ValueError, TypeError):
+                found = None
+            if not found:
+                raise ValidationError({"water_body": "无效的公开水体。"})
+            queryset = queryset.filter(water_body=found)
         return queryset
 
 
@@ -99,35 +108,10 @@ class SourceList(PublicList):
 
 
 def source_queryset(request, queryset):
-    """A query selects one source and (for simulation) one successful run, never blends batches."""
-    source_type = request.query_params.get("source_type", "simulation")
-    if source_type not in DataSource.Kind.values:
-        raise ValidationError({"source_type": "仅支持 api、dataset、simulation、manual。"})
-    queryset = queryset.filter(source__kind=source_type, source__is_active=True)
-    source_value = request.query_params.get("source")
-    if source_value:
-        source = by_identifier(DataSource.objects.filter(kind=source_type, is_active=True), source_value, "code").first()
-        if not source:
-            raise ValidationError({"source": "数据源不存在或与 source_type 不一致。"})
-        queryset = queryset.filter(source=source)
-    if source_type == DataSource.Kind.SIMULATION:
-        run_value = request.query_params.get("simulation_run")
-        runs = SimulationRun.objects.filter(status="succeeded", observations__in=queryset).distinct()
-        if run_value:
-            try:
-                runs = runs.filter(pk=UUID(run_value))
-            except ValueError:
-                raise ValidationError({"simulation_run": "批次 ID 必须为 UUID。"})
-        else:
-            runs = runs.filter(scenario__code=request.query_params.get("scenario", "normal"))
-        run = runs.order_by("-created_at").first()
-        if run_value and not run:
-            raise ValidationError({"simulation_run": "未找到匹配区域及来源的成功批次。"})
-        return queryset.filter(simulation_run=run) if run else queryset.none()
-    source_ids = list(queryset.order_by().values_list("source_id", flat=True).distinct()[:2])
-    if len(source_ids) > 1:
-        raise ValidationError({"source": "该范围存在多个数据源，请指定一个 source，避免混合来源。"})
-    return queryset
+    """Share the series provenance contract with legacy lists and summaries."""
+    single_params(request.query_params, ("source_type", "source", "scenario", "simulation_run"))
+    observations, _, _, _ = select_provenance(request.query_params, observations=queryset)
+    return observations
 
 
 def parse_timestamp(value, field):
@@ -144,11 +128,11 @@ class ObservationList(PublicList):
     serializer_class = ObservationSerializer
 
     def get_queryset(self):
-        queryset = Observation.objects.select_related("station", "metric", "source").filter(station__is_active=True).filter(Q(station__place__isnull=True) | Q(station__place__is_published=True))
+        queryset = Observation.objects.select_related("station", "metric", "source").filter(station__in=public_stations())
         if self.request.query_params.get("region"):
             queryset = queryset.filter(station__region=resolve_region(self.request))
         if station_value := self.request.query_params.get("station"):
-            station = by_identifier(Station.objects.filter(is_active=True), station_value, "code").first()
+            station = by_identifier(public_stations(), station_value, "code").first()
             if not station:
                 raise ValidationError({"station": "监测站不存在。"})
             queryset = queryset.filter(station=station)
@@ -180,7 +164,7 @@ class EnvironmentalSummary(APIView):
         region = resolve_region(request)
         if request.query_params.get("source_type", "simulation") != "simulation":
             raise ValidationError({"source_type": "M1 天气及空气摘要仅启用模拟来源。"})
-        queryset = Observation.objects.filter(station__region=region, station__kind=self.station_kind, station__is_active=True).filter(Q(station__place__isnull=True) | Q(station__place__is_published=True)).select_related("station", "metric", "source")
+        queryset = Observation.objects.filter(station__region=region, station__kind=self.station_kind, station__in=public_stations()).select_related("station", "metric", "source")
         queryset = source_queryset(request, queryset)
         station_code = queryset.order_by("station__code").values_list("station__code", flat=True).first()
         queryset = queryset.filter(station__code=station_code)
@@ -222,7 +206,7 @@ class Dashboard(APIView):
 
     def get(self, request):
         region = resolve_region(request)
-        queryset = Observation.objects.filter(station__region=region, station__is_active=True).filter(Q(station__place__isnull=True) | Q(station__place__is_published=True)).select_related("station", "metric", "source")
+        queryset = Observation.objects.filter(station__region=region, station__in=public_stations()).select_related("station", "metric", "source")
         queryset = source_queryset(request, queryset)
         latest = queryset.order_by("-observed_at").values_list("observed_at", flat=True).first()
         rows = list(queryset.filter(observed_at=latest)) if latest else []
@@ -232,7 +216,7 @@ class Dashboard(APIView):
             "is_simulated": request.query_params.get("source_type", "simulation") == "simulation",
             "observed_at": latest,
             "place_count": region.places.filter(is_published=True).count(),
-            "station_count": region.stations.filter(is_active=True).count(),
+            "station_count": public_stations().filter(region=region).count(),
             "observation_count": queryset.count(),
             "latest_observations": ObservationSerializer(rows, many=True).data,
             "notice": "按单一来源和模拟批次展示，无综合生态指数及官方水质评级。",

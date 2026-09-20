@@ -2,7 +2,7 @@ import math
 import uuid
 
 from django.core.exceptions import ValidationError
-from django.core.validators import MaxValueValidator, MinValueValidator
+from django.core.validators import MaxValueValidator, MinValueValidator, URLValidator
 from django.db import models
 from django.utils import timezone
 
@@ -53,8 +53,30 @@ class MapLayout(ValidatedModel):
         return f"{self.name} v{self.version}"
 
     def clean(self):
-        if self.pk and MapLayout.objects.filter(pk=self.pk).exclude(region_id=self.region_id).exists() and self.places.exists():
-            raise ValidationError({"region": "已有点位的底图不能移动到其他区域，请创建新版本。"})
+        errors = {}
+        if not isinstance(self.version, int) or self.version < 1:
+            errors["version"] = "底图版本必须为正整数。"
+        for field in ("image_width", "image_height"):
+            dimension = getattr(self, field)
+            if not isinstance(dimension, int) or not 1 <= dimension <= 8192:
+                errors[field] = "底图尺寸必须为 1 至 8192 像素。"
+        if self.image_url and self.image_url != "/assets/maps/demo-campus-v1.png":
+            try:
+                URLValidator(schemes=["https"])(self.image_url)
+            except ValidationError:
+                errors["image_url"] = "请使用 HTTPS 图片地址，或项目内置示范底图路径。"
+        if self.image_url == "/assets/maps/demo-campus-v1.png" and self.region_id:
+            if self.region.slug != "demo-campus" or not self.region.is_demo or self.version != 1 or (self.image_width, self.image_height) != (1000, 700):
+                errors["image_url"] = "内置示范图只适用于虚构 demo-campus 的 1000×700 布局 v1。"
+        old = MapLayout.objects.filter(pk=self.pk).first() if self.pk else None
+        if old and self.places.exists():
+            for field in ("region_id", "version", "image_width", "image_height"):
+                if getattr(old, field) != getattr(self, field):
+                    errors[field.removesuffix("_id")] = "已有点位的底图不能原地改变坐标基准，请创建新版本并重新布点。"
+            if old.image_url and old.image_url != self.image_url:
+                errors["image_url"] = "已有图片和点位的底图不可直接换图，请创建新版本。"
+        if errors:
+            raise ValidationError(errors)
 
 
 class Place(ValidatedModel):

@@ -84,7 +84,13 @@ class WaterBodyList(generics.ListAPIView):
     permission_classes = [AllowAny]
 
     def get_queryset(self):
-        return published_water_bodies().order_by('place__name', 'pk')
+        from ecology.views import resolve_region
+        from ecology.series import single_params
+        single_params(self.request.query_params, ('region',))
+        queryset = published_water_bodies()
+        if self.request.query_params.get('region'):
+            queryset = queryset.filter(place__region=resolve_region(self.request))
+        return queryset.order_by('place__name', 'pk')
 
 
 class NearbyWaterBodies(APIView):
