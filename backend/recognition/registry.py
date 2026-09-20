@@ -4,7 +4,7 @@ from pathlib import Path
 from django.conf import settings
 from django.db import transaction
 
-from common.models import AuditLog
+from common.audit import audit_admin
 from .artifacts import CONFIG_FIELDS, ModelError, read_manifest, safe_path, validate_config, verify_artifact
 from .models import ModelVersion, QueueControl
 
@@ -40,7 +40,7 @@ def register_model(manifest_path, activate=False):
             model = existing
         else:
             model = ModelVersion.objects.create(**config)
-            AuditLog.objects.create(event='model.registered', target_id=str(model.pk), details={'checksum': model.checksum, 'config_digest': model.config_digest})
+            audit_admin('model.registered', None, model, action='register')
     if activate:
         activate_model(model.pk)
         model.refresh_from_db()
@@ -53,11 +53,13 @@ def activate_model(model_id=None, actor=None):
         model = ModelVersion.objects.select_for_update().get(pk=model_id) if model_id else None
         if model:
             verify_artifact(settings.RECOGNITION_MODEL_ROOT, snapshot_for(model))
+        previous_id = ModelVersion.objects.filter(enabled=True).values_list('pk', flat=True).first()
         ModelVersion.objects.filter(enabled=True).update(enabled=False)
         if model:
             ModelVersion.objects.filter(pk=model.pk).update(enabled=True)
-        AuditLog.objects.create(event='model.activated' if model else 'model.disabled', actor=actor,
-                                target_id=str(model.pk) if model else '', details={'config_digest': model.config_digest} if model else {})
+        audit_admin('model.activated' if model else 'model.disabled', actor, model or ModelVersion,
+                    action='activate' if model else 'disable', changed_fields=['enabled'],
+                    target_id=str(model.pk) if model else (str(previous_id) if previous_id else ''))
     return model
 
 

@@ -22,3 +22,17 @@
 .book { background: #f3ecdc; color: #aa9560; }
 .entry .title { font-size: 29rpx; }
 .entry .copy { font-size: 22rpx; margin-top: 3rpx; }
+.city-section { padding: 26rpx; background: #fffefa; border: 1rpx solid #d4e2cf; border-radius: 28rpx; }
+.city-choice { margin: 20rpx 0; }
+.city-temperature { font-size: 76rpx; }
+.city-section .sun-art { width: 155rpx; flex-shrink: 0; }
+.air-card { padding: 22rpx; border-radius: 20rpx; background: #edf3e8; }
+.aqi-row { display: flex; align-items: baseline; gap: 18rpx; margin: 12rpx 0; }
+.aqi-value { font-size: 54rpx; color: #315e42; }
+.pollutants { display: flex; flex-wrap: wrap; gap: 16rpx; }
+.pollutant { min-width: 150rpx; font-size: 25rpx; }
+.source-copy { margin-top: 12rpx; font-size: 20rpx; color: #687761; overflow-wrap: anywhere; white-space: pre-wrap; }
+.source-link { margin-top: 22rpx; padding: 0; text-align: left; font-size: 22rpx; color: #315e42; background: transparent; line-height: 1.6; }
+.source-link::after { border: 0; }
+.warning-card { margin-top: 16rpx; padding: 20rpx; border: 1rpx solid #ddc9a1; border-radius: 16rpx; background: #fff8e9; }
+.warning-body { margin: 16rpx 0; font-size: 25rpx; white-space: pre-wrap; }

@@ -1,0 +1,20 @@
+{% extends "admin/base_site.html" %}
+{% block content %}
+<p>仅维护由项目生成的过期模拟数据。预览不会删除数据；正式执行需确认，执行后不能撤销。请先备份数据库。</p>
+<p><a href="{% url 'admin:ecology_simulationretentionpolicy_changelist' %}">管理保留策略</a> · <a href="{% url 'admin:ecology_simulationrun_changelist' %}">返回批次查询</a></p>
+{% if error %}<p class="errornote">{{ error }}</p>{% endif %}
+<form method="post">{% csrf_token %}<input type="hidden" name="action" value="preview"><input type="submit" value="生成清理预览"></form>
+{% if plan %}
+<h2>预览：{{ plan.batch_count }} 个候选批次 / {{ plan.observation_count }} 条实际观测</h2>
+<p>保留至少 {{ plan.policy.retain_days }} 天，每来源/场景至少 {{ plan.policy.keep_successful }} 个最新成功批次，另外保护最新观测范围。截止 {{ plan.cutoff|date:"Y-m-d H:i:s T" }}；预览有效至 {{ plan.expires_at|date:"Y-m-d H:i:s T" }}。</p>
+<h3>候选清理</h3>
+<table><thead><tr><th>批次 ID</th><th>来源 / 场景</th><th>观测日期范围</th><th>状态</th><th>实际观测数</th></tr></thead><tbody>
+{% for row in plan.candidates %}<tr><td>{{ row.id }}</td><td>{{ row.source }} / {{ row.scenario }}</td><td>{{ row.start|date:"Y-m-d H:i" }} — {{ row.end|date:"Y-m-d H:i" }}</td><td>{{ row.status }}</td><td>{{ row.actual_count }}</td></tr>{% empty %}<tr><td colspan="5">没有符合清理条件的批次。</td></tr>{% endfor %}
+</tbody></table>
+<h3>受保护批次</h3>
+<table><thead><tr><th>批次 ID</th><th>来源 / 场景</th><th>实际 / 记录数</th><th>保护原因</th></tr></thead><tbody>
+{% for row in plan.protected %}<tr><td>{{ row.id }}</td><td>{{ row.source }} / {{ row.scenario }}</td><td>{{ row.actual_count }} / {{ row.declared_count }}</td><td>{{ row.protection|join:"；" }}</td></tr>{% empty %}<tr><td colspan="4">暂无批次。</td></tr>{% endfor %}
+</tbody></table>
+{% if plan.batch_count %}<form method="post">{% csrf_token %}<input type="hidden" name="action" value="execute">{{ form.as_p }}<input type="submit" value="确认执行本次清理"></form>{% endif %}
+{% endif %}
+{% endblock %}

@@ -1,3 +1,4 @@
+from common.admin_audit import AuditAdminMixin
 from django.contrib import admin
 from django.core.exceptions import PermissionDenied
 from django.db import transaction
@@ -6,7 +7,7 @@ from .models import Favorite, Feedback, History, Visit
 
 
 @admin.register(Feedback)
-class FeedbackAdmin(admin.ModelAdmin):
+class FeedbackAdmin(AuditAdminMixin, admin.ModelAdmin):
     list_display = ('id', 'owner', 'status', 'created_at', 'resolved_at', 'handled_by')
     list_filter = ('status',)
     readonly_fields = ('owner', 'body', 'created_at', 'resolved_at', 'handled_by')
@@ -33,5 +34,9 @@ class FeedbackAdmin(admin.ModelAdmin):
         super().save_model(request, obj, form, change)
 
 
+class ActivityAdmin(AuditAdminMixin, admin.ModelAdmin):
+    pass
+
+
 for model in (Favorite, History, Visit):
-    admin.site.register(model)
+    admin.site.register(model, ActivityAdmin)

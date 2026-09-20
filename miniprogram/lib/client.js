@@ -55,7 +55,7 @@ function createClient(platform, config, session) {
         const sentToken = session.token();
         platform.request({
           url, method: opts.method || 'GET', data: opts.data,
-          timeout: config.timeout,
+          timeout: opts.timeout || config.timeout,
           header: Object.assign({ 'content-type': 'application/json' }, headers()),
           success(response) { try { resolve(unwrap(response, sentToken)); } catch (error) { reject(error); } },
           fail(error) { reject(networkError(error)); },

@@ -44,7 +44,7 @@ else:
 INSTALLED_APPS = [
     'django.contrib.admin', 'django.contrib.auth', 'django.contrib.contenttypes',
     'django.contrib.sessions', 'django.contrib.messages', 'django.contrib.staticfiles',
-    'rest_framework', 'common', 'accounts', 'ecology', 'knowledge', 'assets', 'recognition', 'activity', 'assessments', 'llm',
+    'rest_framework', 'common', 'accounts', 'ecology', 'knowledge', 'assets', 'recognition', 'activity', 'assessments', 'llm', 'weatherdata',
 ]
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware', 'common.middleware.RequestLogMiddleware',
@@ -106,6 +106,23 @@ if not 1 <= LLM_DAILY_TURN_LIMIT <= 5:
     raise ImproperlyConfigured('LLM_DAILY_TURN_LIMIT must be between 1 and 5')
 LLM_QUEUE_TIMEOUT_SECONDS = 300
 LLM_RETENTION_DAYS = 30
+# Separate real-weather connector. Credentials never enter the database or client.
+QWEATHER_ENABLED = os.getenv('QWEATHER_ENABLED', '0') == '1'
+QWEATHER_API_KEY = os.getenv('QWEATHER_API_KEY', '').strip()
+QWEATHER_API_HOST = os.getenv('QWEATHER_API_HOST', '').strip().lower()
+QWEATHER_MONTHLY_LIMIT = int(os.getenv('QWEATHER_MONTHLY_LIMIT', '100'))
+if not 1 <= QWEATHER_MONTHLY_LIMIT <= 30000:
+    raise ImproperlyConfigured('QWEATHER_MONTHLY_LIMIT must be between 1 and 30000')
+QWEATHER_TIMEOUT_SECONDS = 5
+QWEATHER_MINUTE_LIMIT = 15
+QWEATHER_CACHE_SECONDS = {
+    'weather': int(os.getenv('QWEATHER_WEATHER_TTL_SECONDS', '1800')),
+    'air': int(os.getenv('QWEATHER_AIR_TTL_SECONDS', '3600')),
+    'alerts': int(os.getenv('QWEATHER_ALERT_TTL_SECONDS', '900')),
+}
+if any(not minimum <= QWEATHER_CACHE_SECONDS[kind] <= 86400 for kind, minimum in [('weather', 1800), ('air', 3600), ('alerts', 900)]):
+    raise ImproperlyConfigured('QWeather cache lifetimes must be at least 30/60/15 minutes and at most 24 hours')
+QWEATHER_FAILURE_COOLDOWN_SECONDS = 600
 DATA_MODE = 'simulation'
 MAX_UPLOAD_BYTES = 5 * 1024 * 1024
 MAX_IMAGE_PIXELS = 20_000_000

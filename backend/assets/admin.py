@@ -1,9 +1,10 @@
+from common.admin_audit import AuditAdminMixin
 from django.contrib import admin
 from .models import Asset
 
 
 @admin.register(Asset)
-class AssetAdmin(admin.ModelAdmin):
+class AssetAdmin(AuditAdminMixin, admin.ModelAdmin):
     list_display = ('id', 'owner', 'purpose', 'byte_size', 'created_at', 'expires_at')
     list_filter = ('purpose',)
     exclude = ('original', 'thumbnail')

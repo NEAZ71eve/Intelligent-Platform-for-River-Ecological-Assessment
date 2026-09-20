@@ -1,16 +1,16 @@
+from common.admin_audit import AuditAdminMixin
 from django.conf import settings
 from django.contrib import admin
 from django.db.models import Count, Sum
 from django.utils import timezone
 
-from common.audit import audit
 from .models import GatewayConfig, UsageLedger
 from .services import ACTIVE, SHANGHAI
 from .sources import SCOPE_NAMES
 
 
 @admin.register(GatewayConfig)
-class GatewayConfigAdmin(admin.ModelAdmin):
+class GatewayConfigAdmin(AuditAdminMixin, admin.ModelAdmin):
     list_display = ('__str__', 'enabled', 'environment_enabled', 'key_configured', 'daily_turn_limit', 'updated_at')
     readonly_fields = ('environment_enabled', 'key_configured', 'model_name', 'today_summary', 'updated_at')
     fields = ('enabled', 'environment_enabled', 'key_configured', 'model_name', 'daily_turn_limit',
@@ -44,13 +44,10 @@ class GatewayConfigAdmin(admin.ModelAdmin):
     def has_delete_permission(self, request, obj=None):
         return False
 
-    def save_model(self, request, obj, form, change):
-        super().save_model(request, obj, form, change)
-        audit('llm.gateway_changed', request.user, obj.pk, status='enabled' if obj.enabled else 'disabled')
 
 
 @admin.register(UsageLedger)
-class UsageLedgerAdmin(admin.ModelAdmin):
+class UsageLedgerAdmin(AuditAdminMixin, admin.ModelAdmin):
     list_display = ('id', 'scope', 'day', 'status', 'dispatched', 'used_image', 'accounted_tokens', 'usage_estimated', 'duration_ms', 'error_code')
     list_filter = ('scope', 'day', 'status', 'error_code', 'usage_estimated')
     # Private text, image and upstream id are deliberately absent from this model.

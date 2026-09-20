@@ -1,3 +1,4 @@
+from common.admin_audit import AuditAdminMixin
 from django.contrib import admin, messages
 from django.core.exceptions import ValidationError
 
@@ -8,7 +9,7 @@ from .rules import activate_rules
 
 
 @admin.register(DetectionModel)
-class DetectionModelAdmin(admin.ModelAdmin):
+class DetectionModelAdmin(AuditAdminMixin, admin.ModelAdmin):
     list_display = ('name', 'version', 'enabled', 'threshold', 'checksum')
     list_filter = ('enabled',)
     readonly_fields = tuple(field.name for field in DetectionModel._meta.fields)
@@ -40,7 +41,7 @@ class DetectionModelAdmin(admin.ModelAdmin):
 
 
 @admin.register(RuleSet)
-class RuleSetAdmin(admin.ModelAdmin):
+class RuleSetAdmin(AuditAdminMixin, admin.ModelAdmin):
     list_display = ('version', 'is_active', 'created_at', 'updated_at')
     list_filter = ('is_active',)
     readonly_fields = ('id', 'created_at', 'updated_at', 'is_active')
@@ -76,7 +77,7 @@ class RuleSetAdmin(admin.ModelAdmin):
 
 
 @admin.register(AssessmentJob)
-class AssessmentJobAdmin(admin.ModelAdmin):
+class AssessmentJobAdmin(AuditAdminMixin, admin.ModelAdmin):
     list_display = ('id', 'owner', 'status', 'decision', 'rule_version', 'model_version', 'created_at')
     list_filter = ('status', 'decision', 'error_code')
     readonly_fields = tuple(field.name for field in AssessmentJob._meta.fields)

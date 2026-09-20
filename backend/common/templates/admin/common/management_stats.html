@@ -1,0 +1,36 @@
+{% extends "admin/base_site.html" %}
+{% block content %}
+<style>
+  .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;margin:20px 0}
+  .stats-card{border:1px solid var(--hairline-color);padding:16px;border-radius:8px}
+  .stats-card h2{margin-top:0}.stats-card p{margin:8px 0}.stats-filters{display:flex;flex-wrap:wrap;align-items:end;gap:12px}
+  .stats-filters label{display:block;margin-bottom:5px}.stats-scroll{overflow:auto}.stats-notes{line-height:1.7}
+</style>
+<p class="stats-notes">日期按北京时间，范围为 <strong>[开始日期 00:00，结束日期 00:00)</strong>。当前总量是查询时仍保留的记录；窗口内新增按创建时间筛选，状态是查询时的状态。已删除或过期清理的数据不计入当前存量，不代表历史累计、页面浏览量或日活。</p>
+<p class="stats-notes">AI 用量账目按创建时间筛选；配额结算仍按账目的北京时间入队日期 day。预占回合仅包含排队及运行中；结算 token 包含估算值，以供应商账单为准。模拟观测数是批次记录的生成数量。各卡片只展示你有权限访问的数据。</p>
+{% if error %}<p class="errornote">{{ error }}</p>{% endif %}
+<form method="get" class="stats-filters">
+ <div><label for="start">开始日期（含）</label><input type="date" name="start" id="start" value="{{ start }}" required></div>
+ <div><label for="end">结束日期（不含）</label><input type="date" name="end" id="end" value="{{ end }}" required></div>
+ <div><label for="dataset">查询明细</label><select name="dataset" id="dataset"><option value="">仅统计概览</option>{% for key,item in datasets.items %}<option value="{{ key }}" {% if key == selected_dataset %}selected{% endif %}>{{ item.label }}</option>{% endfor %}</select></div>
+ <div><label for="status">状态（可选）</label><input name="status" id="status" value="{{ selected_status }}" size="12" placeholder="如 succeeded"></div>
+ <div><label for="scope">AI 板块</label><select name="scope" id="scope"><option value="">全部</option><option value="recognition" {% if selected_scope == 'recognition' %}selected{% endif %}>AI 识别</option><option value="explore" {% if selected_scope == 'explore' %}selected{% endif %}>生态导览</option><option value="learn" {% if selected_scope == 'learn' %}selected{% endif %}>科普智游</option></select></div>
+ <div><label for="page_size">每页条数</label><input type="number" min="1" max="100" name="page_size" id="page_size" value="{{ page_size }}"></div>
+ <input type="submit" value="查询">
+</form>
+{% if payload %}
+<div class="stats-grid">
+ {% for key,item in payload.summary.items %}<section class="stats-card">
+  <h2>{{ item.label }}</h2><p>当前总量：<strong>{{ item.current_total }}</strong></p><p>窗口内创建：<strong>{{ item.created_in_window }}</strong></p>
+  {% if item.current_published != None %}<p>当前已发布：{{ item.current_published }}；窗口内创建且当前已发布：{{ item.window_currently_published }}</p>{% endif %}
+  {% for state,count in item.window_status.items %}<p>{{ state }}：{{ count }}</p>{% endfor %}
+  {% if key == 'simulation' %}<p>窗口内批次生成观测数：{{ item.window_generated_observations }}</p>{% endif %}
+  {% for scope,usage in item.scopes.items %}<h3>{{ scope }}</h3><p>提交 {{ usage.submitted }} · 成功 {{ usage.succeeded }} · 失败 {{ usage.failed }} · 预占 {{ usage.reserved_turns }}</p><p>结算 {{ usage.accounted_tokens }} token · 预占 {{ usage.reserved_tokens }} token · 含估算账目 {{ usage.estimated_entries }} 条</p>{% endfor %}
+ </section>{% endfor %}
+</div>
+{% if payload.query %}<h2>{{ payload.query.label }}明细</h2><p>共 {{ payload.query.count }} 条，第 {{ payload.query.page }} 页，每页 {{ payload.query.page_size }} 条。</p>
+<div class="stats-scroll"><table><thead><tr>{% for field in payload.query.fields %}<th>{{ field }}</th>{% endfor %}</tr></thead><tbody>{% for row in query_rows %}<tr>{% for value in row %}<td>{{ value|default_if_none:'—' }}</td>{% endfor %}</tr>{% empty %}<tr><td>此窗口没有符合条件的记录。</td></tr>{% endfor %}</tbody></table></div>
+<p>{% if payload.query.page > 1 %}<a href="{{ previous_url }}">上一页</a>{% endif %} {% if payload.query.has_next %}<a href="{{ next_url }}">下一页</a>{% endif %}</p>
+{% endif %}
+{% endif %}
+{% endblock %}

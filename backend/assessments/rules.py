@@ -62,19 +62,20 @@ def rules_lock():
 
 def activate_rules(rule_id=None, actor=None):
     from django.db import transaction
-    from common.models import AuditLog
+    from common.audit import audit_admin
     from .models import RuleSet
     with transaction.atomic():
         rules_lock()
         rule = RuleSet.objects.select_for_update().get(pk=rule_id) if rule_id else None
         if rule:
             validate_definition(rule.definition)
+        previous_id = RuleSet.objects.filter(is_active=True).values_list('pk', flat=True).first()
         RuleSet.objects.filter(is_active=True).update(is_active=False)
         if rule:
             RuleSet.objects.filter(pk=rule.pk).update(is_active=True)
-        AuditLog.objects.create(event='assessment.rules.activated' if rule else 'assessment.rules.disabled',
-                                actor=actor, target_id=str(rule.pk) if rule else '',
-                                details={'version': rule.version} if rule else {})
+        audit_admin('assessment.rules.activated' if rule else 'assessment.rules.disabled', actor, rule or RuleSet,
+                    action='activate' if rule else 'disable', changed_fields=['is_active'],
+                    target_id=str(rule.pk) if rule else (str(previous_id) if previous_id else ''))
     return rule
 
 

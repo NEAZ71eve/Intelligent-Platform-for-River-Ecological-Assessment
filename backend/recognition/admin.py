@@ -1,3 +1,4 @@
+from common.admin_audit import AuditAdminMixin
 from django.contrib import admin, messages
 from django.core.exceptions import ValidationError
 
@@ -7,7 +8,7 @@ from .registry import activate_model
 
 
 @admin.register(ModelVersion)
-class ModelVersionAdmin(admin.ModelAdmin):
+class ModelVersionAdmin(AuditAdminMixin, admin.ModelAdmin):
     list_display = ('name', 'version', 'enabled', 'threshold', 'checksum')
     list_filter = ('enabled',)
     readonly_fields = tuple(field.name for field in ModelVersion._meta.fields)
@@ -39,7 +40,7 @@ class ModelVersionAdmin(admin.ModelAdmin):
 
 
 @admin.register(RecognitionJob)
-class RecognitionJobAdmin(admin.ModelAdmin):
+class RecognitionJobAdmin(AuditAdminMixin, admin.ModelAdmin):
     list_display = ('id', 'owner', 'status', 'error_code', 'model_version', 'created_at', 'duration_ms')
     list_filter = ('status', 'error_code')
     readonly_fields = tuple(field.name for field in RecognitionJob._meta.fields)

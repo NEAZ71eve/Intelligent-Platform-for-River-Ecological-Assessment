@@ -1,6 +1,7 @@
 import math
 import uuid
 
+from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.validators import MaxValueValidator, MinValueValidator, URLValidator
 from django.db import models
@@ -272,6 +273,7 @@ class SimulationRun(ValidatedModel):
 
     class Meta:
         ordering = ["-created_at"]
+        permissions = [("maintain_simulation", "可以预览和执行模拟批次保留策略")]
 
     def clean(self):
         if self.source_id and self.source.kind != DataSource.Kind.SIMULATION:
@@ -342,3 +344,40 @@ class Observation(ValidatedModel):
                     errors["observed_at"] = "模拟观测时间必须处于批次时间范围内。"
         if errors:
             raise ValidationError(errors)
+
+
+class SimulationRetentionPolicy(models.Model):
+    """Singleton policy and common row lock for generation and cleanup."""
+
+    id = models.PositiveSmallIntegerField(primary_key=True, default=1, editable=False)
+    retain_days = models.PositiveIntegerField(default=30, validators=[MinValueValidator(30), MaxValueValidator(3650)])
+    keep_successful = models.PositiveIntegerField(default=3, validators=[MinValueValidator(1), MaxValueValidator(100)])
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "模拟批次保留策略"
+        verbose_name_plural = verbose_name
+        constraints = [models.CheckConstraint(condition=models.Q(id=1, retain_days__gte=30, retain_days__lte=3650, keep_successful__gte=1, keep_successful__lte=100), name="simulation_policy_limits")]
+
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        return super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"保留 {self.retain_days} 天 / 每来源场景至少 {self.keep_successful} 个成功批次"
+
+
+class SimulationCleanupPreview(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    actor = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.CASCADE)
+    fingerprint = models.CharField(max_length=64)
+    policy = models.JSONField(default=dict)
+    candidate_ids = models.JSONField(default=list)
+    observation_count = models.PositiveIntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField()
+    consumed_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        verbose_name = "模拟批次清理预览"
+        verbose_name_plural = verbose_name

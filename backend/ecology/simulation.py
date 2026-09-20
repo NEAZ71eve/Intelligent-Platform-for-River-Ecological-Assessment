@@ -10,6 +10,7 @@ from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.utils import timezone
 
+from .maintenance import lock_catalogue, lock_policy
 from .models import DataSource, Metric, Observation, Region, SimulationRun, SimulationScenario, Station
 
 GENERATOR_VERSION = "hourly-v1"
@@ -71,6 +72,17 @@ def generate(scenario_code, start, hours, seed=None):
         raise ValidationError("开始时间必须包含时区并对齐整点。")
     if isinstance(hours, bool) or not isinstance(hours, int) or not 1 <= hours <= 744:
         raise ValidationError("生成小时数必须为 1 至 744。")
+    with transaction.atomic():
+        lock_policy()
+        lock_catalogue()
+        result, error = _generate_locked(scenario_code, start, hours, seed)
+    if error is not None:
+        raise error
+    return result
+
+
+def _generate_locked(scenario_code, start, hours, seed):
+    # Read and validate dependencies only after obtaining all catalogue locks.
     ensure_simulation_catalogue()
     scenario = SimulationScenario.objects.get(code=scenario_code)
     validate_parameters(scenario_code, scenario.parameters)
@@ -99,43 +111,47 @@ def generate(scenario_code, start, hours, seed=None):
     end = start + timedelta(hours=hours)
     signature = {"start": start.isoformat(), "hours": hours, "seed": seed, "scenario": scenario_code, "scenario_version": scenario.version, "parameters": scenario.parameters, "generator": GENERATOR_VERSION, "stations": [(str(s.id), s.code, s.kind) for s in stations], "metrics": [(str(metrics[row[0]].id), row[0], metrics[row[0]].unit, metrics[row[0]].min_value, metrics[row[0]].max_value) for row in METRICS]}
     key = digest(signature)
-    run, _ = SimulationRun.objects.get_or_create(key=key, defaults={"scenario": scenario, "source": source, "start": start, "end": end, "seed": seed, "generator_version": GENERATOR_VERSION, "parameters": signature})
-    started = time.monotonic()
-    try:
-        with transaction.atomic():
-            run = SimulationRun.objects.select_for_update().get(pk=run.pk)
-            if run.status == "succeeded":
-                return run, False
-            rows = []
-            for hour in range(hours):
-                observed_at = start + timedelta(hours=hour)
-                cycle = math.sin((observed_at.hour - 8) / 24 * 2 * math.pi)
-                for station in stations:
-                    for code, _, _, kind, _, _, mean, amplitude, noise in METRICS:
-                        if station.kind != kind:
-                            continue
-                        metric = metrics[code]
-                        rng = random.Random(digest([seed, scenario.version, GENERATOR_VERSION, station.code, code, observed_at.isoformat()]))
-                        value = mean + amplitude * cycle + rng.uniform(-noise, noise)
-                        if scenario_code == "turbidity" and code == "turbidity":
-                            peak = scenario.parameters.get("turbidity_peak", 75)
-                            value += peak * math.exp(-((observed_at.hour - 14) / 2) ** 2)
-                        missing = scenario_code == "missing" and int(observed_at.timestamp() // 3600) % scenario.parameters.get("missing_every", 7) == 0
-                        if metric.min_value is not None:
-                            value = max(metric.min_value, value)
-                        if metric.max_value is not None:
-                            value = min(metric.max_value, value)
-                        row = Observation(station=station, metric=metric, value=None if missing else round(value, 3), observed_at=observed_at, source=source, quality_status="missing" if missing else "valid", simulation_run=run, dedupe_key=observation_key(station, metric, source, observed_at, run))
-                        row.clean()
-                        rows.append(row)
-            Observation.objects.bulk_create(rows, batch_size=500)
-            run.status = "succeeded"
-            run.counts = len(rows)
-            run.elapsed_ms = int((time.monotonic() - started) * 1000)
-            run.completed_at = timezone.now()
-            run.error_code = ""
-            run.save()
-        return run, True
-    except Exception as exc:
-        SimulationRun.objects.filter(pk=run.pk).update(status="failed", error_code=type(exc).__name__[:80], elapsed_ms=int((time.monotonic() - started) * 1000), completed_at=timezone.now())
-        raise
+    error = None
+    result = None
+    with transaction.atomic():
+        run, _ = SimulationRun.objects.get_or_create(key=key, defaults={"scenario": scenario, "source": source, "start": start, "end": end, "seed": seed, "generator_version": GENERATOR_VERSION, "parameters": signature})
+        started = time.monotonic()
+        try:
+            with transaction.atomic():
+                run = SimulationRun.objects.select_for_update().get(pk=run.pk)
+                if run.status == "succeeded":
+                    return (run, False), None
+                rows = []
+                for hour in range(hours):
+                    observed_at = start + timedelta(hours=hour)
+                    cycle = math.sin((observed_at.hour - 8) / 24 * 2 * math.pi)
+                    for station in stations:
+                        for code, _, _, kind, _, _, mean, amplitude, noise in METRICS:
+                            if station.kind != kind:
+                                continue
+                            metric = metrics[code]
+                            rng = random.Random(digest([seed, scenario.version, GENERATOR_VERSION, station.code, code, observed_at.isoformat()]))
+                            value = mean + amplitude * cycle + rng.uniform(-noise, noise)
+                            if scenario_code == "turbidity" and code == "turbidity":
+                                peak = scenario.parameters.get("turbidity_peak", 75)
+                                value += peak * math.exp(-((observed_at.hour - 14) / 2) ** 2)
+                            missing = scenario_code == "missing" and int(observed_at.timestamp() // 3600) % scenario.parameters.get("missing_every", 7) == 0
+                            if metric.min_value is not None:
+                                value = max(metric.min_value, value)
+                            if metric.max_value is not None:
+                                value = min(metric.max_value, value)
+                            row = Observation(station=station, metric=metric, value=None if missing else round(value, 3), observed_at=observed_at, source=source, quality_status="missing" if missing else "valid", simulation_run=run, dedupe_key=observation_key(station, metric, source, observed_at, run))
+                            row.clean()
+                            rows.append(row)
+                Observation.objects.bulk_create(rows, batch_size=500)
+                run.status = "succeeded"
+                run.counts = len(rows)
+                run.elapsed_ms = int((time.monotonic() - started) * 1000)
+                run.completed_at = timezone.now()
+                run.error_code = ""
+                run.save()
+            result = (run, True)
+        except Exception as exc:
+            SimulationRun.objects.filter(pk=run.pk).update(status="failed", error_code=type(exc).__name__[:80], elapsed_ms=int((time.monotonic() - started) * 1000), completed_at=timezone.now())
+            error = exc
+    return result, error

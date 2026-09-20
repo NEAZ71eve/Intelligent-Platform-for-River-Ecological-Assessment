@@ -1,0 +1,5 @@
+{% extends "admin/change_list.html" %}
+{% block object-tools-items %}
+  {% if may_maintain %}<li><a href="{% url 'admin:ecology_simulationrun_maintenance' %}">保留策略与清理预览</a></li>{% endif %}
+  {{ block.super }}
+{% endblock %}

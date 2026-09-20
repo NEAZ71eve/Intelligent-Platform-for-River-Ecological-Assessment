@@ -2,7 +2,7 @@
 from django.conf import settings
 from django.db import transaction
 
-from common.models import AuditLog
+from common.audit import audit_admin
 from .artifacts import CONFIG_FIELDS, ModelError, read_manifest, safe_path, validate_config, verify_artifact
 from .models import DetectionModel
 from recognition.models import QueueControl
@@ -39,7 +39,7 @@ def register_detector(manifest_path, activate=False):
             model = existing
         else:
             model = DetectionModel.objects.create(**config)
-            AuditLog.objects.create(event='detector.registered', target_id=str(model.pk), details={'checksum': model.checksum, 'config_digest': model.config_digest})
+            audit_admin('detector.registered', None, model, action='register')
     if activate:
         activate_detector(model.pk)
         model.refresh_from_db()
@@ -52,11 +52,13 @@ def activate_detector(model_id=None, actor=None):
         model = DetectionModel.objects.select_for_update().get(pk=model_id) if model_id else None
         if model:
             verify_artifact(settings.ASSESSMENT_MODEL_ROOT, snapshot_for(model))
+        previous_id = DetectionModel.objects.filter(enabled=True).values_list('pk', flat=True).first()
         DetectionModel.objects.filter(enabled=True).update(enabled=False)
         if model:
             DetectionModel.objects.filter(pk=model.pk).update(enabled=True)
-        AuditLog.objects.create(event='detector.activated' if model else 'detector.disabled', actor=actor,
-                                target_id=str(model.pk) if model else '', details={'config_digest': model.config_digest} if model else {})
+        audit_admin('detector.activated' if model else 'detector.disabled', actor, model or DetectionModel,
+                    action='activate' if model else 'disable', changed_fields=['enabled'],
+                    target_id=str(model.pk) if model else (str(previous_id) if previous_id else ''))
     return model
 
 

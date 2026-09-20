@@ -16,6 +16,7 @@ urlpatterns = [
     path('api/v1/', include('activity.urls')),
     path('api/v1/', include('assessments.urls')),
     path('api/v1/', include('llm.urls')),
+    path('api/v1/weather-data/', include('weatherdata.urls')),
 ]
 handler404 = 'common.views.not_found'
 handler500 = 'common.views.server_error'

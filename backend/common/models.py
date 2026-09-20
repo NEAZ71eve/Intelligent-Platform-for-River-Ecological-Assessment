@@ -8,12 +8,25 @@ class AuditLog(models.Model):
     actor = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL)
     event = models.CharField(max_length=80)
     target_id = models.CharField(max_length=64, blank=True)
+    model_label = models.CharField(max_length=100, blank=True, db_index=True)
+    action = models.CharField(max_length=32, blank=True, db_index=True)
+    changed_fields = models.JSONField(default=list, blank=True)
     details = models.JSONField(default=dict, blank=True)
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)
 
     class Meta:
         ordering = ['-created_at']
         verbose_name = '业务审计日志'
+        verbose_name_plural = verbose_name
+
+
+class ManagementStats(AuditLog):
+    """Admin entry point and explicit all-sections aggregate permission; no new table."""
+
+    class Meta:
+        proxy = True
+        default_permissions = ('view',)
+        verbose_name = '管理统计与查询'
         verbose_name_plural = verbose_name
 
 
@@ -30,4 +43,3 @@ class TaskLog(models.Model):
         ordering = ['-created_at']
         verbose_name = '任务运行日志'
         verbose_name_plural = verbose_name
-
