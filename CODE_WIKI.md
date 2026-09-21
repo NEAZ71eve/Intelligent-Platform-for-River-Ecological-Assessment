@@ -305,7 +305,7 @@ v3 类别 mAP50：metal 0.97 ｜ fabric 0.966 ｜ water_plant 0.937 ｜ plastic 
 ### 7.5 建议下一步（按依赖序）
 
 1. 后端登记 ONNX（artifacts/river-eco-yolov8n-v3.onnx + manifest）→ 启动 Phase 4 T15/T16 联调验收。
-2. 提交 HYHQ 工作区未入库内容（runs/v3 训练产物、v1.manifest 修订）。
+2. ✅ 已完成：提交 HYHQ 训练产物（`39ac3e4`：runs/v2/v2-2/v3 + v1.manifest）。
 3. 补完 TACO 图片（857/1500）→ 增量扩充统一集；marine-debris640 重新拉取。
 4. 启动硬缺口自采（试点 50 张/类）+ 发送 3 封申请邮件；用 eval-v1/v2（43 图）做泛化评估。
 5. 方向 B：生态等级标签试点（双人标注）→ 多任务模型基线。
@@ -350,6 +350,7 @@ v3 类别 mAP50：metal 0.97 ｜ fabric 0.966 ｜ water_plant 0.937 ｜ plastic 
 
 | 提交 | 内容 |
 | --- | --- |
+| `3bf3210` | docs: 记录 2026-09-21 提交推送（HYHQ 39ac3e4 / miniprogram-2 2fd7e99），工作区状态更新 |
 | `2fd7e99` | docs: 同步 CODE_WIKI 与数据集清单至 2026-09-21 状态（unified-v2/v3 训练/YRDG 落地/git 与文档位置修正） |
 | `39ef592` | docs: 更新 CODE_WIKI 全量状态，纳入数据集清单与采集/标注/申请规范 |
 | `5f75177` | feat: 河道生态评估小程序前端与数据集调研报告（15 细类缺口全景） |
@@ -365,7 +366,7 @@ v3 类别 mAP50：metal 0.97 ｜ fabric 0.966 ｜ water_plant 0.937 ｜ plastic 
 ### 8.4 工作区状态
 
 - **HYHQ（main）**：✅ 已提交并推送（`39ac3e4`：248 文件 = v2/v2-2/v3 训练产物 + detect 评估 + v1.manifest 修订）；工作区干净。
-- **miniprogram-2（master）**：✅ 已提交并推送（`2fd7e99`：三文档）；工作区干净。
+- **miniprogram-2（master）**：✅ 已提交并推送（最新 `3bf3210`）；工作区干净。
 - 数据集本体在 D 盘（§10），不入 GitHub。
 
 ---
@@ -397,25 +398,27 @@ node --test tests/*.test.js
 
 ## 10. 数据集落地与调研现状（2026-09-21）
 
-### 10.1 数据落盘位置（全部在 D 盘）
+### 10.1 数据集位置（绝对路径）
 
-```
-D:\HYHQ_data\
-├── .runtime\                    # 数据集（约 36GB）
-│   ├── IWHR_AI_Lable_Floater_V1 #   统一集源（3000 图 / 2.1GB）
-│   ├── CANSURF\                 #   水面金属罐（7062 图，已验证）
-│   ├── iSOOD\                   #   排污口检测（10433 图，md5 通过）
-│   ├── TACO_git\                #   TACO 标注（4784 条）+ Flickr 图片下载（857/1500，进行中）
-│   ├── YRDG\                    #   YRDG 漂浮物（10233 图 + labels，已完成）
-│   ├── marine-debris640\        #   Marine Debris 640（⚠ 克隆不完整，仅 .git 无数据）
-│   ├── supplement_bottle_foam\  #   bottle/foam 自采补充（16 图 + 16 标签）
-│   ├── downloads\               #   压缩包 + 下载脚本（iSOOD zip 9.5GB、YRDG zip 3.8GB、CANSURF zip 2.1GB…）
-│   └── prepare_v3.log / train_v3.log  # unified-v2 构建与 v3 训练日志
-├── eval-v1\ eval-v2\            # 人工评估集（16 + 27 图，3 场景，sources.csv 带来源）
-├── docs\                        # 数据工作文档（邮件模板/自采规范/标注规范/数据集清单）
-└── (小程序项目) D:\WeChatProjects\miniprogram-2
-    (后端+推理) D:\WeChatProjects\HYHQ
-```
+数据本体全部位于 `D:\HYHQ_data`（约 36GB，不入 GitHub；来源/校验和/状态索引见 `docs/数据集清单.md`）：
+
+| 数据集 / 用途 | 绝对路径 | 内容 / 状态 |
+| --- | --- | --- |
+| IWHR 统一集源 | `D:\HYHQ_data\.runtime\IWHR_AI_Lable_Floater_V1` | 3000 图 / ~2.1GB，misc_debris 主力 |
+| CANSURF | `D:\HYHQ_data\.runtime\CANSURF` | 7062 图 + label，metal |
+| iSOOD | `D:\HYHQ_data\.runtime\iSOOD` | 10433 图 + label，outfall，md5 通过 |
+| YRDG | `D:\HYHQ_data\.runtime\YRDG` | 10233 图 + labels，漂浮物 6 类（已完成） |
+| TACO | `D:\HYHQ_data\.runtime\TACO_git` | 标注 `data\annotations.json`（4784 条）+ Flickr 图片下载中（857/1500） |
+| MarineDebris 640 | `D:\HYHQ_data\.runtime\marine-debris640` | ⚠ 克隆不完整（仅 .git）；zip 在 `.runtime\marine-debris640.zip` |
+| bottle/foam 补充 | `D:\HYHQ_data\.runtime\supplement_bottle_foam` | 16 图 + 16 标签（auto-label，few-shot） |
+| 压缩包与下载脚本 | `D:\HYHQ_data\.runtime\downloads` | CANSURF-main.zip 2.1GB、iSOOD_10481_v1.0.zip 9.5GB + xlsx、IWHR_package1/2.zip、YRDG.zip 3.8GB、dl_*.py |
+| 构建 / 训练日志 | `D:\HYHQ_data\.runtime\prepare_v3.log`、`train_v3.log` | unified-v2 构建与 v3 训练日志 |
+| 泛化评估集 | `D:\HYHQ_data\eval-v1`（16 图）、`D:\HYHQ_data\eval-v2`（27 图） | 3 场景，sources.csv 带来源 URL |
+| 数据工作文档 | `D:\HYHQ_data\docs` | 申请邮件模板 / 自采规范 / 标注规范 |
+| **统一数据集构建产物** | `D:\WeChatProjects\HYHQ\inference\data\splits\unified-v2` | 31550 图 / 87610 框 / 划分 22085-4732-4733（seed 42 可重放，不入库） |
+| ONNX 制品 | `D:\WeChatProjects\HYHQ\inference\artifacts` | river-eco-yolov8n-v1/v2/v3.onnx（各 ~12.3MB）+ manifest（已入库） |
+| 小程序工程 | `D:\WeChatProjects\miniprogram-2` | 前端代码（GitHub `miniprogram-2` 分支） |
+| 后端 + 推理 | `D:\WeChatProjects\HYHQ` | 后端 / 训练 / 数据划分（GitHub `main` 分支） |
 
 ### 10.2 数据集状态表
 
