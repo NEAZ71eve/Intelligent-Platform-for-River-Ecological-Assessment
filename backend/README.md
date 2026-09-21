@@ -2,7 +2,7 @@
 
 ## 运行与范围
 
-本机使用 Python 3.12；北京服务器既有基线已在 Python 3.13 上完成依赖安装、数据库及服务测试。2026-09-20 已部署 M2 + LLM 基线；2026-09-21 的 AI 分区互动修改仅在本机验证，尚未部署。锁定依赖见 `requirements.txt`。数据库默认 PostgreSQL；`HYHQ_USE_SQLITE=1` 仅用于显式本地开发。设置与私有文件位于后端目录，真实 `.env`、数据库、用户文件、模型和本地运行时均不提交。
+本机使用 Python 3.12；北京服务器使用 Python 3.13。2026-09-21 已部署运行代码 `d4d0bed`，包含三板块 AI、真实天气、管理统计审计与模拟批次维护；上轮源码和文档快照为 `c7bbdbf`。数据库、依赖、四个服务和私有数据清理计时器已配置，两个外部 API 已完成服务器真实调用验证，详见 [当前部署与回退](../docs/北京天气版本部署与回退.md)。锁定依赖见 `requirements.txt`。数据库默认 PostgreSQL；`HYHQ_USE_SQLITE=1` 仅用于显式本地开发。设置与私有文件位于后端目录，真实 `.env`、数据库、用户文件、模型和本地运行时均不提交。
 
 从仓库根目录使用 `scripts/manage.sh` 执行命令，该脚本会切换到 backend 工作目录，确保 Django 能正确发现测试。
 
@@ -17,7 +17,7 @@ scripts/manage.sh runserver 127.0.0.1:8000
 scripts/manage.sh run_recognition_worker
 ```
 
-真实微信身份适配已实现，但未配置真实 AppID / AppSecret，尚未向微信验收。开发模拟登录必须同时开启 `ENV=development`、`DJANGO_DEBUG=1`、`ALLOW_DEV_AUTH=1`，生产即使误开第三项也不提供该接口。模拟身份不能替代真实用户认证。
+真实微信身份适配已实现；北京已配置 AppID，AppSecret 仍待补齐，公网域名放行、HTTPS、合法域名和真实微信登录验收尚未完成。开发模拟登录必须同时开启 `ENV=development`、`DJANGO_DEBUG=1`、`ALLOW_DEV_AUTH=1`，生产即使误开第三项也不提供该接口。模拟身份不能替代真实用户认证。
 
 ## 响应、鉴权与权限
 
@@ -46,7 +46,8 @@ scripts/manage.sh run_recognition_worker
 | `metrics/`、`data-sources/`、`observations/` | GET | 公开；指标、已启用来源及有界原始观测样例 |
 | `observation-series/` | GET | 公开；单站多指标、单来源/成功单批次的完整窗口聚合，最长 31 天、最多 50000 条原始记录及每指标 240 个桶 |
 | `simulation-runs/` | GET | 公开成功批次目录；按 `region,station,source,scenario` 筛选，标准分页 |
-| `weather/`、`air-quality/`、`weather-alerts/` | GET | 公开；均为模拟模式，官方预警未接入会明确说明 |
+| `weather/`、`air-quality/`、`weather-alerts/` | GET | 公开；保留的模拟接口，旧预警接口明确返回未接入状态 |
+| `weather-data/locations/`、`weather-data/summary/` | GET | 公开；独立的真实天气、空气质量与预警，详见 [和风天气接入](weatherdata/README.md) |
 | `dashboard/` | GET | 公开；按单一来源/批次读取指标 |
 | `contents/`、`content-tags/`、`routes/` | GET | 公开；科普组合筛选/标签目录，路线只展示公开节点，详见 [知识模块](knowledge/README.md) |
 | `places/{id}/`、`contents/{id}/`、`routes/{id}/` | GET | 公开详情 |
@@ -63,7 +64,9 @@ scripts/manage.sh run_recognition_worker
 | `visits/`、`visits/{id}/` | GET/POST、DELETE | 自记游览；同一用户/地点/日期去重，无定位核验 |
 | `feedback/`、`feedback/{id}/` | GET/POST、DELETE | 仅本人；最多 1000 字，答复/状态/处理时间只读，详见 [个人记录与反馈](activity/README.md) |
 
-科普、路线与个人业务的最新本地验证见 [M2-B01～B04 记录](../docs/verification/M2业务闭环验证记录.md)：完整 PostgreSQL 214 项、前端 191 项，以及用户侧和后台答复实际 HTTP 均通过。反馈字段新增迁移 `activity/0002_feedback_resolution.py`；本轮没有部署到北京服务器。
+科普、路线与个人业务的专项历史验证见 [M2-B01～B04 记录](../docs/verification/M2业务闭环验证记录.md)，包含用户侧和后台答复实际 HTTP；相关迁移已纳入北京当前部署。最新完整验证为 PostgreSQL 后端 377 项、小程序 257 项及实际管理数据库流程 48 项通过，见 [真实天气与管理验证记录](../docs/verification/真实天气与管理验证记录.md)。
+
+首页真实天气覆盖天津市、天津工业大学、天津师范大学、天津理工大学与北京市，校园入口代表附近天气网格。数据存于独立 `weatherdata` 表，不写入模拟观测历史。本机 100 次、北京 29,900 次分配共同约束本项目每月最多 30,000 次请求，另有滚动 31 天限制；费用账本必须连续保留。管理统计与审计见 [通用模块说明](common/README.md)，模拟保留策略和手动预览确认维护见 [批次维护说明](ecology/MAINTENANCE.md)。
 
 公开读取不等于管理权限。内容管理员需显式授予 Django 模型权限；上传图片不通过公开 media 路由暴露。生产单层可信 Nginx 代理开启 `TRUST_PROXY_HTTPS=1` 后按其覆盖的 X-Forwarded-For 区分限流来源；不能直接暴露绕过代理的应用端口。
 
@@ -122,7 +125,7 @@ scripts/manage.sh cleanup_private_data --dry-run
 scripts/manage.sh cleanup_private_data
 ```
 
-清理命令需要在实际部署时设置调度，M1 未自动修改系统定时任务。模拟历史批次的长期保留策略留待 M4。
+北京已启用每日私有数据清理计时器；其他新部署仍需单独配置调度。模拟历史批次已有保留策略和手动预览确认维护工具，尚未安排模拟批次定时删除，详见 [批次维护说明](ecology/MAINTENANCE.md)。
 
 ## M3 识别任务与模型版本
 
@@ -164,4 +167,4 @@ npm test
 node tests/live-smoke.js
 ```
 
-真实 HTTP 联调脚本需要开发服务器、显式模拟登录及工作进程运行；只创建并删除自己的测试账号。它使用 wx mock，不证明微信开发者工具或真机可用。既有 PostgreSQL 结果见 [M1 验证记录](../docs/verification/M1验证记录.md)；M2 本轮完整后端 158 项通过，聚合边界及真实 HTTP 三场景结果见 [M2 核心展示验证记录](../docs/verification/M2核心展示验证记录.md)。服务器基线验证不代表 M2 已上线，微信开发者工具和真机验收仍需另行执行。
+真实 HTTP 联调脚本需要开发服务器、显式模拟登录及工作进程运行；只创建并删除自己的测试账号。它使用 wx mock，不证明微信开发者工具或真机可用。聚合边界及真实 HTTP 三场景的专项历史结果见 [M2 核心展示验证记录](../docs/verification/M2核心展示验证记录.md)。2026-09-21 的 377 项完整后端测试已在本机和北京隔离 PostgreSQL 通过；小程序 257 项和实际管理流程 48 项通过，详见 [最新验证记录](../docs/verification/真实天气与管理验证记录.md)。开发者工具已显示真实天气和五地点选择器，完整手机交互及正式微信登录仍待验收，内部部署不代表公网正式可用。
