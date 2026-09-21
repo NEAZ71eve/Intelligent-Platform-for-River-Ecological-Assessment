@@ -46,17 +46,16 @@
 
 ## 6. 第二轮新发现（2026-09-21，针对图1/图2误检反查）
 
-### 6.0 零成本：IWHR 标注被浪费（最优先！）
+### 6.0 ~~零成本：IWHR 标注被浪费~~（已证伪，2026-09-21）
 
-IWHR_AI_Lable_Floater_V1（已纳入的 3000 图源）**本就有细分标注**：塑料瓶、**泡沫板**、水草、藻类（23692 框，北京大运河，PMC11882902）。
-当前 prepare_unified_v2.py 把它**整体映射成 misc_debris 单类**——白捡的 foam_board / water_plant / algae_mass 标注全被压平了。
-**行动**：查 IWHR 原始标注 json 的细分类名，在适配器里改映射：
-- 塑料瓶类 → bottle（id=0）
-- 泡沫板类 → foam_board（id=1）
-- 水草类 → water_plant（id=2）
-- 藻类类 → algae_mass（id=3，直接补零样本！）
-- 其余 → misc_debris
-**预期**：不动下载，仅改映射，foam_board/water_plant/algae_mass 三类立刻从 0/50 涨到几千框。
+**结论：IWHR VOC XML 全部类名就是 `floater`（3897/3897），无细分标注。** 论文摘要说的"含塑料瓶/泡沫板/水草/藻类"是覆盖对象类型，不是标注类。无法重映射，此路不通。
+
+**真正的白捡：TACO 续传完成。** 已下载 857/1500 图（644 张 Flickr 404 失败），COCO 标注实际含：
+- bottle: Clear plastic bottle 285 + Other plastic bottle 50 = **335 框**
+- foam_board: Styrofoam piece 112 + Foam cup 13 + Foam food container 15 = **140 框**
+- glass: Glass bottle 104 框
+
+当前预处理只纳入了 402 张，**重跑 prepare_unified_v2.py 即自动纳入新增 ~455 张**，bottle/foam_board 框数直接上涨。注意 TACO 是陆地场景，domain gap 大，仅作类别形态补充。
 
 ### 6.1 新增对口数据集
 

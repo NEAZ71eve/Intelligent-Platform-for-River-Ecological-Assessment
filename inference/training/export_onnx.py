@@ -33,13 +33,13 @@ DISPLAY = {
 
 
 def find_best_run():
-    """找最新的 river-eco-v2* run 目录（训练重跑会带 -N 后缀）。"""
-    candidates = sorted(RUNS.glob("river-eco-v2*"), key=lambda p: p.stat().st_mtime)
+    """找最新的 river-eco-v3* run 目录（训练重跑会带 -N 后缀）。"""
+    candidates = sorted(RUNS.glob("river-eco-v3*"), key=lambda p: p.stat().st_mtime)
     for run in reversed(candidates):
         best = run / "weights" / "best.pt"
         if best.exists():
             return run, best
-    raise SystemExit("未找到 runs/river-eco-v2*/weights/best.pt —— 请先运行 train_yolo.py")
+    raise SystemExit("未找到 runs/river-eco-v3*/weights/best.pt —— 请先运行 train_yolo.py")
 
 
 def main():
@@ -52,7 +52,7 @@ def main():
     print(f"[export] ONNX: {onnx_src}")
 
     ARTIFACTS.mkdir(parents=True, exist_ok=True)
-    artifact_name = "river-eco-yolov8n-v2.onnx"
+    artifact_name = "river-eco-yolov8n-v3.onnx"
     dest = ARTIFACTS / artifact_name
     shutil.copy2(onnx_src, dest)
     sha = hashlib.sha256(dest.read_bytes()).hexdigest()
@@ -79,7 +79,7 @@ def main():
 
     manifest = {
         "model_name": "river-eco-yolov8n",
-        "model_version": "v2",
+        "model_version": "v3",
         "task": "detection",
         "artifact": artifact_name,
         "sha256": sha,
@@ -97,7 +97,7 @@ def main():
         "source_url": "https://github.com/NEAZ71eve/Intelligent-Platform-for-River-Ecological-Assessment",
         "evaluation": evaluation,
     }
-    manifest_path = ARTIFACTS / "river-eco-yolov8n-v2.manifest.json"
+    manifest_path = ARTIFACTS / "river-eco-yolov8n-v3.manifest.json"
     manifest_path.write_text(json.dumps(manifest, ensure_ascii=False, indent=2),
                              encoding="utf-8")
     print(f"[ok] {dest.name} ({dest.stat().st_size} bytes)")

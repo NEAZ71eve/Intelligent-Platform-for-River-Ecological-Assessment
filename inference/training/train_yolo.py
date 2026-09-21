@@ -22,7 +22,7 @@ def main():
     model.train(
         data=str(_ROOT / "data" / "splits" / "unified-v2" / "dataset.yaml"),
         epochs=100, imgsz=640, batch=16,
-        project=str(_ROOT / "runs"), name="river-eco-v2",
+        project=str(_ROOT / "runs"), name="river-eco-v3",
         seed=42, deterministic=True,   # 可重放
         patience=20,
         cache="disk",
