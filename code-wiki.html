@@ -70,7 +70,7 @@
     <p class="sub">HYHQ 河道生态评估业务小程序（原 TDesign 官方 Demo 已于 2026-09-18 由 <code style="background:rgba(255,255,255,.2);color:#fff;border-color:rgba(255,255,255,.4)">HYHQ\miniprogram</code> 迁移覆盖，TDesign 内容作为素材残留保留）。业务代码同源维护于 HYHQ 仓库，已推送 GitHub：<code style="background:rgba(255,255,255,.2);color:#fff;border-color:rgba(255,255,255,.4)">NEAZ71eve/Intelligent-Platform-for-River-Ecological-Assessment</code>。</p>
     <div class="tags">
       <span class="tag">微信原生小程序</span><span class="tag">无第三方依赖</span><span class="tag">9 业务页面</span>
-      <span class="tag">河道巡查</span><span class="tag">基础库 3.7.12</span><span class="tag">2026-09-18 迁移</span>
+      <span class="tag">河道巡查</span><span class="tag">基础库 3.7.12</span><span class="tag">2026-09-21 更新</span>
     </div>
   </div>
 </header>
@@ -105,7 +105,7 @@
     <div class="stat"><b>3</b><span>全局组件</span></div>
     <div class="stat"><b>6</b><span>业务模块（lib/）</span></div>
     <div class="stat"><b>3</b><span>测试文件（node --test）</span></div>
-    <div class="stat"><b>2541</b><span>文件总数（不含 .git，含 TDesign 残留）</span></div>
+    <div class="stat"><b>2547</b><span>git 跟踪文件数（含 TDesign 残留）</span></div>
     <div class="stat"><b>59</b><span>TDesign 残留演示页（未注册）</span></div>
   </div>
 </section>
@@ -288,11 +288,11 @@ node --test tests/*.test.js</code></pre>
     <rect x="196" y="56" width="190" height="40" rx="8" fill="#00a870"/><text x="206" y="80" font-size="12.5" fill="#fff">T1 D0决策门 ✓ 有条件NO-GO</text>
     <rect x="20" y="120" width="920" height="122" rx="10" fill="#e8efff" stroke="#0052d9"/>
     <text x="36" y="144" font-size="14" font-weight="bold" fill="#0b3d91">Phase 1 数据与训练（D0-D3）</text>
-    <rect x="36" y="156" width="150" height="74" rx="8" fill="#ff9f1a"/><text x="46" y="178" font-size="12.5" fill="#fff">T2 数据集审计 ⚠</text><text x="46" y="196" font-size="11" fill="#fff">仅 IWHR 到位</text><text x="46" y="212" font-size="11" fill="#fff">其余3源未下载</text>
+    <rect x="36" y="156" width="150" height="74" rx="8" fill="#ff9f1a"/><text x="46" y="178" font-size="12.5" fill="#fff">T2 数据审计 ⚠</text><text x="46" y="196" font-size="11" fill="#fff">5源到位4</text><text x="46" y="212" font-size="11" fill="#fff">TACO 857/1500</text>
     <rect x="196" y="156" width="130" height="74" rx="8" fill="#00a870"/><text x="206" y="190" font-size="12.5" fill="#fff">T3 类别映射 ✓</text>
-    <rect x="336" y="156" width="150" height="74" rx="8" fill="#00a870"/><text x="346" y="190" font-size="12.5" fill="#fff">T4 数据集构建 ✓</text>
-    <rect x="496" y="156" width="150" height="74" rx="8" fill="#00a870"/><text x="506" y="178" font-size="12.5" fill="#fff">T5 训练 ✓ 100轮</text><text x="506" y="196" font-size="11" fill="#fff">脚本已提交</text><text x="506" y="212" font-size="11" fill="#fff">缺报告md</text>
-    <rect x="656" y="156" width="150" height="74" rx="8" fill="#ff9f1a"/><text x="666" y="178" font-size="12.5" fill="#fff">T6 ONNX导出 ⚠</text><text x="666" y="196" font-size="11" fill="#fff">后处理完成</text><text x="666" y="212" font-size="11" fill="#fff">ONNX未导出</text>
+    <rect x="336" y="156" width="150" height="74" rx="8" fill="#00a870"/><text x="346" y="190" font-size="12.5" fill="#fff">T4 unified-v2 ✓</text>
+    <rect x="496" y="156" width="150" height="74" rx="8" fill="#00a870"/><text x="506" y="178" font-size="12.5" fill="#fff">T5 v3训练 ✓</text><text x="506" y="196" font-size="11" fill="#fff">10类 mAP50=0.79</text><text x="506" y="212" font-size="11" fill="#fff">缺报告md</text>
+    <rect x="656" y="156" width="150" height="74" rx="8" fill="#00a870"/><text x="666" y="190" font-size="12.5" fill="#fff">T6 ONNX v1-3 ✓</text>
     <rect x="20" y="256" width="920" height="86" rx="10" fill="#e3f9e9" stroke="#008858"/>
     <text x="36" y="280" font-size="14" font-weight="bold" fill="#006c45">Phase 2 后端演进（全部提交 ✓）</text>
     <rect x="36" y="292" width="120" height="40" rx="8" fill="#00a870"/><text x="46" y="316" font-size="12.5" fill="#fff">T7 规则引擎 ✓</text>
@@ -300,15 +300,15 @@ node --test tests/*.test.js</code></pre>
     <rect x="276" y="292" width="160" height="40" rx="8" fill="#00a870"/><text x="286" y="316" font-size="12.5" fill="#fff">T9 assessment API ✓</text>
     <rect x="446" y="292" width="130" height="40" rx="8" fill="#00a870"/><text x="456" y="316" font-size="12.5" fill="#fff">T10 推理worker ✓</text>
     <rect x="586" y="292" width="110" height="40" rx="8" fill="#00a870"/><text x="596" y="316" font-size="12.5" fill="#fff">T11 Admin ✓</text>
-    <rect x="20" y="356" width="920" height="86" rx="10" fill="#fffbe6" stroke="#e37318"/>
-    <text x="36" y="380" font-size="14" font-weight="bold" fill="#614700">Phase 3 小程序改造（已实现，待提交/联调 ⚠）</text>
-    <rect x="36" y="392" width="130" height="40" rx="8" fill="#ff9f1a"/><text x="46" y="416" font-size="12.5" fill="#fff">T12 巡查上报页 ✓</text>
-    <rect x="176" y="392" width="130" height="40" rx="8" fill="#ff9f1a"/><text x="186" y="416" font-size="12.5" fill="#fff">T13 评估结果页 ✓</text>
-    <rect x="316" y="392" width="150" height="40" rx="8" fill="#ff9f1a"/><text x="326" y="416" font-size="12.5" fill="#fff">T14 记录+入口 ✓</text>
+    <rect x="20" y="356" width="920" height="86" rx="10" fill="#e8efff" stroke="#0052d9"/>
+    <text x="36" y="380" font-size="14" font-weight="bold" fill="#0b3d91">Phase 3 小程序改造（已实现并提交 ✓，待联调）</text>
+    <rect x="36" y="392" width="130" height="40" rx="8" fill="#00a870"/><text x="46" y="416" font-size="12.5" fill="#fff">T12 巡查上报页 ✓</text>
+    <rect x="176" y="392" width="130" height="40" rx="8" fill="#00a870"/><text x="186" y="416" font-size="12.5" fill="#fff">T13 评估结果页 ✓</text>
+    <rect x="316" y="392" width="150" height="40" rx="8" fill="#00a870"/><text x="326" y="416" font-size="12.5" fill="#fff">T14 记录+入口 ✓</text>
     <rect x="476" y="392" width="130" height="40" rx="8" fill="#c9cdd4"/><text x="486" y="416" font-size="12.5" fill="#4e5969">T15 联调测试</text>
     <rect x="616" y="392" width="130" height="40" rx="8" fill="#c9cdd4"/><text x="626" y="416" font-size="12.5" fill="#4e5969">T16 验收清单</text>
   </svg>
-  <div class="fig-title">图 2：17 任务 × 4 阶段进度（绿=完成 12，橙=部分/待联调 4，灰=未开始 2）</div>
+  <div class="fig-title">图 2：17 任务 × 4 阶段进度（绿=完成 14，橙=进行中 1，灰=未开始 2；T2 TACO 下载中，T15/T16 待 ONNX 登记后启动）</div>
 
   <h3>已实现模块与训练结果</h3>
   <div class="grid2">
@@ -317,9 +317,9 @@ node --test tests/*.test.js</code></pre>
       <ul>
         <li><code>audit_datasets.py</code>：数据集审计（SHA-256 + dHash 去重）</li>
         <li><code>class_mapping.py</code>：类别映射（4 大类 + 15 细类）</li>
-        <li><code>build_dataset.py</code>：统一 YOLO 构建 + 冻结划分（2100/450/450）</li>
-        <li><code>train_yolo.py</code>：yolov8n、640×640、100 轮、seed 42</li>
-        <li><code>export_onnx.py</code>：ONNX 导出 + manifest（<span class="warn">未运行</span>）</li>
+        <li><code>build_dataset.py</code>：统一 YOLO 构建 + 冻结划分（unified-v2：31550 图 / 87610 框 / 22085-4732-4733）</li>
+        <li><code>train_yolo.py</code>：yolov8n、640×640、100 轮、seed 42、workers=4（Windows 稳定）</li>
+        <li><code>export_onnx.py</code>：ONNX 导出 + manifest（<span class="ok">已运行</span>，v1/v2/v3 均已导出并提交）</li>
         <li><code>onnx_detector.py</code>：conf 过滤 + 逐类 NMS（测试通过）</li>
       </ul>
     </div>
@@ -344,28 +344,32 @@ node --test tests/*.test.js</code></pre>
     <li><code>tests/assessment.test.js</code> + <code>tests/pages.test.js</code>：16/16 通过（HYHQ 仓库内验证）。</li>
   </ul>
   <table>
-    <tr><th>训练指标（runs/river-eco-v1-4 最终轮）</th><th>数值</th><th>说明</th></tr>
-    <tr><td>mAP50 / mAP50-95</td><td><strong>0.904 / 0.658</strong></td><td>yolov8n.pt 预训练，100 轮，4 次迭代训练</td></tr>
-    <tr><td>Precision / Recall</td><td>0.897 / 0.817</td><td>—</td></tr>
-    <tr><td>数据集</td><td>3,000 图 / 23,692 框</td><td><span class="err">仅 IWHR 单源、单细类 misc_debris</span>；其余 14 细类无样本</td></tr>
+    <tr><th>训练指标</th><th>数值</th><th>说明</th></tr>
+    <tr><td><strong>v3（unified-v2 多源，10 类）</strong></td><td><strong>mAP50 0.790 / mAP50-95 0.517</strong>（P 0.80 / R 0.747）</td><td>100 轮，val 4732 图 / 12961 框；ONNX v3 已导出提交（2026-09-21）</td></tr>
+    <tr><td>v2-2（多源中间版）</td><td>mAP50 0.756（80 轮）</td><td>unified-v2 早期版；v2 首轮中断</td></tr>
+    <tr><td>v1-4（历史基线）</td><td>mAP50 0.904 / mAP50-95 0.658</td><td>3000 图全 IWHR，<span class="err">仅 misc_debris 单类</span>，其余 14 类零样本</td></tr>
+    <tr><td>v3 弱类（mAP50）</td><td>bottle 0.451 ｜ foam_board 0.177</td><td>样本仅 155 / 81 框，待 TACO 补图 + few-shot 补充</td></tr>
     <tr><td>依赖</td><td colspan="2">onnxruntime==1.23.1、onnx==1.19.0、numpy==2.2.6</td></tr>
   </table>
 
   <h3>缺口与阻塞</h3>
   <ol>
-    <li><strong>D0 决策门悬置</strong>：WATER-DET 有条件 NO-GO，2026-10-01 前未获数据将触发回退条款（转花卉识别）。</li>
-    <li><strong>模型覆盖面不足</strong>：水华黑臭 / 排污口 / 岸带三类无训练数据，规则引擎这些大类无真实检出可评。</li>
-    <li><strong>ONNX 制品缺失</strong>：未导出、未登记 → 后端运行时报 <code>MODEL_NOT_CONFIGURED</code>；小程序提交任务显示「评估模型未启用」（预期失败路径）。</li>
-    <li><strong>Phase 3 未提交 / 未联调</strong>：HYHQ 工作区含小程序改动（app.json + assessment 页 + lib 等），尚未 git 提交；与后端联调（Phase 4 T15/T16）未开始。</li>
+    <li><strong>D0 决策门悬置</strong>：WATER-DET 有条件 NO-GO，2026-10-01 前未获数据将触发回退条款。</li>
+    <li><strong>5 类硬缺口仍零样本</strong>：algae_mass / sewage_color / foam_pollution / bank_garbage / bank_encroach（unified-v2 中无数据，须自采）。</li>
+    <li><strong>ONNX 待登记</strong>：v1/v2/v3 均已导出，尚未 register_model 到后端 → 小程序提交任务仍走「评估模型未启用」预期失败路径。</li>
+    <li><strong>Phase 4 未启动</strong>：后端 + 小程序联调（T15/T16）待 ONNX 登记后开始。</li>
+    <li><strong>HYHQ 工作区未提交</strong>：v1.manifest 修订 + runs/ 下 v2/v2-2/v3 训练产物未跟踪；<strong>TACO 图片未下完</strong>（857/1500）；marine-debris640 克隆不完整；bottle/foam 补充集（supplement_bottle_foam，16 张）已自动标注。</li>
     <li><strong>缺 yolo-v1-report.md</strong>：训练报告文档未补。</li>
   </ol>
 
   <h3>建议下一步（按依赖序）</h3>
   <ol>
-    <li>运行 <code>export_onnx.py</code> 导出 ONNX + manifest → <code>register_model</code> 登记。</li>
-    <li>提交 HYHQ 工作区 Phase 3 改动，启动后端 + 小程序联调（Phase 4 T15/T16）。</li>
-    <li>补下载 YRDG / FloW / TU Delft → 重训 → 补 <code>yolo-v1-report.md</code>。</li>
-    <li>等待 2026-10-01 WATER-DET 结果，决定是否回退花卉识别方案。</li>
+    <li>后端登记 ONNX v3（artifacts/river-eco-yolov8n-v3.onnx + manifest）→ 启动 Phase 4 T15/T16 联调验收。</li>
+    <li>提交 HYHQ 工作区未入库内容（runs/v3 训练产物、v1.manifest 修订）。</li>
+    <li>补完 TACO 图片（857/1500）→ 增量扩充统一集；marine-debris640 重新拉取。</li>
+    <li>启动硬缺口自采（试点 50 张/类）+ 发送 3 封申请邮件；用 eval-v1/v2（43 图）做泛化评估。</li>
+    <li>方向 B：生态等级标签试点（双人标注）→ 多任务模型基线。</li>
+    <li>等待 2026-10-01 WATER-DET 结果，决定是否触发回退条款。</li>
   </ol>
 </section>
 
@@ -376,28 +380,31 @@ node --test tests/*.test.js</code></pre>
   <table>
     <tr><th>remote</th><th>URL</th><th>状态</th></tr>
     <tr><td><code>origin</code></td><td>https://github.com/gruTGU/HYHQ.git</td><td>保留（原仓库）</td></tr>
-    <tr><td><code>github</code></td><td>git@github.com:NEAZ71eve/Intelligent-Platform-for-River-Ecological-Assessment.git</td><td><span class="ok">已推送</span>，main=9a8fe62</td></tr>
+    <tr><td><code>github</code></td><td>git@github.com:NEAZ71eve/Intelligent-Platform-for-River-Ecological-Assessment.git</td><td><span class="ok">已推送</span>，main=13472e0</td></tr>
   </table>
   <p>本地身份（仓库级）：<code>gruTGU &lt;gruTGU@users.noreply.github.com&gt;</code>；SSH key：ed25519 / rsa。</p>
-  <h3>10.2 提交历史（main，最近 3 条）</h3>
+  <h3>10.2 提交历史（main，最近 6 条）</h3>
   <table>
     <tr><th>提交</th><th>内容</th></tr>
-    <tr><td><code>9a8fe62</code></td><td>chore: 训练产物纳入版本管理（runs/ 权重与指标，inference 白名单）</td></tr>
-    <tr><td><code>9bf3023</code></td><td>feat(inference): YOLOv8n 训练与 ONNX 导出脚本及 IWHR 审计记录</td></tr>
-    <tr><td><code>2940993</code></td><td>feat(ecology): Phase 2 backend evolution - rule engine + geo + assessment-jobs API + worker + admin</td></tr>
+    <tr><td><code>13472e0</code></td><td>feat(inference): river-eco-v3 训练完成（TACO 扩充 bottle 78→155 / foam 50→81），val mAP50=0.789，ONNX v3 导出</td></tr>
+    <tr><td><code>b3cbbbd</code></td><td>docs: 二轮调研发现（IWHR 可零成本重标、driftwood/foam/grass 数据集）</td></tr>
+    <tr><td><code>37d58a0</code></td><td>docs: bottle/foam_board few-shot 补充计划（auto-label 失败，已列候选标注）</td></tr>
+    <tr><td><code>130343d</code></td><td>feat(inference): eval-v2 独立测试集（27 图，outfall/bloom 黑臭重点）+ 检测汇总</td></tr>
+    <tr><td><code>1c8e9b8</code></td><td>feat(inference): v2 训练完成（多类 YOLOv8n，test mAP50=0.767），eval-v1 重跑，ONNX v2 导出+报告</td></tr>
+    <tr><td><code>5509f28</code></td><td>feat(inference): eval-v1 独立测试集（16 图，4 场景，sources+README）</td></tr>
   </table>
   <h3>10.3 训练产物白名单策略（双 .gitignore）</h3>
   <ul>
-    <li>根 <code>.gitignore</code> 与 <code>inference/.gitignore</code> 均新增：<code>!inference/runs/**/*.pt</code>（训练权重入库）、<code>!inference/artifacts/*.onnx</code>（未来 ONNX 制品入库）。</li>
+    <li>根 <code>.gitignore</code> 与 <code>inference/.gitignore</code> 均新增：<code>!inference/runs/**/*.pt</code>（训练权重入库）、<code>!inference/artifacts/*.onnx</code>（ONNX 制品入库）。</li>
     <li>仍全局忽略 <code>*.pt</code>/<code>*.onnx</code>/<code>*.pth</code>：预训练权重（如 <code>weights/yolo26n.pt</code>）、临时权重不入库。</li>
-    <li><span class="ok">已入库</span>（9a8fe62，33 文件 / 22.8MB）：runs/ 权重（best.pt/last.pt）、results.csv、混淆矩阵、PR/P/F1 曲线、训练/验证批次图。</li>
-    <li><span class="warn">明确不入库</span>：原始数据 <code>.runtime/</code>（约 2.2GB）、<code>data/raw/</code>、划分缓存 <code>data/splits/</code>（seed 42 可重放重建）。</li>
+    <li><span class="ok">已入库</span>：runs/ 权重（best.pt/last.pt）、results.csv、混淆矩阵、PR/P/F1 曲线、批次图，以及 <strong>ONNX v1/v2/v3 制品</strong>（artifacts/，各 ~12.3MB）。</li>
+    <li><span class="warn">明确不入库</span>：原始数据 <code>.runtime/</code>（约 36GB）、<code>data/raw/</code>、划分缓存 <code>data/splits/</code>（seed 42 可重放重建）。</li>
   </ul>
-  <h3>10.4 未提交工作</h3>
+  <h3>10.4 工作区状态</h3>
   <table>
     <tr><th>位置</th><th>内容</th></tr>
-    <tr><td>HYHQ 工作区</td><td>Phase 3 小程序改动（app.json、recognize/records/assessment 页、lib/assessment.js、tests）</td></tr>
-    <tr><td>miniprogram-2</td><td>迁移后全部业务文件未跟踪/已修改（本目录无远程仓库，24 项变更）</td></tr>
+    <tr><td>HYHQ（main）</td><td>v1.manifest.json 已修改；runs/ 下 river-eco-v2 / v2-2 / v3 与 detect/runs（v3 训练产物）未跟踪，待整理提交</td></tr>
+    <tr><td>miniprogram-2（master，39ef592）</td><td>CODE_WIKI.md / code-wiki.html / docs/数据集清单.md 本次已同步至 2026-09-21 状态（未提交）</td></tr>
   </table>
 </section>
 
