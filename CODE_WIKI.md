@@ -328,12 +328,13 @@ v3 类别 mAP50：metal 0.97 ｜ fabric 0.966 ｜ water_plant 0.937 ｜ plastic 
 
 本地身份（仓库级）：`gruTGU <gruTGU@users.noreply.github.com>`；SSH key：ed25519/rsa。
 
-### 8.2 提交历史（2026-09-18 全部已推送）
+### 8.2 提交历史（2026-09-21 全部已推送）
 
-**HYHQ `main` 分支**（最近 8 条，更早见 git log）：
+**HYHQ `main` 分支**（最近 9 条，更早见 git log）：
 
 | 提交 | 内容 |
 | --- | --- |
+| `39ac3e4` | feat(inference): 提交 v2/v2-2/v3 训练产物与 detect 评估结果（runs 白名单 .pt 入库），修订 v1.manifest |
 | `13472e0` | feat(inference): river-eco-v3 训练完成（TACO 扩充 bottle 78→155 / foam 50→81），val mAP50=0.789，ONNX v3 导出 |
 | `b3cbbbd` | docs: 二轮调研发现（IWHR 可零成本重标、driftwood/foam/grass 数据集） |
 | `37d58a0` | docs: bottle/foam_board few-shot 补充计划（auto-label 失败，已列候选标注） |
@@ -349,6 +350,7 @@ v3 类别 mAP50：metal 0.97 ｜ fabric 0.966 ｜ water_plant 0.937 ｜ plastic 
 
 | 提交 | 内容 |
 | --- | --- |
+| `2fd7e99` | docs: 同步 CODE_WIKI 与数据集清单至 2026-09-21 状态（unified-v2/v3 训练/YRDG 落地/git 与文档位置修正） |
 | `39ef592` | docs: 更新 CODE_WIKI 全量状态，纳入数据集清单与采集/标注/申请规范 |
 | `5f75177` | feat: 河道生态评估小程序前端与数据集调研报告（15 细类缺口全景） |
 | `0254dbd` / `a1d362a` | docs: 河道生态评估实现计划 / 模块设计 |
@@ -362,8 +364,8 @@ v3 类别 mAP50：metal 0.97 ｜ fabric 0.966 ｜ water_plant 0.937 ｜ plastic 
 
 ### 8.4 工作区状态
 
-- **HYHQ（main）**：含未提交内容——`inference/artifacts/river-eco-yolov8n-v1.manifest.json` 已修改；`inference/runs/` 下 river-eco-v2 / v2-2 / v3 与 detect/runs（v3 训练产物）未跟踪（白名单外文件待整理提交）。
-- **miniprogram-2（master）**：`CODE_WIKI.md`、`code-wiki.html`、`docs/数据集清单.md` 本次已同步至 2026-09-21 状态（未提交）。
+- **HYHQ（main）**：✅ 已提交并推送（`39ac3e4`：248 文件 = v2/v2-2/v3 训练产物 + detect 评估 + v1.manifest 修订）；工作区干净。
+- **miniprogram-2（master）**：✅ 已提交并推送（`2fd7e99`：三文档）；工作区干净。
 - 数据集本体在 D 盘（§10），不入 GitHub。
 
 ---

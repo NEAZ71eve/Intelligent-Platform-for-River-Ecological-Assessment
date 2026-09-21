@@ -358,14 +358,14 @@ node --test tests/*.test.js</code></pre>
     <li><strong>5 类硬缺口仍零样本</strong>：algae_mass / sewage_color / foam_pollution / bank_garbage / bank_encroach（unified-v2 中无数据，须自采）。</li>
     <li><strong>ONNX 待登记</strong>：v1/v2/v3 均已导出，尚未 register_model 到后端 → 小程序提交任务仍走「评估模型未启用」预期失败路径。</li>
     <li><strong>Phase 4 未启动</strong>：后端 + 小程序联调（T15/T16）待 ONNX 登记后开始。</li>
-    <li><strong>HYHQ 工作区未提交</strong>：v1.manifest 修订 + runs/ 下 v2/v2-2/v3 训练产物未跟踪；<strong>TACO 图片未下完</strong>（857/1500）；marine-debris640 克隆不完整；bottle/foam 补充集（supplement_bottle_foam，16 张）已自动标注。</li>
+    <li><strong>HYHQ 训练产物已提交</strong>（39ac3e4）：runs/ v2/v2-2/v3 与 detect 评估均已入库；仍剩 <strong>TACO 图片未下完</strong>（857/1500）；marine-debris640 克隆不完整；bottle/foam 补充集（supplement_bottle_foam，16 张）已自动标注。</li>
     <li><strong>缺 yolo-v1-report.md</strong>：训练报告文档未补。</li>
   </ol>
 
   <h3>建议下一步（按依赖序）</h3>
   <ol>
     <li>后端登记 ONNX v3（artifacts/river-eco-yolov8n-v3.onnx + manifest）→ 启动 Phase 4 T15/T16 联调验收。</li>
-    <li>提交 HYHQ 工作区未入库内容（runs/v3 训练产物、v1.manifest 修订）。</li>
+    <li><span class="ok">✅ 已完成</span>：提交 HYHQ 训练产物（39ac3e4，runs/v3 + v1.manifest）。</li>
     <li>补完 TACO 图片（857/1500）→ 增量扩充统一集；marine-debris640 重新拉取。</li>
     <li>启动硬缺口自采（试点 50 张/类）+ 发送 3 封申请邮件；用 eval-v1/v2（43 图）做泛化评估。</li>
     <li>方向 B：生态等级标签试点（双人标注）→ 多任务模型基线。</li>
@@ -380,12 +380,13 @@ node --test tests/*.test.js</code></pre>
   <table>
     <tr><th>remote</th><th>URL</th><th>状态</th></tr>
     <tr><td><code>origin</code></td><td>https://github.com/gruTGU/HYHQ.git</td><td>保留（原仓库）</td></tr>
-    <tr><td><code>github</code></td><td>git@github.com:NEAZ71eve/Intelligent-Platform-for-River-Ecological-Assessment.git</td><td><span class="ok">已推送</span>，main=13472e0</td></tr>
+    <tr><td><code>github</code></td><td>git@github.com:NEAZ71eve/Intelligent-Platform-for-River-Ecological-Assessment.git</td><td><span class="ok">已推送</span>，main=39ac3e4</td></tr>
   </table>
   <p>本地身份（仓库级）：<code>gruTGU &lt;gruTGU@users.noreply.github.com&gt;</code>；SSH key：ed25519 / rsa。</p>
-  <h3>10.2 提交历史（main，最近 6 条）</h3>
+  <h3>10.2 提交历史（main，最近 7 条）</h3>
   <table>
     <tr><th>提交</th><th>内容</th></tr>
+    <tr><td><code>39ac3e4</code></td><td>feat(inference): 提交 v2/v2-2/v3 训练产物与 detect 评估结果（runs 白名单 .pt 入库），修订 v1.manifest</td></tr>
     <tr><td><code>13472e0</code></td><td>feat(inference): river-eco-v3 训练完成（TACO 扩充 bottle 78→155 / foam 50→81），val mAP50=0.789，ONNX v3 导出</td></tr>
     <tr><td><code>b3cbbbd</code></td><td>docs: 二轮调研发现（IWHR 可零成本重标、driftwood/foam/grass 数据集）</td></tr>
     <tr><td><code>37d58a0</code></td><td>docs: bottle/foam_board few-shot 补充计划（auto-label 失败，已列候选标注）</td></tr>
@@ -403,8 +404,8 @@ node --test tests/*.test.js</code></pre>
   <h3>10.4 工作区状态</h3>
   <table>
     <tr><th>位置</th><th>内容</th></tr>
-    <tr><td>HYHQ（main）</td><td>v1.manifest.json 已修改；runs/ 下 river-eco-v2 / v2-2 / v3 与 detect/runs（v3 训练产物）未跟踪，待整理提交</td></tr>
-    <tr><td>miniprogram-2（master，39ef592）</td><td>CODE_WIKI.md / code-wiki.html / docs/数据集清单.md 本次已同步至 2026-09-21 状态（未提交）</td></tr>
+    <tr><td>HYHQ（main）</td><td><span class="ok">✅ 已提交并推送</span>（39ac3e4：248 文件 = v2/v2-2/v3 训练产物 + detect 评估 + v1.manifest 修订）；工作区干净</td></tr>
+    <tr><td>miniprogram-2（master，2fd7e99）</td><td><span class="ok">✅ 已提交并推送</span>（三文档）；工作区干净</td></tr>
   </table>
 </section>
 
