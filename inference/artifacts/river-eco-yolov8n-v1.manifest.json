@@ -1,9 +1,9 @@
 {
   "model_name": "river-eco-yolov8n",
-  "model_version": "v1",
+  "model_version": "v2",
   "task": "detection",
-  "artifact": "river-eco-yolov8n-v1.onnx",
-  "sha256": "96fc7178c28f1eb29bae9703f440d6bda9c041433edb3e335691f38a5ee6da6c",
+  "artifact": "river-eco-yolov8n-v2.onnx",
+  "sha256": "e7410e78bf5586a0e0a85f43a3d753807aea977b74bec3a2fdade9f55531454c",
   "labels": [
     {
       "id": 0,
@@ -109,27 +109,32 @@
   },
   "imgsz": 640,
   "threshold": 0.5,
-  "scope": "内河水面漂浮物检测原型（公开数据集训练）；仅 IWHR floater 单类有真实样本，其余细类为预留头，不代表真实河道巡查识别准确率；非官方水质评价。",
-  "license": "IWHR CC BY 4.0; Ultralytics YOLOv8n AGPL-3.0",
-  "source_url": "https://doi.org/10.1038/s41597-025-04594-9",
+  "scope": "河道生态评估检测 v2（unified-v2 多类训练）：覆盖 10/15 细类，水华黑臭/岸带 5 细类零样本未训练；仅作识别参考，非官方水质评价。",
+  "license": "IWHR CC BY 4.0; iSOOD CC BY 4.0; Ultralytics YOLOv8n AGPL-3.0",
+  "source_url": "https://github.com/NEAZ71eve/Intelligent-Platform-for-River-Ecological-Assessment",
   "evaluation": {
     "report": "inference/reports/yolo-v1-report.md",
     "final_epoch": {
-      "epoch": 100.0,
-      "time": 5918.4,
-      "train/box_loss": 0.85535,
-      "train/cls_loss": 0.48772,
-      "train/dfl_loss": 0.93355,
-      "metrics/precision(B)": 0.89652,
-      "metrics/recall(B)": 0.81657,
-      "metrics/mAP50(B)": 0.9035,
-      "metrics/mAP50-95(B)": 0.65835,
-      "val/box_loss": 0.9066,
-      "val/cls_loss": 0.56164,
-      "val/dfl_loss": 0.94184,
-      "lr/pg0": 1.04674e-05,
-      "lr/pg1": 1.04674e-05,
-      "lr/pg2": 1.04674e-05
+      "epoch": 80.0,
+      "time": 11879.7,
+      "train/box_loss": 0.89613,
+      "train/cls_loss": 0.53721,
+      "train/dfl_loss": 0.96772,
+      "metrics/precision(B)": 0.76056,
+      "metrics/recall(B)": 0.69133,
+      "metrics/mAP50(B)": 0.75621,
+      "metrics/mAP50-95(B)": 0.47658,
+      "val/box_loss": 1.07935,
+      "val/cls_loss": 0.61779,
+      "val/dfl_loss": 1.00311,
+      "lr/pg0": 0.006537,
+      "lr/pg1": 0.002179,
+      "lr/pg2": 0.006537,
+      "lr/pg3": 0.002179,
+      "lr/pg4": 0.006537,
+      "lr/pg5": 0.002179,
+      "lr/pg6": 0.006537,
+      "lr/pg7": 0.002179
     }
   }
 }
