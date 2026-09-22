@@ -1,0 +1,140 @@
+{
+  "model_name": "river-eco-yolov8n",
+  "model_version": "v5",
+  "task": "detection",
+  "artifact": "river-eco-yolov8n-v5.onnx",
+  "sha256": "dbc9153ad2ec645ffa627d0ac97de1b9d8bbafafcc62531024396e00e8616f61",
+  "labels": [
+    {
+      "id": 0,
+      "name": "塑料瓶罐",
+      "fine": "bottle",
+      "eval_category": "floating_debris"
+    },
+    {
+      "id": 1,
+      "name": "泡沫板材",
+      "fine": "foam_board",
+      "eval_category": "floating_debris"
+    },
+    {
+      "id": 2,
+      "name": "水生植物",
+      "fine": "water_plant",
+      "eval_category": "floating_debris"
+    },
+    {
+      "id": 3,
+      "name": "藻类聚集",
+      "fine": "algae_mass",
+      "eval_category": "floating_debris"
+    },
+    {
+      "id": 4,
+      "name": "塑料垃圾",
+      "fine": "plastic",
+      "eval_category": "floating_debris"
+    },
+    {
+      "id": 5,
+      "name": "纸制品",
+      "fine": "paper",
+      "eval_category": "floating_debris"
+    },
+    {
+      "id": 6,
+      "name": "玻璃制品",
+      "fine": "glass",
+      "eval_category": "floating_debris"
+    },
+    {
+      "id": 7,
+      "name": "金属制品",
+      "fine": "metal",
+      "eval_category": "floating_debris"
+    },
+    {
+      "id": 8,
+      "name": "织物纤维",
+      "fine": "fabric",
+      "eval_category": "floating_debris"
+    },
+    {
+      "id": 9,
+      "name": "其他漂浮物",
+      "fine": "misc_debris",
+      "eval_category": "floating_debris"
+    },
+    {
+      "id": 10,
+      "name": "异常水色",
+      "fine": "sewage_color",
+      "eval_category": "bloom_blackwater"
+    },
+    {
+      "id": 11,
+      "name": "泡沫污染",
+      "fine": "foam_pollution",
+      "eval_category": "bloom_blackwater"
+    },
+    {
+      "id": 12,
+      "name": "排污口",
+      "fine": "outfall",
+      "eval_category": "outfall_discharge"
+    },
+    {
+      "id": 13,
+      "name": "岸带垃圾",
+      "fine": "bank_garbage",
+      "eval_category": "bank_problem"
+    },
+    {
+      "id": 14,
+      "name": "岸带侵占",
+      "fine": "bank_encroach",
+      "eval_category": "bank_problem"
+    }
+  ],
+  "class_mapping_version": 1,
+  "preprocessing": {
+    "resize_size": 640,
+    "letterbox": true,
+    "pad_value": 114,
+    "interpolation": "bilinear",
+    "scale": [
+      0.0,
+      1.0
+    ]
+  },
+  "imgsz": 640,
+  "threshold": 0.5,
+  "scope": "河道生态评估检测 v5（unified-v4：marine-debris640 仅 train 子集入训练，marine valid/test 174 图划为水域 held-out 评估集；剔除 TACO 污染漂移；+synth_cp 合成）：覆盖 10/15 细类，水华黑臭/岸带 5 细类零样本未训练；水域 held-out mAP50=0.7325（bottle 0.627/foam_board 0.802/plastic 0.811）；仅作识别参考，非官方水质评价。",
+  "license": "IWHR CC BY 4.0; iSOOD CC BY 4.0; marine-debris640; Ultralytics YOLOv8n AGPL-3.0",
+  "source_url": "https://github.com/NEAZ71eve/Intelligent-Platform-for-River-Ecological-Assessment",
+  "evaluation": {
+    "report": "miniprogram-2/docs/HYHQ_河道检测模型迭代报告_v3_v4_v5.md",
+    "final_epoch": {
+      "epoch": 100.0,
+      "time": 16814.1,
+      "train/box_loss": 0.9388,
+      "train/cls_loss": 0.48263,
+      "train/dfl_loss": 0.94416,
+      "metrics/precision(B)": 0.79568,
+      "metrics/recall(B)": 0.76183,
+      "metrics/mAP50(B)": 0.78696,
+      "metrics/mAP50-95(B)": 0.51368,
+      "val/box_loss": 1.05913,
+      "val/cls_loss": 0.61172,
+      "val/dfl_loss": 0.99153,
+      "lr/pg0": 0.000597,
+      "lr/pg1": 0.000199,
+      "lr/pg2": 0.000597,
+      "lr/pg3": 0.000199,
+      "lr/pg4": 0.000597,
+      "lr/pg5": 0.000199,
+      "lr/pg6": 0.000597,
+      "lr/pg7": 0.000199
+    }
+  }
+}

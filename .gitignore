@@ -20,6 +20,14 @@ miniprogram/config/local.js
 *.pth
 *.gguf
 *.safetensors
+# 训练产物白名单：runs/ 训练权重与推理 ONNX 制品纳入版本管理
+!inference/runs/**/*.pt
+!inference/artifacts/*.onnx
+# 数据集（图片/标签/划分快照）不入库，仅白名单文档描述
+inference/data/splits/
+inference/data/synth_cp/
+inference/data/eval-v*/
+inference/data/p0/
 # Training caches and exported feature/head arrays are reproducible local artifacts.
 inference/**/*.npz
 inference/**/*.npy
@@ -31,3 +39,7 @@ inference/**/*.log
 # Local SSH and private keys must never be committed.
 *.pem
 *.key
+
+# 本地协作文档与验收脚本不入库
+CODE_WIKI.md
+backend/e2e_v5_acceptance.py
