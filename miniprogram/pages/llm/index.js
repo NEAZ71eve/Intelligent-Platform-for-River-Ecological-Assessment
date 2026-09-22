@@ -1,14 +1,14 @@
 const { app } = require('../../lib/page');
-const { message, task } = require('../../lib/format');
+const { message } = require('../../lib/format');
 const { assessmentTask } = require('../../lib/assessment');
 const { loadAll, selectRegion } = require('../../lib/region');
 const { DISCLAIMER, SOURCE_LABELS, SCOPE_LABELS, publicSource, modelLabel, pending, turnView, sessionView, readPage, requestId } = require('../../lib/llm');
 Page({
-  data: { loading: true, busy: false, loggedIn: false, error: '', actionError: '', unavailable: false, status: null, modelLabel: 'DeepSeek Flash', scopeLabel: '识别解读', session: null, source: null, sourceLoading: false, sourceError: '', sourceKind: '', isRecognition: true, includeImage: false, question: '', questionCount: 0, turns: [], next: '', loadingMore: false, moreError: '', polling: false, pollNotice: '', hasPending: false, disclaimer: DISCLAIMER },
+  data: { loading: true, busy: false, loggedIn: false, error: '', actionError: '', unavailable: false, status: null, modelLabel: 'DeepSeek Flash', scopeLabel: '河道解读', session: null, source: null, sourceLoading: false, sourceError: '', sourceKind: '', isRecognition: false, includeImage: false, question: '', questionCount: 0, turns: [], next: '', loadingMore: false, moreError: '', polling: false, pollNotice: '', hasPending: false, disclaimer: DISCLAIMER },
   onLoad(options) {
-    this._alive = true; this._scope = 'recognition';
+    this._alive = true; this._scope = 'assessment';
     if (options && options.sessionId) this._sessionId = options.sessionId;
-    else if (options && ['recognition', 'assessment'].includes(options.kind) && options.jobId) { this._sourceKind = options.kind; this._sourceId = options.jobId; }
+    else if (options && options.kind === 'assessment' && options.jobId) { this._sourceKind = options.kind; this._sourceId = options.jobId; }
     else if (options && publicSource(options.scope, options.source_type, options.source_id)) { this._scope = options.scope; this._sourceType = options.source_type; this._sourceId = options.source_id; }
     else this._invalid = true;
     this.setData({ isRecognition: this._scope === 'recognition', scopeLabel: SCOPE_LABELS[this._scope] });
@@ -50,7 +50,7 @@ Page({
     this.restoreDraft();
     this.setData({ loading: true, error: '', actionError: '', unavailable: false, loggedIn: Boolean(token), polling: false, pollNotice: '' });
     try {
-      if (this._invalid) throw new Error('请从识别结果、生态导览或科普智游资料进入 AI。');
+      if (this._invalid) throw new Error('请从河道观察结果、生态导览或科普智游资料进入 AI。');
       await this.loadStatus(generation, token);
       if (!this.current(generation, token) || !token) return;
       if (this._sessionId) {
@@ -61,20 +61,19 @@ Page({
         if (session.id !== sessionId) throw new Error('返回的会话不匹配，请刷新核对。');
         this._scope = session.scope;
         this.setData({ session, source: null, sourceError: '', sourceKind: session.kind, isRecognition: session.is_recognition, scopeLabel: SCOPE_LABELS[session.scope], includeImage: session.include_image === true });
-        if (!session.is_recognition) await this.loadSessionSource(session, generation, token);
+        if (['explore', 'learn'].includes(session.scope)) await this.loadSessionSource(session, generation, token);
         if (!this.current(generation, token) || this._sessionId !== session.id || this.data.unavailable) return;
         await this.loadTurns(false, generation, token);
-      } else if (this._scope !== 'recognition') {
+      } else if (this._sourceKind === 'assessment') {
+        const result = await app().api.request('assessment-jobs/' + encodeURIComponent(this._sourceId) + '/');
+        if (!this.current(generation, token)) return;
+        const source = assessmentTask(result.data);
+        if (source.status !== 'succeeded') throw new Error('请在原任务完成并有可查看结果后使用 AI 解读。');
+        this.setData({ source, sourceKind: this._sourceKind });
+      } else {
         const source = await this.loadPublicSource();
         if (!this.current(generation, token)) return;
         this.setData({ source, sourceKind: this._scope, isRecognition: false, scopeLabel: SCOPE_LABELS[this._scope] });
-      } else {
-        const endpoint = this._sourceKind === 'recognition' ? 'recognition-jobs/' : 'assessment-jobs/';
-        const result = await app().api.request(endpoint + encodeURIComponent(this._sourceId) + '/');
-        if (!this.current(generation, token)) return;
-        const source = this._sourceKind === 'recognition' ? task(result.data) : assessmentTask(result.data);
-        if (source.status !== 'succeeded') throw new Error('请在原任务完成并有可查看结果后使用 AI 解读。');
-        this.setData({ source, sourceKind: this._sourceKind });
       }
     } catch (error) { if (this.current(generation, token)) this.handleError(error); }
     finally { if (this.current(generation, token)) { this.setData({ loading: false }); wx.stopPullDownRefresh(); } }
@@ -102,7 +101,7 @@ Page({
   },
   async loadStatus(generation = this._generation, token = this._token) {
     const version = this._statusVersion = (this._statusVersion || 0) + 1;
-    const response = await app().api.request('llm/status/', { data: { scope: this._scope || 'recognition' } });
+    const response = await app().api.request('llm/status/', { data: { scope: this._scope || 'assessment' } });
     if (!this.current(generation, token) || version !== this._statusVersion) return;
     const status = response.data;
     if (!status || typeof status.enabled !== 'boolean') throw new Error('AI 服务状态返回异常，请刷新重试。');
@@ -137,7 +136,7 @@ Page({
     await this.mutate(async () => {
       try {
         const data = { scope: this._scope, include_image: includeImage };
-        if (this._scope === 'recognition') data[this._sourceKind === 'recognition' ? 'recognition_job_id' : 'assessment_job_id'] = this._sourceId;
+        if (this._sourceKind === 'assessment') data.assessment_job_id = this._sourceId;
         else Object.assign(data, { source_type: this._sourceType, source_id: this._sourceId });
         const response = await app().api.request('llm/sessions/', { method: 'POST', data });
         const session = sessionView(response.data);
@@ -147,9 +146,9 @@ Page({
           if (this._draft && this._draft.token === token && this._draft.key === draftKey) this._draft.key = this.draftKey();
         }
         if (!this.current(generation, token)) return;
-        const source = !session.is_recognition && this.data.source && this.data.source.id === session.source_id && this.data.source.type === session.source_type ? this.data.source : null;
+        const source = session.is_recognition ? null : this.data.source && this.data.source.id === session.source_id && this.data.source.type === session.source_type ? this.data.source : null;
         this.setData({ session, source, sourceError: '', turns: [], next: '', actionError: '' });
-        if (!session.is_recognition) await this.loadSessionSource(session, generation, token);
+        if (['explore', 'learn'].includes(session.scope)) await this.loadSessionSource(session, generation, token);
       } catch (error) { if (this.current(generation, token)) this.setData({ actionError: message(error) + (error.code === 'IMAGE_UNAVAILABLE' ? ' 可关闭附图，再建立仅文字结果的会话。' : error.status === 429 ? '' : ' 若结果未确认，可先去会话记录查看。') }); }
     });
   },
@@ -226,20 +225,19 @@ Page({
     if (!this.canAct()) return;
     const session = this.data.session, kind = session ? session.kind : this._sourceKind;
     const scope = session ? session.scope : this._scope;
-    if (scope !== 'recognition') {
-      const type = session ? session.source_type : this._sourceType, id = session ? session.source_id : this._sourceId;
-      if (!publicSource(scope, type, id)) return;
-      if (type === 'region') {
-        if (scope === 'learn') app().globalData.pendingKnowledgeFilter = { region: id };
-        else selectRegion(app(), { id });
-        wx.switchTab({ url: '/pages/' + scope + '/index' });
-      } else if (type === 'water') wx.navigateTo({ url: '/pages/water/index?waterBodyId=' + encodeURIComponent(id) + ((session && session.source_region_id || this.data.source && this.data.source.region) ? '&region=' + encodeURIComponent(session && session.source_region_id || this.data.source.region) : '') });
-      else wx.navigateTo({ url: '/pages/detail/index?kind=' + type + '&id=' + encodeURIComponent(id) });
+    if (scope === 'recognition' || scope === 'assessment') {
+      const id = session ? session.assessment_job_id : this._sourceId;
+      if (!id) return;
+      wx.navigateTo({ url: '/pages/assessment/index?jobId=' + encodeURIComponent(id) });
       return;
     }
-    const id = session ? (kind === 'recognition' ? session.recognition_job_id : session.assessment_job_id) : this._sourceId;
-    if (!id) return;
-    if (kind === 'recognition') { app().globalData.recognitionJobId = id; wx.switchTab({ url: '/pages/recognize/index' }); }
-    else wx.navigateTo({ url: '/pages/assessment/index?jobId=' + encodeURIComponent(id) });
+    const type = session ? session.source_type : this._sourceType, id = session ? session.source_id : this._sourceId;
+    if (!publicSource(scope, type, id)) return;
+    if (type === 'region') {
+      if (scope === 'learn') app().globalData.pendingKnowledgeFilter = { region: id };
+      else selectRegion(app(), { id });
+      wx.switchTab({ url: '/pages/' + scope + '/index' });
+    } else if (type === 'water') wx.navigateTo({ url: '/pages/water/index?waterBodyId=' + encodeURIComponent(id) + ((session && session.source_region_id || this.data.source && this.data.source.region) ? '&region=' + encodeURIComponent(session && session.source_region_id || this.data.source.region) : '') });
+    else wx.navigateTo({ url: '/pages/detail/index?kind=' + type + '&id=' + encodeURIComponent(id) });
   },
 });

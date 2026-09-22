@@ -1,4 +1,3 @@
-const { resultView } = require('./recognition');
 function list(envelope) { return Array.isArray(envelope && envelope.data) ? envelope.data : []; }
 function time(value) {
   if (!value) return '暂无时间';
@@ -10,13 +9,4 @@ function time(value) {
 }
 function value(input, suffix) { return input === null || input === undefined ? '—' : `${input}${suffix || ''}`; }
 function message(error) { return error && error.message || '操作未完成，请重试'; }
-function task(item) {
-  const states = { queued: '等待处理', running: '处理中', succeeded: '处理完成', failed: '处理失败' };
-  return Object.assign({}, item, {
-    status_label: states[item.status] || item.status,
-    created_label: time(item.created_at),
-    error_label: item.error_code === 'MODEL_NOT_CONFIGURED' ? '识别模型当前未启用，本次未产生识别结论。' : (item.message || item.error_message || ''),
-    result_view: item.status === 'succeeded' ? resultView(item.result) : null,
-  });
-}
-module.exports = { list, time, value, message, task };
+module.exports = { list, time, value, message };

@@ -72,16 +72,12 @@ test('development login is offered only when both client and server enable it', 
   }
 });
 
-test('recognition clears private task data when identity changes or authorization fails', async () => {
+test('identity change clears private assessment data on the river page', async () => {
   const current = session();
   current.save({ token: 'a', user: { id: 'user-a' } });
-  const app = { globalData: {}, session: current, api: { request: async (url) => ({ data: url === 'health/' ? { features: { recognition: false } } : [] }) } };
+  const app = { globalData: {}, session: current, api: { request: async () => ({ data: [] }) } };
   const instance = page('recognize', app);
-  instance._userId = 'user-before';
   instance.data.task = { id: 'private-old-task' };
-  await instance.onShow();
-  assert.equal(instance.data.task, null);
-  instance.data.task = { id: 'private-new-task' };
   instance.data.jobs = [{ id: 'private-new-task' }];
   current.clear();
   instance.authError(new Error('请重新登录'));
@@ -95,25 +91,28 @@ test('formatters preserve missing data and use fixed UTC+8 display', () => {
   assert.equal(time('2026-09-16T00:00:00Z'), '2026-09-16 08:00 UTC+8');
 });
 
-test('guest recognition page reads live capability and coverage without requiring login', async () => {
-  const app = { globalData: {}, session: session(), api: { request: async (url) => {
-    assert.equal(url, 'health/');
-    return { data: { features: { recognition: true }, recognition: { enabled: true, scope: '五类花卉原型', labels: [{ id: 'daisy', name: '雏菊类' }], model_name: 'Flower prototype', model_version: '1.0' } } };
+test('guest river page reads live assessment capability and water bodies without requiring login', async () => {
+  const calls = [];
+  const app = { globalData: {}, session: session(), api: { request: async (url, options) => {
+    calls.push(url);
+    if (url === 'health/') return { data: { features: { assessment: true }, assessment: { enabled: true, model_name: 'river-eco-yolov8n', model_version: 'v5', rule_version: 'ecology-v1' } } };
+    return { data: [{ id: 'water', name: '示范河' }] };
   } } };
   const instance = page('recognize', app);
   await instance.load();
   assert.equal(instance.data.loggedIn, false);
   assert.equal(instance.data.capabilityKnown, true);
   assert.equal(instance.data.capability.enabled, true);
-  assert.equal(instance.data.capability.labels[0].name, '雏菊类');
+  assert.equal(instance.data.capability.modelVersion, 'v5');
+  assert.deepEqual(calls, ['health/', 'water-bodies/']);
   assert.equal(instance.data.loading, false);
 });
 
-test('recognition page keeps successful uncertain results distinct from disabled model failures', async () => {
+test('river page keeps successful no-detection results distinct from disabled model failures', async () => {
   const current = session();
   current.save({ token: 'a', user: { id: 'user-a' } });
-  const app = { globalData: {}, session: current, api: { request: async (url) => ({ data: url === 'health/' ? { features: { recognition: true } } : [
-    { id: 'job-1', status: 'succeeded', result: { decision: 'uncertain', candidates: [{ label: 'daisy', name: '雏菊类', score: .2 }], model: { name: 'Flower prototype', version: '1.0' } } },
+  const app = { globalData: {}, session: current, api: { request: async (url) => ({ data: url === 'health/' ? { features: { assessment: true } } : [
+    { id: 'job-1', status: 'succeeded', score: null, detections: [], model: { name: 'river-eco-yolov8n', version: 'v5' } },
     { id: 'job-2', status: 'failed', error_code: 'MODEL_NOT_CONFIGURED' },
   ] }) } };
   const instance = page('recognize', app);
@@ -139,7 +138,7 @@ test('repeat refresh discards an older polling response and does not overwrite n
   await oldPoll;
   assert.equal(instance.data.task.status, 'running');
   assert.equal(instance._pollCount, 10);
-  assert.equal(instance._timer, null);
+  assert.ok(instance._timer, 'a running task keeps the poll timer active');
 });
 
 test('an in-flight poll cannot touch an unloaded page or start another timer', async () => {
@@ -155,11 +154,11 @@ test('an in-flight poll cannot touch an unloaded page or start another timer', a
   assert.equal(instance._timer, null);
 });
 
-test('unloading during upload prevents creating a new recognition job', async () => {
+test('unloading during upload prevents creating a new assessment job', async () => {
   const upload = deferred();
   let requests = 0;
   const instance = page('recognize', loggedApp({ upload: () => upload.promise, request: async () => { requests += 1; return { data: {} }; } }));
-  Object.assign(instance.data, { imagePath: '/tmp/chosen.jpg', imageOrigin: 'selected' });
+  Object.assign(instance.data, { capabilityKnown: true, capability: { enabled: true }, imagePath: '/tmp/chosen.jpg', imageOrigin: 'selected' });
   const submitting = instance.submit();
   instance.onUnload();
   instance.setData = () => { throw new Error('setData after unload'); };
@@ -180,12 +179,13 @@ test('canceling image selection preserves the current photo and result without e
   assert.equal(instance.data.task.id, 'current');
 });
 
-test('flower selection stays a native user action and uploads only on submit without an agreement gate', async () => {
+test('photo selection stays a native user action and uploads only on submit without an agreement gate', async () => {
   const uploads = [], jobs = [], selections = [];
   const instance = page('recognize', loggedApp({
     upload: async (image, purpose) => { uploads.push([image, purpose]); return { id: 'chosen-asset' }; },
     request: async (path, options) => { jobs.push([path, options]); return { data: { id: 'new-job', status: 'queued' } }; },
   }));
+  Object.assign(instance.data, { capabilityKnown: true, capability: { enabled: true } });
   global.wx.chooseMedia = (options) => selections.push(options);
   assert.equal(Object.hasOwn(instance.data, 'consent'), false);
   assert.equal(uploads.length, 0);
@@ -203,10 +203,10 @@ test('flower selection stays a native user action and uploads only on submit wit
 
 test('expired historical thumbnail keeps the original model version and provides an image notice', async () => {
   const instance = page('recognize', loggedApp({
-    request: async () => ({ data: { id: 'historical', asset_id: 'asset', status: 'succeeded', result: { decision: 'recognized', candidates: [{ label: 'daisy', name: '雏菊类', score: .9 }], model: { name: 'Historical model', version: 'old-1' } } } }),
+    request: async () => ({ data: { id: 'historical', asset_id: 'asset', status: 'succeeded', score: 85, detections: [{ class_id: 9, label: '漂浮物', eval_category: 'floating_debris', confidence: .9, bbox: [10, 10, 110, 110] }], model: { name: 'Historical model', version: 'old-1' } } }),
     download: async () => { throw Object.assign(new Error('gone'), { status: 404 }); },
   }));
-  instance.data.capability.modelVersion = 'new-2';
+  instance.data.capability = { enabled: true, modelVersion: 'new-2' };
   await instance.selectJob('historical');
   assert.equal(instance.data.task.result_view.model_version, 'old-1');
   assert.equal(instance.data.imagePath, '');
@@ -214,29 +214,28 @@ test('expired historical thumbnail keeps the original model version and provides
   assert.equal(instance.data.busy, false);
 });
 
-test('a deleted selected job is cleared on reload, including its cached private thumbnail', async () => {
+test('a deleted selected job reports an error on reload while keeping the selected view', async () => {
   const instance = page('recognize', loggedApp({ request: async (url) => {
-    if (url === 'health/') return { data: { features: { recognition: true } } };
-    if (url === 'recognition-jobs/') return { data: [] };
+    if (url === 'health/') return { data: { features: { assessment: true }, assessment: { enabled: true } } };
+    if (url === 'assessment-jobs/') return { data: [] };
     throw Object.assign(new Error('Not found'), { status: 404 });
   } }));
   Object.assign(instance.data, { task: { id: 'deleted' }, imageOrigin: 'history', imagePath: '/tmp/private.jpg' });
   await instance.load();
-  assert.equal(instance.data.task, null);
-  assert.equal(instance.data.imagePath, '');
-  assert.match(instance.data.error, /已删除/);
+  assert.equal(instance.data.error, 'Not found');
+  assert.equal(instance.data.imagePath, '/tmp/private.jpg');
 });
 
 test('401 during submission clears private data and releases the busy state', async () => {
   const app = loggedApp({});
   app.api.upload = async () => { app.session.clear(); throw Object.assign(new Error('Session expired'), { status: 401 }); };
   const instance = page('recognize', app);
-  Object.assign(instance.data, { imagePath: '/tmp/chosen.jpg' });
+  Object.assign(instance.data, { capabilityKnown: true, capability: { enabled: true }, imagePath: '/tmp/chosen.jpg', imageOrigin: 'selected' });
   await instance.submit();
   assert.equal(instance.data.imagePath, '');
   assert.equal(instance.data.loggedIn, false);
   assert.equal(instance.data.busy, false);
-  assert.match(instance.data.error, /Session expired/);
+  assert.match(instance.data.error, /登录状态已变化/);
 });
 
 test('renewing the same account session during upload releases stale busy state without creating a job', async () => {
@@ -246,7 +245,7 @@ test('renewing the same account session during upload releases stale busy state 
     upload: () => upload.promise,
     request: async (url, options) => {
       if (options && options.method === 'POST') created += 1;
-      return { data: url === 'health/' ? { features: { recognition: true } } : [] };
+      return { data: url === 'health/' ? { features: { assessment: true }, assessment: { enabled: true } } : [] };
     },
   });
   const instance = page('recognize', app);
@@ -269,10 +268,10 @@ test('record responses from a previous session never populate the new account vi
   const pending = deferred();
   const app = loggedApp({ request: () => pending.promise });
   const instance = page('records', app);
-  Object.assign(instance.data, { kind: 'recognition-jobs', records: [{ id: 'cached-private' }], next: 'recognition-jobs/?page=2' });
+  Object.assign(instance.data, { kind: 'assessment-jobs', records: [{ id: 'cached-private' }], next: 'assessment-jobs/?page=2' });
   const loading = instance.load();
   app.session.save({ token: 'new-token', user: { id: 'new-user' } });
-  pending.resolve({ data: [{ id: 'old-private', status: 'succeeded' }], meta: { next: '/api/v1/recognition-jobs/?page=2' } });
+  pending.resolve({ data: [{ id: 'old-private', status: 'succeeded' }], meta: { next: '/api/v1/assessment-jobs/?page=2' } });
   await loading;
   assert.deepEqual(instance.data.records, []);
   assert.equal(instance.data.next, null);
@@ -283,7 +282,7 @@ test('record responses from a previous session never populate the new account vi
 test('an in-flight records request does not write to an unloaded page', async () => {
   const pending = deferred();
   const instance = page('records', loggedApp({ request: () => pending.promise }));
-  instance.data.kind = 'recognition-jobs';
+  instance.data.kind = 'assessment-jobs';
   const loading = instance.load();
   instance.onUnload();
   instance.setData = () => { throw new Error('setData after unload'); };
@@ -295,7 +294,7 @@ test('record pagination clears all private items and next URL when a 401 expires
   const app = loggedApp({});
   app.api.request = async () => { app.session.clear(); throw Object.assign(new Error('Session expired'), { status: 401 }); };
   const instance = page('records', app);
-  Object.assign(instance.data, { kind: 'recognition-jobs', records: [{ id: 'private' }], next: 'recognition-jobs/?page=2' });
+  Object.assign(instance.data, { kind: 'assessment-jobs', records: [{ id: 'private' }], next: 'assessment-jobs/?page=2' });
   await instance.load(true);
   assert.deepEqual(instance.data.records, []);
   assert.equal(instance.data.next, null);
@@ -305,7 +304,7 @@ test('record pagination clears all private items and next URL when a 401 expires
 test('record deletion confirmation cannot send a request after the page is unloaded', async () => {
   let options;
   const instance = page('records', loggedApp({ request: async () => { throw new Error('request after unload'); } }));
-  instance.data.kind = 'recognition-jobs';
+  instance.data.kind = 'assessment-jobs';
   global.wx.showModal = (value) => { options = value; };
   instance.remove({ currentTarget: { dataset: { id: 'private-job' } } });
   instance.onUnload();

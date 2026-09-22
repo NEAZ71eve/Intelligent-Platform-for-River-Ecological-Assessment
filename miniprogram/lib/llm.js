@@ -1,7 +1,7 @@
 const { time } = require('./format');
 const DISCLAIMER = 'AI 回答仅供参考，请结合资料核对；不代表物种鉴定、饮用安全结论或官方水质评价。';
 const SOURCE_LABELS = { region: '区域资料', place: '地点资料', water: '河湖资料', content: '科普文章', route: '游览路线' };
-const SCOPE_LABELS = { recognition: '识别解读', explore: '生态导览', learn: '科普智游' };
+const SCOPE_LABELS = { recognition: '识别解读', assessment: '河道解读', explore: '生态导览', learn: '科普智游' };
 const PUBLIC_SOURCES = { explore: ['region', 'place', 'water'], learn: ['region', 'content', 'route'] };
 function publicSource(scope, type, id) { return !!(PUBLIC_SOURCES[scope] && PUBLIC_SOURCES[scope].includes(type) && typeof id === 'string' && id); }
 function entryUrl(scope, type, id) { return publicSource(scope, type, id) ? '/pages/llm/index?scope=' + scope + '&source_type=' + type + '&source_id=' + encodeURIComponent(id) : ''; }
@@ -14,10 +14,10 @@ function turnView(turn) {
 }
 function sessionView(session) {
   if (!session || typeof session.id !== 'string' || !session.id || !['recognition', 'assessment', 'explore', 'learn'].includes(session.kind)) throw new Error('AI 会话返回格式不正确，请刷新核对。');
-  const scope = session.scope || (['recognition', 'assessment'].includes(session.kind) ? 'recognition' : session.kind);
+  const scope = session.scope || (['recognition', 'assessment'].includes(session.kind) ? session.kind : session.kind);
   if (!SCOPE_LABELS[scope] || (['explore', 'learn'].includes(scope) && !publicSource(scope, session.source_type, session.source_id))) throw new Error('AI 会话来源不正确，请刷新核对。');
   const context = session.context_summary;
-  return Object.assign({}, session, { scope, is_recognition: scope === 'recognition', created_label: time(session.created_at), expires_label: time(session.expires_at), kind_label: session.kind === 'recognition' ? '花卉识别' : session.kind === 'assessment' ? '河道观察' : SCOPE_LABELS[scope], source_label: SOURCE_LABELS[session.source_type] || '原识别结果', context_text: typeof context === 'string' ? context : context ? JSON.stringify(context, null, 2) : '资料摘要暂不可用。' });
+  return Object.assign({}, session, { scope, is_recognition: scope === 'recognition', created_label: time(session.created_at), expires_label: time(session.expires_at), kind_label: session.kind === 'recognition' ? '识别记录' : session.kind === 'assessment' ? '河道观察' : SCOPE_LABELS[scope], source_label: SOURCE_LABELS[session.source_type] || '原观察结果', context_text: typeof context === 'string' ? context : context ? JSON.stringify(context, null, 2) : '资料摘要暂不可用。' });
 }
 function pageKey(path, endpoint) {
   if (typeof path !== 'string' || /[\s\\#]/.test(path)) throw new Error('AI 记录分页地址无效，请刷新重试。');

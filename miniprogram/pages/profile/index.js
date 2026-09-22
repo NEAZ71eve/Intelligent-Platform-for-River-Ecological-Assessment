@@ -178,7 +178,7 @@ Page({
   records(event) {
     if (!this._canChange()) return;
     const kind = event.currentTarget.dataset.kind;
-    if (['favorites', 'histories', 'recognition-jobs', 'assessment-jobs', 'visits'].includes(kind)) wx.navigateTo({ url: '/pages/records/index?kind=' + kind });
+    if (['favorites', 'histories', 'assessment-jobs', 'visits'].includes(kind)) wx.navigateTo({ url: '/pages/records/index?kind=' + kind });
   },
   legal(event) { if (this._active()) wx.navigateTo({ url: '/pages/legal/index?kind=' + (event.currentTarget.dataset.kind === 'terms' ? 'terms' : 'privacy') }); },
   feedback() { if (this._active()) wx.navigateTo({ url: '/pages/feedback/index' }); },

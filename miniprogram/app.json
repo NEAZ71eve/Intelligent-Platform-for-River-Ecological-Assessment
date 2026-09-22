@@ -23,15 +23,14 @@
     "list": [
       { "pagePath": "pages/home/index", "text": "首页" },
       { "pagePath": "pages/explore/index", "text": "生态导览" },
-      { "pagePath": "pages/recognize/index", "text": "AI 识别" },
+      { "pagePath": "pages/recognize/index", "text": "河道观察" },
       { "pagePath": "pages/learn/index", "text": "科普智游" },
       { "pagePath": "pages/profile/index", "text": "我的" }
     ]
   },
   "usingComponents": {
     "page-state": "/components/page-state/index",
-    "source-label": "/components/source-label/index",
-    "recognition-result": "/components/recognition-result/index"
+    "source-label": "/components/source-label/index"
   },
   "permission": { "scope.userLocation": { "desc": "仅在主动点击后，用于查找附近水体并可选保存个人观察位置" } },
   "requiredPrivateInfos": ["getLocation"],

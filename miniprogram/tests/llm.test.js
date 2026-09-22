@@ -45,43 +45,43 @@ test('request identifiers remain valid UUIDs without exposing local quota UI sta
   assert.match(requestId(), /^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/);
 });
 test('guest reads service notice without fetching private source, sessions or sending a question', async () => {
-  const { page, calls, navigation } = fixture(undefined, { kind: 'recognition', jobId: 'j1' }, true);
+  const { page, calls, navigation } = fixture(undefined, { kind: 'assessment', jobId: 'a1' }, true);
   await page.onShow(); assert.equal(page.data.loggedIn, false); assert.deepEqual(calls.map((item) => item.path), ['llm/status/']);
   await page.send(); page.createSession(); page.login(); assert.equal(calls.length, 1); assert.deepEqual(navigation, ['/pages/profile/index']);
 });
 test('unbound chat links fail and disabled service retains an explicit status without creating a session', async () => {
-  const invalid = fixture(undefined, {}); await invalid.page.onShow(); assert.match(invalid.page.data.error, /识别结果/); assert.equal(invalid.calls.length, 0);
-  const { page, calls, modals } = fixture(async (path) => path === 'llm/status/' ? { data: { enabled: false, notice: '密钥尚未配置', quota: null } } : undefined, { kind: 'recognition', jobId: 'j1' });
+  const invalid = fixture(undefined, {}); await invalid.page.onShow(); assert.match(invalid.page.data.error, /河道观察结果/); assert.equal(invalid.calls.length, 0);
+  const { page, calls, modals } = fixture(async (path) => path === 'llm/status/' ? { data: { enabled: false, notice: '密钥尚未配置', quota: null } } : undefined, { kind: 'assessment', jobId: 'a1' });
   await page.onShow(); await page.createSession();
   assert.equal(page.data.status.enabled, false); assert.equal(page.data.status.notice, '密钥尚未配置'); assert.equal(modals.length, 0); assert.equal(calls.some((item) => item.options && item.options.method), false);
 });
 test('source entry defaults to no image, creates only on tap, and needs a separate first send', async () => {
-  const { page, calls, modals } = fixture(undefined, { kind: 'recognition', jobId: 'j1' }); await page.onShow();
+  const { page, calls, modals } = fixture(undefined, { kind: 'assessment', jobId: 'a1' }); await page.onShow();
   assert.equal(page.data.includeImage, false); assert.ok(page.data.source.result_view); assert.equal(page.data.turns.length, 0);
   assert.equal(calls.some((item) => item.options && item.options.method === 'POST'), false);
   await page.createSession();
   const posts = calls.filter((item) => item.options && item.options.method === 'POST');
-  assert.equal(posts.length, 1); assert.deepEqual(posts[0].options.data, { scope: 'recognition', recognition_job_id: 'j1', include_image: false });
+  assert.equal(posts.length, 1); assert.deepEqual(posts[0].options.data, { scope: 'assessment', assessment_job_id: 'a1', include_image: false });
   assert.equal(modals.length, 0); assert.equal(page.data.session.id, 's1'); assert.equal(page.data.question, ''); assert.equal(page.data.turns.length, 0);
 });
-test('explicit image preference and double taps create one session without a checkbox or modal', async () => {
+test('assessment source never offers image attachment and double taps create one session without a checkbox or modal', async () => {
   const posted = deferred();
-  const { page, calls, modals } = fixture(async (path, options) => path === 'llm/sessions/' && options.method === 'POST' ? posted.promise : undefined, { kind: 'recognition', jobId: 'j1' }); await page.onShow();
+  const { page, calls, modals } = fixture(async (path, options) => path === 'llm/sessions/' && options.method === 'POST' ? posted.promise : undefined, { kind: 'assessment', jobId: 'a1' }); await page.onShow();
   page.imageChange(change(true)); const creating = page.createSession(); await page.createSession();
-  assert.equal(modals.length, 0); assert.equal(calls.filter((item) => item.options && item.options.method === 'POST').length, 1);
-  assert.deepEqual(calls.find((item) => item.options && item.options.method === 'POST').options.data, { scope: 'recognition', recognition_job_id: 'j1', include_image: true });
-  posted.resolve({ data: session('s1', { include_image: true }) }); await creating;
-  assert.equal(page.data.session.include_image, true); assert.equal(page.data.turns.length, 0);
+  assert.equal(page.data.includeImage, false); assert.equal(modals.length, 0); assert.equal(calls.filter((item) => item.options && item.options.method === 'POST').length, 1);
+  assert.deepEqual(calls.find((item) => item.options && item.options.method === 'POST').options.data, { scope: 'assessment', assessment_job_id: 'a1', include_image: false });
+  posted.resolve({ data: session('s1', { include_image: false }) }); await creating;
+  assert.equal(page.data.session.include_image, false); assert.equal(page.data.turns.length, 0);
 });
 test('expired original image is an explicit failure with no automatic thumbnail or image-free retry', async () => {
-  const { page, calls } = fixture(async (path, options) => { if (path === 'llm/sessions/' && options.method === 'POST') throw Object.assign(new Error('原图已过期'), { code: 'IMAGE_UNAVAILABLE', status: 409 }); }, { kind: 'recognition', jobId: 'j1' });
-  await page.onShow(); page.imageChange(change(true)); await page.createSession();
-  assert.equal(page.data.session, null); assert.equal(page.data.includeImage, true); assert.match(page.data.actionError, /关闭附图/); assert.equal(calls.filter((item) => item.options && item.options.method === 'POST').length, 1);
+  const { page, calls } = fixture(async (path, options) => { if (path === 'llm/sessions/' && options.method === 'POST') throw Object.assign(new Error('原图已过期'), { code: 'IMAGE_UNAVAILABLE', status: 409 }); }, { kind: 'assessment', jobId: 'a1' });
+  await page.onShow(); await page.createSession();
+  assert.equal(page.data.session, null); assert.equal(page.data.includeImage, false); assert.match(page.data.actionError, /关闭附图/); assert.equal(calls.filter((item) => item.options && item.options.method === 'POST').length, 1);
 });
 test('old create responses after hide or account switch never display private context', async () => {
   for (const mode of ['hide', 'account']) {
     const posted = deferred();
-    const { page, application } = fixture(async (path, options) => path === 'llm/sessions/' && options.method === 'POST' ? posted.promise : undefined, { kind: 'recognition', jobId: 'j1' }); await page.onShow();
+    const { page, application } = fixture(async (path, options) => path === 'llm/sessions/' && options.method === 'POST' ? posted.promise : undefined, { kind: 'assessment', jobId: 'a1' }); await page.onShow();
     const creating = page.createSession();
     if (mode === 'hide') page.onHide(); else application.session.save({ token: 'B', user: { id: 'B' } });
     posted.resolve({ data: session('private-A') }); await creating;
@@ -91,7 +91,7 @@ test('old create responses after hide or account switch never display private co
 });
 test('returning during session creation waits for the request and refresh cannot create a duplicate', async () => {
   const posted = deferred();
-  const { page, calls } = fixture(async (path, options) => path === 'llm/sessions/' && options.method === 'POST' ? posted.promise : undefined, { kind: 'recognition', jobId: 'j1' }); await page.onShow();
+  const { page, calls } = fixture(async (path, options) => path === 'llm/sessions/' && options.method === 'POST' ? posted.promise : undefined, { kind: 'assessment', jobId: 'a1' }); await page.onShow();
   const creating = page.createSession(); page.onHide(); const showing = page.onShow(); await page.onPullDownRefresh(); await page.createSession();
   posted.resolve({ data: session() }); await creating; await showing;
   assert.equal(page.data.session.id, 's1'); assert.equal(calls.filter((item) => item.options && item.options.method === 'POST').length, 1);
@@ -206,11 +206,11 @@ test('a history delete response after account renewal clears the old list withou
   assert.equal(page.data.sessions.length, 0); assert.equal(page.data.busy, false); assert.equal(application.session.token(), 'B');
 });
 test('result entries only navigate from a completed current-account task, never create or send automatically', () => {
-  for (const kind of ['recognition', 'assessment']) {
+  for (const kind of ['assessment']) {
     let definition; const navigation = []; let token = 'A';
     global.Page = (value) => { definition = value; }; global.wx = { navigateTo: ({ url }) => navigation.push(url) };
     global.getApp = () => ({ session: { token: () => token } });
-    const path = require.resolve('../pages/' + (kind === 'recognition' ? 'recognize' : 'assessment') + '/index'); delete require.cache[path]; require(path);
+    const path = require.resolve('../pages/' + kind + '/index'); delete require.cache[path]; require(path);
     const page = { ...definition, data: { task: { id: 'job', status: 'queued' }, busy: false }, _visible: true, _sessionToken: 'A' };
     page.openAI(); assert.equal(navigation.length, 0); page.data.task.status = 'succeeded'; page.openAI();
     assert.deepEqual(navigation, ['/pages/llm/index?kind=' + kind + '&jobId=job']);
@@ -269,7 +269,7 @@ test('returning from public sessions selects the original source and water regio
 test('history accepts all three scope buckets while retaining legacy recognition and assessment rows', async () => {
   const rows = [session('r'), session('a', { kind: 'assessment', assessment_job_id: 'a1' }), session('e', { kind: 'explore', scope: 'explore', source_type: 'place', source_id: 'p1' }), session('l', { kind: 'learn', scope: 'learn', source_type: 'content', source_id: 'c1' })];
   const { page } = fixture(async (path) => path === 'llm/sessions/' ? { data: rows } : undefined, {}, false, 'llm-history'); await page.onShow();
-  assert.equal(page.data.sessions.length, 4); assert.deepEqual(page.data.sessions.map((item) => item.scope), ['recognition', 'recognition', 'explore', 'learn']);
+  assert.equal(page.data.sessions.length, 4); assert.deepEqual(page.data.sessions.map((item) => item.scope), ['recognition', 'assessment', 'explore', 'learn']);
   assert.throws(() => sessionView(session('bad', { kind: 'learn', scope: 'learn', source_type: 'water', source_id: 'w1' })), /来源/);
 });
 
@@ -333,7 +333,7 @@ test('pending session source metadata after hide or login change cannot restore 
 });
 
 test('all fresh entry types start blank and creation or refresh never inserts a preset question', async () => {
-  const entries = [{ kind: 'recognition', jobId: 'j1' }, { kind: 'assessment', jobId: 'a1' }, { scope: 'explore', source_type: 'region', source_id: 'r1' }, { scope: 'learn', source_type: 'content', source_id: 'c1' }];
+  const entries = [{ kind: 'assessment', jobId: 'a1' }, { scope: 'explore', source_type: 'region', source_id: 'r1' }, { scope: 'learn', source_type: 'content', source_id: 'c1' }];
   for (const options of entries) {
     const { page, calls } = fixture(undefined, options);
     await page.onShow(); assert.equal(page.data.question, ''); assert.equal(page.data.questionCount, 0);

@@ -1,13 +1,17 @@
-.upload-panel { height: 460rpx; border: 2rpx dashed #b6c7a1; border-radius: 30rpx; background: #edf2e4; display: flex; flex-direction: column; justify-content: center; align-items: center; position: relative; overflow: hidden; }
-.upload-panel .copy { font-size: 21rpx; }
-.scan-frame { width: 145rpx; height: 145rpx; border: 2rpx solid #c3d1ad; border-radius: 28rpx; position: relative; margin-bottom: 35rpx; }
-.plant-stem { width: 3rpx; height: 80rpx; background: #729955; position: absolute; left: 73rpx; top: 35rpx; transform: rotate(-8deg); }
-.plant-leaf { position: absolute; width: 44rpx; height: 66rpx; background: #9bb980; border-radius: 90% 0 90% 0; }
-.one { left: 33rpx; top: 24rpx; transform: rotate(-60deg); }
-.two { left: 71rpx; top: 49rpx; width: 39rpx; height: 57rpx; transform: rotate(4deg); background: #6e9655; }
-.preview { width: 100%; height: 100%; }
-.replace { position: absolute; bottom: 20rpx; background: rgba(37,65,37,.65); color: white; border-radius: 99rpx; padding: 7rpx 20rpx; font-size: 23rpx; }
-.privacy-link { color: #376f4a; margin-left: 10rpx; }
 .scope-card { padding: 26rpx; background: #edf1e2; border-radius: 24rpx; }
-.scope-labels { display: flex; flex-wrap: wrap; margin-top: 14rpx; }
-.scope-labels text { background: #fffefa; color: #698552; padding: 5rpx 15rpx; border-radius: 99rpx; font-size: 21rpx; margin: 8rpx 10rpx 0 0; }
+.upload-panel { min-height: 340rpx; padding: 32rpx; border: 2rpx dashed #a7c6be; border-radius: 28rpx; background: #e9f1ed; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.water-symbol { font-size: 100rpx; line-height: 1.2; color: #589287; margin-bottom: 20rpx; }
+/* Only the widthFix image determines this container's height; captions live outside it. */
+.image-wrap { position: relative; overflow: hidden; border-radius: 24rpx; line-height: 0; background: #e9f1ed; }
+.preview { width: 100%; display: block; }
+.box-layer { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.detection-box { position: absolute; border: 3rpx solid #f3b642; }
+.box-label { position: absolute; top: 0; left: 0; background: #f3b642; color: #203a30; font-size: 21rpx; line-height: 1.4; padding: 0 6rpx; }
+.water-picker { padding: 18rpx; margin-top: 16rpx; border-radius: 16rpx; background: #f0f4e9; }
+.nearby { padding: 20rpx; border-radius: 16rpx; background: #edf4ed; }
+.privacy-link { color: #376f4a; margin-left: 10rpx; }
+.result-banner { padding: 32rpx; background: #e3eee6; border-radius: 28rpx; }
+.rule-score { font-size: 72rpx; color: #306c51; font-weight: 650; }
+.rule-score text { font-size: 25rpx; font-weight: 400; }
+.detection-row { display: flex; justify-content: space-between; padding: 18rpx 0; border-bottom: 1rpx solid #edf0e5; }
+.grade-pill { display: inline-block; margin-top: 12rpx; background: #306c51; color: #ffffff; font-size: 26rpx; border-radius: 99rpx; padding: 6rpx 22rpx; }

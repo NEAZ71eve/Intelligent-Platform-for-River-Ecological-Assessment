@@ -69,7 +69,7 @@
     <view class="entry" data-page="explore" bindtap="navigate"><view class="entry-icon water">≈</view><view class="grow"><view class="title">去看看身边的山水</view><view class="copy">生态点位 / 河湖指标 / 校园步道</view></view><text class="chevron">›</text></view>
     <view class="entry" data-page="water" bindtap="measurements"><view class="entry-icon water">≈</view><view class="grow"><view class="title">智慧河湖</view><view class="copy">四项模拟指标 / 监测站 / 历史趋势</view></view><text class="chevron">›</text></view>
     <view class="entry" data-page="data-center" bindtap="measurements"><view class="entry-icon book">▥</view><view class="grow"><view class="title">生态数据中心</view><view class="copy">按来源与批次浏览 / 缺失提示 / 统计</view></view><text class="chevron">›</text></view>
-    <view class="entry" data-page="recognize" bindtap="navigate"><view class="entry-icon leaf">⌁</view><view class="grow"><view class="title">认识一片校园绿意</view><view class="copy">有限类别识别 / 模型说明 / 个人记录</view></view><text class="chevron">›</text></view>
+    <view class="entry" data-page="recognize" bindtap="navigate"><view class="entry-icon water">≈</view><view class="grow"><view class="title">记录一处河道现状</view><view class="copy">拍摄照片 / 生态评估 / 私有记录</view></view><text class="chevron">›</text></view>
     <view class="entry" bindtap="assessment"><view class="entry-icon water">≈</view><view class="grow"><view class="title">观察一张河道照片</view><view class="copy">漂浮物候选 / 图像教学规则 / 私有记录</view></view><text class="chevron">›</text></view>
     <view class="entry" data-page="learn" bindtap="navigate"><view class="entry-icon book">▤</view><view class="grow"><view class="title">收集一点生态知识</view><view class="copy">科普阅读 / 预设路线 / 个人收藏</view></view><text class="chevron">›</text></view>
   </view>

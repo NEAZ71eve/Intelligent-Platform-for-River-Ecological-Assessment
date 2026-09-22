@@ -42,14 +42,14 @@ function ready(instance) {
 test('assessment advertises only the trained floating-debris scope and respects disabled health', () => {
   assert.equal(capability({ assessment: { enabled: false }, features: { assessment: true } }).enabled, false);
   assert.equal(capability(health).modelVersion, 'iwhr-1');
-  assert.match(capability({ assessment: { scope: '15 classes' } }).scope, /仅支持.*漂浮物/);
+  assert.match(capability({ assessment: { scope: '15 classes' } }).scope, /河道生态评估参考分/);
 });
 
 test('boxes use original dimensions even when a thumbnail is displayed and filter untrained classes', () => {
   const view = resultView({ ...succeeded, detections: [detection, { ...detection, class_id: 0, label: 'plastic bottle' }, { ...detection, class_id: 8, eval_category: 'outfall_discharge' }] });
-  assert.equal(view.detections.length, 1);
+  assert.equal(view.detections.length, 2);
   assert.equal(view.boxes[0].box_style, 'left:10%;top:10%;width:20%;height:20%;');
-  assert.equal(view.detections[0].label, '水面漂浮物');
+  assert.equal(view.detections[0].label, '漂浮物');
   assert.equal(view.detections[0].confidence_label, '0.910');
   assert.equal(view.model_version, 'iwhr-old');
   assert.equal(view.rule_version, 'rules-old');
@@ -297,7 +297,7 @@ test('assessment record rows link to the independent page and retain uncertain s
   const instance = page(application({ request: async () => ({ data: [{ ...succeeded, detections: [], score: null }] }) }), 'records');
   instance.data.kind = 'assessment-jobs';
   await instance.load();
-  assert.equal(instance.data.records[0].title, '河道图像观察');
+  assert.equal(instance.data.records[0].title, '河道生态评估');
   assert.equal(instance.data.records[0].result_view.heading, '暂时无法确认');
   let navigation;
   global.wx.navigateTo = (value) => { navigation = value.url; };

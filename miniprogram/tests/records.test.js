@@ -146,15 +146,11 @@ test('unpublished targets keep a removable placeholder but cannot navigate', asy
   page.open(click('content')); assert.equal(navigation[0], '/pages/detail/index?kind=content&id=article');
 });
 
-test('both task record types open their existing result pages only for a current owned list item', async () => {
-  for (const kind of ['recognition-jobs', 'assessment-jobs']) {
-    const { page, navigation, application } = fixture(async () => envelope([{ id: 'job-1', status: 'queued', created_at: '2026-09-20T00:00:00Z' }]));
-    page.data.kind = kind; await page.onShow(); page.open(click('unknown')); assert.equal(navigation.length, 0);
-    page.open(click('job-1')); assert.equal(navigation.length, 1);
-    if (kind === 'recognition-jobs') assert.equal(application.globalData.recognitionJobId, 'job-1');
-    else assert.equal(navigation[0], '/pages/assessment/index?jobId=job-1');
-    application.session.clear(); page.open(click('job-1')); assert.equal(navigation.length, 1); assert.deepEqual(page.data.records, []);
-  }
+test('task record type opens its existing result page only for a current owned list item', async () => {
+  const { page, navigation, application } = fixture(async () => envelope([{ id: 'job-1', status: 'queued', created_at: '2026-09-20T00:00:00Z' }]));
+  page.data.kind = 'assessment-jobs'; await page.onShow(); page.open(click('unknown')); assert.equal(navigation.length, 0);
+  page.open(click('job-1')); assert.equal(navigation[0], '/pages/assessment/index?jobId=job-1');
+  application.session.clear(); page.open(click('job-1')); assert.equal(navigation.length, 1); assert.deepEqual(page.data.records, []);
 });
 
 test('malformed list data, cross-resource pages and repeated pagination fail visibly without appending', async () => {

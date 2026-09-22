@@ -1,8 +1,9 @@
 const { time } = require('./format');
 
-const SCOPE = '当前仅支持 IWHR 数据训练的水面漂浮物观察，不区分塑料瓶、排污口或其他生态类别。';
-const DISCLAIMER = '图像教学规则分仅用于观察练习，不是官方生态等级或水质评价。检测框面积不是水面覆盖率，也不代表真实污染程度。';
-const STATES = { queued: '等待处理', running: '观察中', succeeded: '观察完成', failed: '处理失败' };
+const SCOPE = '河道生态评估参考分（100 分制，优/良/中/差），由河道生态评估 v5 模型（15 细类）检测后按污染类别扣分。';
+const DISCLAIMER = '生态评估参考分用于观察练习，不是官方水质或生态指数。检测框面积不是水面覆盖率，也不代表真实污染程度。';
+const STATES = { queued: '等待处理', running: '评估中', succeeded: '评估完成', failed: '处理失败' };
+const GRADE_LABELS = { 优: '优', 良: '良', 中: '中', 差: '差' };
 
 function capability(health) {
   const details = health && health.assessment || {};
@@ -22,16 +23,18 @@ function dimension(value) { return finite(value) && value > 0; }
 function detectionViews(job) {
   const width = job.image_width;
   const height = job.image_height;
-  return (Array.isArray(job.detections) ? job.detections : []).filter((item) => item && item.class_id === 9 && item.eval_category === 'floating_debris').map((item, index) => {
-    const confidence = finite(item.confidence) && item.confidence >= 0 && item.confidence <= 1 ? item.confidence : null;
-    const box = Array.isArray(item.bbox) ? item.bbox : [];
-    const valid = dimension(width) && dimension(height) && box.length === 4 && box.every(finite)
-      && box[0] >= 0 && box[1] >= 0 && box[2] > box[0] && box[3] > box[1] && box[2] <= width && box[3] <= height;
-    return {
-      id: index, label: '水面漂浮物', confidence_label: confidence === null ? '—' : confidence.toFixed(3),
-      box_style: valid ? `left:${box[0] / width * 100}%;top:${box[1] / height * 100}%;width:${(box[2] - box[0]) / width * 100}%;height:${(box[3] - box[1]) / height * 100}%;` : '',
-    };
-  });
+  return (Array.isArray(job.detections) ? job.detections : [])
+    .filter((item) => item && item.eval_category === 'floating_debris' && item.class_id !== undefined)
+    .map((item, index) => {
+      const confidence = finite(item.confidence) && item.confidence >= 0 && item.confidence <= 1 ? item.confidence : null;
+      const box = Array.isArray(item.bbox) ? item.bbox : [];
+      const valid = dimension(width) && dimension(height) && box.length === 4 && box.every(finite)
+        && box[0] >= 0 && box[1] >= 0 && box[2] > box[0] && box[3] > box[1] && box[2] <= width && box[3] <= height;
+      return {
+        id: index, label: item.label || '水面漂浮物', confidence_label: confidence === null ? '—' : confidence.toFixed(3),
+        box_style: valid ? `left:${box[0] / width * 100}%;top:${box[1] / height * 100}%;width:${(box[2] - box[0]) / width * 100}%;height:${(box[3] - box[1]) / height * 100}%;` : '',
+      };
+    });
 }
 
 function resultView(job) {
@@ -39,12 +42,14 @@ function resultView(job) {
   const detections = detectionViews(job);
   // An empty detection set never implies clean water, even for old or malformed results.
   const score = detections.length && finite(job.score) && job.score >= 0 && job.score <= 100 ? job.score : null;
+  const grade = typeof job.grade === 'string' && GRADE_LABELS[job.grade] ? job.grade : '';
   const causes = (Array.isArray(job.causes) ? job.causes : []).map((item) => typeof item === 'string' ? item : item && item.text).filter(Boolean);
   const suggestions = (Array.isArray(job.suggestions) ? job.suggestions : []).map((item) => typeof item === 'string' ? item : item && item.text).filter(Boolean);
   return {
-    heading: detections.length ? '发现漂浮物候选' : '暂时无法确认',
-    explanation: detections.length ? '这些是模型候选，需结合照片与现场情况人工核对。置信分数不是正确概率。' : '未检出可展示的漂浮物候选，不能据此认定没有污染或水质良好；本次不提供分数。',
+    heading: detections.length ? '完成河道生态评估' : '暂时无法确认',
+    explanation: detections.length ? '分数为生态评估参考分，需结合照片与现场情况人工核对；置信分数不是正确概率。' : '未检出可展示的漂浮物候选，不能据此认定没有污染或水质良好；本次不提供分数。',
     score_label: score === null ? '—' : String(score),
+    grade,
     has_score: score !== null,
     detections,
     boxes: detections.filter((item) => item.box_style),
@@ -62,9 +67,9 @@ function assessmentTask(item) {
   return Object.assign({}, item, {
     status_label: STATES[item.status] || '状态未知',
     created_label: time(item.created_at),
-    error_label: item.error_code === 'MODEL_NOT_CONFIGURED' ? '河道观察模型当前未启用，本次未产生结论。' : item.message || item.error_message || '',
+    error_label: item.error_code === 'MODEL_NOT_CONFIGURED' ? '河道生态评估模型当前未启用，本次未产生结论。' : item.message || item.error_message || '',
     result_view: view,
-    title: '河道图像观察',
+    title: '河道生态评估',
   });
 }
 
