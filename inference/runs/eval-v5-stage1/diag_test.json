@@ -1,0 +1,439 @@
+{
+  "conf": 0.25,
+  "iou_match": 0.5,
+  "per_class_recall": {
+    "bottle": {
+      "tp": 3,
+      "fn": 8,
+      "recall@0.5": 0.2727272727272727
+    },
+    "foam_board": {
+      "tp": 2,
+      "fn": 9,
+      "recall@0.5": 0.18181818181818182
+    },
+    "water_plant": {
+      "tp": 261,
+      "fn": 37,
+      "recall@0.5": 0.8758389261744967
+    },
+    "algae_mass": {
+      "tp": 0,
+      "fn": 0,
+      "recall@0.5": null
+    },
+    "plastic": {
+      "tp": 1144,
+      "fn": 131,
+      "recall@0.5": 0.8972549019607843
+    },
+    "paper": {
+      "tp": 519,
+      "fn": 94,
+      "recall@0.5": 0.8466557911908646
+    },
+    "glass": {
+      "tp": 107,
+      "fn": 25,
+      "recall@0.5": 0.8106060606060606
+    },
+    "metal": {
+      "tp": 4103,
+      "fn": 242,
+      "recall@0.5": 0.9443037974683545
+    },
+    "fabric": {
+      "tp": 389,
+      "fn": 13,
+      "recall@0.5": 0.9676616915422885
+    },
+    "misc_debris": {
+      "tp": 3087,
+      "fn": 634,
+      "recall@0.5": 0.8296156947057243
+    },
+    "sewage_color": {
+      "tp": 0,
+      "fn": 0,
+      "recall@0.5": null
+    },
+    "foam_pollution": {
+      "tp": 0,
+      "fn": 0,
+      "recall@0.5": null
+    },
+    "outfall": {
+      "tp": 1455,
+      "fn": 295,
+      "recall@0.5": 0.8314285714285714
+    },
+    "bank_garbage": {
+      "tp": 0,
+      "fn": 0,
+      "recall@0.5": null
+    },
+    "bank_encroach": {
+      "tp": 0,
+      "fn": 0,
+      "recall@0.5": null
+    }
+  },
+  "area_bucket_recall": {
+    "tiny<0.1%": {
+      "per_class": {
+        "foam_board": {
+          "tp": 0,
+          "fn": 1,
+          "recall@0.5": 0.0
+        },
+        "water_plant": {
+          "tp": 6,
+          "fn": 0,
+          "recall@0.5": 1.0
+        },
+        "plastic": {
+          "tp": 205,
+          "fn": 29,
+          "recall@0.5": 0.8761
+        },
+        "paper": {
+          "tp": 16,
+          "fn": 57,
+          "recall@0.5": 0.2192
+        },
+        "glass": {
+          "tp": 19,
+          "fn": 7,
+          "recall@0.5": 0.7308
+        },
+        "metal": {
+          "tp": 574,
+          "fn": 201,
+          "recall@0.5": 0.7406
+        },
+        "fabric": {
+          "tp": 7,
+          "fn": 0,
+          "recall@0.5": 1.0
+        },
+        "misc_debris": {
+          "tp": 205,
+          "fn": 207,
+          "recall@0.5": 0.4976
+        },
+        "outfall": {
+          "tp": 67,
+          "fn": 43,
+          "recall@0.5": 0.6091
+        }
+      },
+      "overall_recall@0.5": 0.6685
+    },
+    "small0.1-1%": {
+      "per_class": {
+        "bottle": {
+          "tp": 2,
+          "fn": 3,
+          "recall@0.5": 0.4
+        },
+        "foam_board": {
+          "tp": 2,
+          "fn": 4,
+          "recall@0.5": 0.3333
+        },
+        "water_plant": {
+          "tp": 206,
+          "fn": 31,
+          "recall@0.5": 0.8692
+        },
+        "plastic": {
+          "tp": 846,
+          "fn": 72,
+          "recall@0.5": 0.9216
+        },
+        "paper": {
+          "tp": 475,
+          "fn": 20,
+          "recall@0.5": 0.9596
+        },
+        "glass": {
+          "tp": 94,
+          "fn": 14,
+          "recall@0.5": 0.8704
+        },
+        "metal": {
+          "tp": 653,
+          "fn": 36,
+          "recall@0.5": 0.9478
+        },
+        "fabric": {
+          "tp": 310,
+          "fn": 12,
+          "recall@0.5": 0.9627
+        },
+        "misc_debris": {
+          "tp": 1338,
+          "fn": 286,
+          "recall@0.5": 0.8239
+        },
+        "outfall": {
+          "tp": 476,
+          "fn": 102,
+          "recall@0.5": 0.8235
+        }
+      },
+      "overall_recall@0.5": 0.8836
+    },
+    "medium1-8%": {
+      "per_class": {
+        "bottle": {
+          "tp": 4,
+          "fn": 4,
+          "recall@0.5": 0.5
+        },
+        "foam_board": {
+          "tp": 4,
+          "fn": 2,
+          "recall@0.5": 0.6667
+        },
+        "water_plant": {
+          "tp": 49,
+          "fn": 6,
+          "recall@0.5": 0.8909
+        },
+        "plastic": {
+          "tp": 117,
+          "fn": 22,
+          "recall@0.5": 0.8417
+        },
+        "paper": {
+          "tp": 58,
+          "fn": 8,
+          "recall@0.5": 0.8788
+        },
+        "glass": {
+          "tp": 2,
+          "fn": 3,
+          "recall@0.5": 0.4
+        },
+        "metal": {
+          "tp": 2135,
+          "fn": 4,
+          "recall@0.5": 0.9981
+        },
+        "fabric": {
+          "tp": 96,
+          "fn": 1,
+          "recall@0.5": 0.9897
+        },
+        "misc_debris": {
+          "tp": 1333,
+          "fn": 107,
+          "recall@0.5": 0.9257
+        },
+        "outfall": {
+          "tp": 631,
+          "fn": 106,
+          "recall@0.5": 0.8562
+        }
+      },
+      "overall_recall@0.5": 0.9439
+    },
+    "large>8%": {
+      "per_class": {
+        "bottle": {
+          "tp": 2,
+          "fn": 1,
+          "recall@0.5": 0.6667
+        },
+        "foam_board": {
+          "tp": 3,
+          "fn": 2,
+          "recall@0.5": 0.6
+        },
+        "plastic": {
+          "tp": 19,
+          "fn": 8,
+          "recall@0.5": 0.7037
+        },
+        "paper": {
+          "tp": 7,
+          "fn": 9,
+          "recall@0.5": 0.4375
+        },
+        "glass": {
+          "tp": 1,
+          "fn": 1,
+          "recall@0.5": 0.5
+        },
+        "metal": {
+          "tp": 768,
+          "fn": 1,
+          "recall@0.5": 0.9987
+        },
+        "misc_debris": {
+          "tp": 231,
+          "fn": 34,
+          "recall@0.5": 0.8717
+        },
+        "outfall": {
+          "tp": 285,
+          "fn": 44,
+          "recall@0.5": 0.8663
+        }
+      },
+      "overall_recall@0.5": 0.9294
+    }
+  },
+  "by_source": {
+    "CANSURF": {
+      "tp": 3897,
+      "fn": 215,
+      "fp": 254,
+      "recall@0.5": 0.9477,
+      "precision@0.5": 0.9388
+    },
+    "IWHR": {
+      "tp": 2980,
+      "fn": 576,
+      "fp": 552,
+      "recall@0.5": 0.838,
+      "precision@0.5": 0.8437
+    },
+    "TACO": {
+      "tp": 69,
+      "fn": 232,
+      "fp": 136,
+      "recall@0.5": 0.2292,
+      "precision@0.5": 0.3366
+    },
+    "YRDG": {
+      "tp": 2669,
+      "fn": 170,
+      "fp": 399,
+      "recall@0.5": 0.9401,
+      "precision@0.5": 0.8699
+    },
+    "iSOOD": {
+      "tp": 1455,
+      "fn": 295,
+      "fp": 395,
+      "recall@0.5": 0.8314,
+      "precision@0.5": 0.7865
+    }
+  },
+  "confusion_pairs": [
+    {
+      "gt": "paper",
+      "pred": "plastic",
+      "count": 30
+    },
+    {
+      "gt": "metal",
+      "pred": "plastic",
+      "count": 24
+    },
+    {
+      "gt": "fabric",
+      "pred": "plastic",
+      "count": 20
+    },
+    {
+      "gt": "plastic",
+      "pred": "metal",
+      "count": 16
+    },
+    {
+      "gt": "plastic",
+      "pred": "paper",
+      "count": 14
+    },
+    {
+      "gt": "misc_debris",
+      "pred": "plastic",
+      "count": 9
+    },
+    {
+      "gt": "plastic",
+      "pred": "fabric",
+      "count": 7
+    },
+    {
+      "gt": "foam_board",
+      "pred": "plastic",
+      "count": 5
+    },
+    {
+      "gt": "misc_debris",
+      "pred": "metal",
+      "count": 5
+    },
+    {
+      "gt": "bottle",
+      "pred": "plastic",
+      "count": 4
+    },
+    {
+      "gt": "glass",
+      "pred": "metal",
+      "count": 4
+    },
+    {
+      "gt": "misc_debris",
+      "pred": "glass",
+      "count": 3
+    },
+    {
+      "gt": "plastic",
+      "pred": "glass",
+      "count": 3
+    },
+    {
+      "gt": "metal",
+      "pred": "misc_debris",
+      "count": 2
+    },
+    {
+      "gt": "plastic",
+      "pred": "bottle",
+      "count": 2
+    },
+    {
+      "gt": "paper",
+      "pred": "metal",
+      "count": 2
+    },
+    {
+      "gt": "glass",
+      "pred": "paper",
+      "count": 2
+    },
+    {
+      "gt": "glass",
+      "pred": "plastic",
+      "count": 2
+    },
+    {
+      "gt": "fabric",
+      "pred": "misc_debris",
+      "count": 2
+    },
+    {
+      "gt": "misc_debris",
+      "pred": "water_plant",
+      "count": 2
+    }
+  ],
+  "fp_unmatched": {
+    "misc_debris": 579,
+    "outfall": 373,
+    "metal": 290,
+    "plastic": 157,
+    "water_plant": 69,
+    "paper": 38,
+    "fabric": 30,
+    "glass": 13,
+    "foam_board": 7,
+    "bottle": 4
+  }
+}

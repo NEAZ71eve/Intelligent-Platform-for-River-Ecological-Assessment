@@ -1,0 +1,90 @@
+{
+  "eval-v1": {
+    "bank": {
+      "images": 4,
+      "detected": 3,
+      "detect_rate": 0.75,
+      "mean_max_conf": 0.5443,
+      "det_count_hist": {
+        "0": 1,
+        "1": 2,
+        "2": 1
+      }
+    },
+    "bloom": {
+      "images": 4,
+      "detected": 2,
+      "detect_rate": 0.5,
+      "mean_max_conf": 0.5945,
+      "det_count_hist": {
+        "0": 2,
+        "2": 2
+      }
+    },
+    "debris": {
+      "images": 4,
+      "detected": 3,
+      "detect_rate": 0.75,
+      "mean_max_conf": 0.6227,
+      "det_count_hist": {
+        "0": 1,
+        "2": 1,
+        "3": 1,
+        "6": 1
+      }
+    },
+    "outfall": {
+      "images": 4,
+      "detected": 4,
+      "detect_rate": 1.0,
+      "mean_max_conf": 0.808,
+      "det_count_hist": {
+        "1": 4
+      }
+    }
+  },
+  "eval-v2": {
+    "bank": {
+      "images": 6,
+      "detected": 3,
+      "detect_rate": 0.5,
+      "mean_max_conf": 0.6133,
+      "det_count_hist": {
+        "0": 3,
+        "1": 2,
+        "3": 1
+      }
+    },
+    "bloom": {
+      "images": 8,
+      "detected": 5,
+      "detect_rate": 0.625,
+      "mean_max_conf": 0.6118,
+      "det_count_hist": {
+        "0": 3,
+        "1": 5
+      }
+    },
+    "debris": {
+      "images": 5,
+      "detected": 3,
+      "detect_rate": 0.6,
+      "mean_max_conf": 0.4137,
+      "det_count_hist": {
+        "0": 2,
+        "1": 1,
+        "2": 1,
+        "4": 1
+      }
+    },
+    "outfall": {
+      "images": 8,
+      "detected": 8,
+      "detect_rate": 1.0,
+      "mean_max_conf": 0.7157,
+      "det_count_hist": {
+        "1": 8
+      }
+    }
+  }
+}

@@ -1,0 +1,132 @@
+{
+  "split": "test",
+  "conf": 0.25,
+  "overall": {
+    "mAP50": 0.6964928466265204,
+    "mAP50-95": 0.4521481673274906,
+    "mp": 0.8178337691082284,
+    "mr": 0.6947570108136419
+  },
+  "per_class": [
+    {
+      "class_id": 0,
+      "class": "bottle",
+      "precision": 0.43250541729890646,
+      "recall": 0.1875,
+      "mAP50": 0.185,
+      "mAP50-95": 0.16975
+    },
+    {
+      "class_id": 1,
+      "class": "foam_board",
+      "precision": 0.47150705258968834,
+      "recall": 0.16666666666666666,
+      "mAP50": 0.12100000000000001,
+      "mAP50-95": 0.0808
+    },
+    {
+      "class_id": 2,
+      "class": "water_plant",
+      "precision": 0.8706799739082836,
+      "recall": 0.825503355704698,
+      "mAP50": 0.8395449987498134,
+      "mAP50-95": 0.3887595573018855
+    },
+    {
+      "class_id": 4,
+      "class": "plastic",
+      "precision": 0.8882384978303756,
+      "recall": 0.8442091529502961,
+      "mAP50": 0.8371361187133581,
+      "mAP50-95": 0.4858127983285624
+    },
+    {
+      "class_id": 5,
+      "class": "paper",
+      "precision": 0.9395420935242227,
+      "recall": 0.7889762596737976,
+      "mAP50": 0.8083317766930462,
+      "mAP50-95": 0.5175082460004808
+    },
+    {
+      "class_id": 6,
+      "class": "glass",
+      "precision": 0.8866517772939343,
+      "recall": 0.7212246592053898,
+      "mAP50": 0.7032463100853839,
+      "mAP50-95": 0.2919952715538489
+    },
+    {
+      "class_id": 7,
+      "class": "metal",
+      "precision": 0.965390566050011,
+      "recall": 0.9138799816765919,
+      "mAP50": 0.9314863076357895,
+      "mAP50-95": 0.786088461877662
+    },
+    {
+      "class_id": 8,
+      "class": "fabric",
+      "precision": 0.9366328823146541,
+      "recall": 0.92018779342723,
+      "mAP50": 0.9217333107254887,
+      "mAP50-95": 0.580551240775305
+    },
+    {
+      "class_id": 9,
+      "class": "misc_debris",
+      "precision": 0.9088026267290242,
+      "recall": 0.7778258876344868,
+      "mAP50": 0.8141235263722102,
+      "mAP50-95": 0.5902450488285619
+    },
+    {
+      "class_id": 12,
+      "class": "outfall",
+      "precision": 0.8783868035431845,
+      "recall": 0.8015963511972634,
+      "mAP50": 0.803326117290114,
+      "mAP50-95": 0.6299710486085992
+    },
+    {
+      "class_id": 3,
+      "class": "algae_mass",
+      "precision": null,
+      "recall": null,
+      "mAP50": null,
+      "mAP50-95": null
+    },
+    {
+      "class_id": 10,
+      "class": "sewage_color",
+      "precision": null,
+      "recall": null,
+      "mAP50": null,
+      "mAP50-95": null
+    },
+    {
+      "class_id": 11,
+      "class": "foam_pollution",
+      "precision": null,
+      "recall": null,
+      "mAP50": null,
+      "mAP50-95": null
+    },
+    {
+      "class_id": 13,
+      "class": "bank_garbage",
+      "precision": null,
+      "recall": null,
+      "mAP50": null,
+      "mAP50-95": null
+    },
+    {
+      "class_id": 14,
+      "class": "bank_encroach",
+      "precision": null,
+      "recall": null,
+      "mAP50": null,
+      "mAP50-95": null
+    }
+  ]
+}
