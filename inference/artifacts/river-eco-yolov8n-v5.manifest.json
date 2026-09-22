@@ -8,91 +8,76 @@
     {
       "id": 0,
       "name": "塑料瓶罐",
-      "fine": "bottle",
       "eval_category": "floating_debris"
     },
     {
       "id": 1,
       "name": "泡沫板材",
-      "fine": "foam_board",
       "eval_category": "floating_debris"
     },
     {
       "id": 2,
       "name": "水生植物",
-      "fine": "water_plant",
       "eval_category": "floating_debris"
     },
     {
       "id": 3,
       "name": "藻类聚集",
-      "fine": "algae_mass",
       "eval_category": "floating_debris"
     },
     {
       "id": 4,
       "name": "塑料垃圾",
-      "fine": "plastic",
       "eval_category": "floating_debris"
     },
     {
       "id": 5,
       "name": "纸制品",
-      "fine": "paper",
       "eval_category": "floating_debris"
     },
     {
       "id": 6,
       "name": "玻璃制品",
-      "fine": "glass",
       "eval_category": "floating_debris"
     },
     {
       "id": 7,
       "name": "金属制品",
-      "fine": "metal",
       "eval_category": "floating_debris"
     },
     {
       "id": 8,
       "name": "织物纤维",
-      "fine": "fabric",
       "eval_category": "floating_debris"
     },
     {
       "id": 9,
       "name": "其他漂浮物",
-      "fine": "misc_debris",
       "eval_category": "floating_debris"
     },
     {
       "id": 10,
       "name": "异常水色",
-      "fine": "sewage_color",
       "eval_category": "bloom_blackwater"
     },
     {
       "id": 11,
       "name": "泡沫污染",
-      "fine": "foam_pollution",
       "eval_category": "bloom_blackwater"
     },
     {
       "id": 12,
       "name": "排污口",
-      "fine": "outfall",
       "eval_category": "outfall_discharge"
     },
     {
       "id": 13,
       "name": "岸带垃圾",
-      "fine": "bank_garbage",
       "eval_category": "bank_problem"
     },
     {
       "id": 14,
       "name": "岸带侵占",
-      "fine": "bank_encroach",
       "eval_category": "bank_problem"
     }
   ],
@@ -105,6 +90,18 @@
     "scale": [
       0.0,
       1.0
+    ],
+    "supported_class_ids": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9
     ]
   },
   "imgsz": 640,

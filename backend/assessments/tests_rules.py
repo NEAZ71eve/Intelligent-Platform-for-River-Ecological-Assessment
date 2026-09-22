@@ -118,4 +118,4 @@ class RuleRegistryTests(TestCase):
         self.assertTrue(RuleSet.objects.get(pk=self.rule.pk).is_active)
         activate_rules(None)
         call_command('seed_assessment_rules', activate=True, stdout=io.StringIO())
-        self.assertTrue(RuleSet.objects.get(version='image-v1').is_active)
+        self.assertTrue(RuleSet.objects.get(version='ecology-v1').is_active)
