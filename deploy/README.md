@@ -99,6 +99,25 @@ scripts/check.sh
 scripts/check.sh --sqlite
 ```
 
+### 4b. 河道生态评估（v5 子系统）
+
+河道评估（拍照 → ONNX 推理 → RULE v1 规则引擎 → 生态等级 优/良/中/差）使用独立的 `run_assessment_worker` 与 `river-eco-yolov8n-v5.onnx` 制品。模型已随仓库入库（`inference/artifacts/`，SHA-256 在 manifest 中），登记命令与花卉识别同一条管线：
+
+```bash
+# 1) 登记并激活河道评估模型（绝对路径，manifest 必须位于 HYHQ_MODEL_ROOT 内）
+scripts/manage.sh register_model "$PWD/inference/artifacts/river-eco-yolov8n-v5.manifest.json" --activate
+
+# 2) 单次冒烟验收：任意真实河道照片 → 上传 → 推理 → 规则 → 落库，输出 score/grade
+scripts/manage.sh smoke_assessment --image /absolute/path/to/photo.jpg --once
+
+# 3) 常驻消费者（服务器端建议 systemd，见下）
+scripts/manage.sh run_assessment_worker
+```
+
+- `assessment-jobs/` API 已挂载在 `/api/v1/`（创建/查询/删除，仅本人）；规则集缺省使用代码内置 RULE_V1，也可在后台登记 `RuleSet`（version+definition，唯一 `is_active=True`）。
+- 任务状态机与花卉识别一致（queued→running→succeeded/failed），快照不可变；同一时刻 `enabled=True` 的模型唯一，登记/启停/回退见 `../inference/README.md`。
+- 生产部署模板：`systemd/hyhq-assessment.service`（与 recognition worker 同款资源限制，CPU 单核、1G 内存上限）。
+
 工作进程在没有模型时将识别任务标记为明确失败，`MODEL_NOT_CONFIGURED`。M3 的登记命令校验模型及其清单后方可启用；训练、导出、启停和回退见 [推理说明](../inference/README.md)。不要在服务器安装 PyTorch 训练依赖，服务端只安装后端锁定的 CPU 推理依赖。
 
 复制制品时同时复制 ONNX 和 manifest，放入 `HYHQ_MODEL_ROOT` 指定目录。Web 进程只提供任务 API，独立消费者派生子进程进行推理。单机多个消费者共享同一个执行锁，初始并发固定为 1；不要将锁文件放在容器独立文件系统或不同路径。当前设计不支持多主机分布式消费。
@@ -114,7 +133,8 @@ scripts/check.sh --sqlite
 - `Dockerfile`：可选的 API 镜像；从仓库根目录构建。
 - `backend.production.env.example`：生产配置样例。
 - `systemd/hyhq-api.service`：2 个 Gunicorn Web 进程，不加载模型。
-- `systemd/hyhq-recognition.service`：单独队列消费进程。
+- `systemd/hyhq-recognition.service`：花卉识别队列消费进程。
+- `systemd/hyhq-assessment.service`：河道生态评估队列消费进程（v5，见 §4b）。
 - `systemd/hyhq-simulation.*`：可选小时模拟任务。
 - `nginx.conf.example`：HTTPS、反向代理与公开静态文件。
 

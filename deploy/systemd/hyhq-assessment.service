@@ -1,0 +1,32 @@
+[Unit]
+Description=HYHQ river ecological assessment ONNX CPU worker
+After=network.target postgresql.service
+
+[Service]
+Type=simple
+User=hyhq
+Group=hyhq
+WorkingDirectory=/srv/hyhq/backend
+EnvironmentFile=/etc/hyhq/backend.env
+Environment=OMP_NUM_THREADS=1
+Environment=OPENBLAS_NUM_THREADS=1
+Environment=PYTHONDONTWRITEBYTECODE=1
+ExecStart=/srv/hyhq/.venv/bin/python manage.py run_assessment_worker
+Restart=on-failure
+RestartSec=3
+TimeoutStopSec=30
+KillMode=control-group
+MemoryHigh=768M
+MemoryMax=1G
+MemorySwapMax=0
+CPUQuota=100%
+TasksMax=64
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectHome=true
+ProtectSystem=strict
+ReadWritePaths=/srv/hyhq/backend/var
+
+[Install]
+WantedBy=multi-user.target
